@@ -3,6 +3,6 @@ Software Engineering II Anaya Booking and Management System
 
 Tech Stacks
 
-Front End:
+Front End: React
 
-Back End:
+Back End: Javascript
