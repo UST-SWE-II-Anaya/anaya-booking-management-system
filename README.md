@@ -6,3 +6,5 @@ Tech Stacks
 Front End: React
 
 Back End: Javascript
+
+Database: Supabase
