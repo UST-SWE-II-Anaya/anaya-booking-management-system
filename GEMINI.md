@@ -152,7 +152,6 @@ chore: update prettier config
 
 - All PRs must target `develop` (except hotfixes which target `main`).
 - PR title must follow the same Conventional Commits format.
-- At least **1 peer review** required before merging.
 - Delete the feature branch after merging.
 
 ---
