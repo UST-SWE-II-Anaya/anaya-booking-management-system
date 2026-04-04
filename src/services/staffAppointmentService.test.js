@@ -8,7 +8,6 @@ import { supabase } from './supabaseClient'
 import {
   getMyAppointments,
   getMyDashboardStats,
-  getMyAppointmentById,
 } from './staffAppointmentService'
 import { createQueryBuilder } from '../test/mocks/supabaseMock'
 

@@ -90,7 +90,7 @@ executed first.** The following must already exist:
 - Create: `src/components/layout/StaffLayout.jsx`
 - Create: `src/components/layout/StaffRoute.test.jsx`
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 ```jsx
 // src/components/layout/StaffRoute.test.jsx
@@ -145,7 +145,7 @@ describe('StaffRoute', () => {
 Run: `npm test src/components/layout/StaffRoute.test.jsx`
 Expected: FAIL — StaffRoute not found
 
-- [ ] **Step 2: Create StaffRoute**
+- [x] **Step 2: Create StaffRoute**
 
 ```jsx
 // src/components/layout/StaffRoute.jsx
@@ -174,12 +174,12 @@ const StaffRoute = () => {
 export default StaffRoute
 ```
 
-- [ ] **Step 3: Run test**
+- [x] **Step 3: Run test**
 
 Run: `npm test src/components/layout/StaffRoute.test.jsx`
 Expected: PASS (4 tests)
 
-- [ ] **Step 4: Create StaffSidebar**
+- [x] **Step 4: Create StaffSidebar**
 
 ```jsx
 // src/components/layout/StaffSidebar.jsx
@@ -235,7 +235,7 @@ const StaffSidebar = () => (
 export default StaffSidebar
 ```
 
-- [ ] **Step 5: Create StaffLayout**
+- [x] **Step 5: Create StaffLayout**
 
 ```jsx
 // src/components/layout/StaffLayout.jsx
@@ -293,7 +293,7 @@ const StaffLayout = () => {
 export default StaffLayout
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/components/layout/StaffRoute.jsx \
@@ -317,7 +317,7 @@ git commit -m "feat: add StaffRoute guard and staff layout shell"
 `/staff`. We fix this by fetching the profile inline after login and branching on
 `role`.
 
-- [ ] **Step 1: Write failing test for LoginPage role-based redirect**
+- [x] **Step 1: Write failing test for LoginPage role-based redirect**
 
 ```jsx
 // src/pages/auth/LoginPage.test.jsx  (replace the existing file)
@@ -390,7 +390,7 @@ describe('LoginPage', () => {
 Run: `npm test src/pages/auth/LoginPage.test.jsx`
 Expected: FAIL — redirect goes to `/admin` for both roles
 
-- [ ] **Step 2: Update LoginPage**
+- [x] **Step 2: Update LoginPage**
 
 Replace the `handleSubmit` function in `src/pages/auth/LoginPage.jsx`:
 
@@ -513,12 +513,12 @@ const LoginPage = () => {
 export default LoginPage
 ```
 
-- [ ] **Step 3: Run test**
+- [x] **Step 3: Run test**
 
 Run: `npm test src/pages/auth/LoginPage.test.jsx`
 Expected: PASS (3 tests)
 
-- [ ] **Step 4: Create staff page stubs**
+- [x] **Step 4: Create staff page stubs**
 
 Create a minimal stub for each staff page (replaced in later tasks):
 
@@ -533,7 +533,7 @@ Repeat the same pattern for:
 - `src/pages/staff/LeaveRequestPage.jsx` → `const StaffLeaveRequestPage`
 - `src/pages/staff/ProfileSettingsPage.jsx` → `const StaffProfileSettingsPage`
 
-- [ ] **Step 5: Update App.jsx to add staff routes**
+- [x] **Step 5: Update App.jsx to add staff routes**
 
 ```jsx
 // src/App.jsx
@@ -606,13 +606,13 @@ const App = () => {
 export default App
 ```
 
-- [ ] **Step 6: Verify app compiles**
+- [x] **Step 6: Verify app compiles**
 
 Run: `npm run dev`
 Expected: Vite starts on localhost:5173 with no errors. Visiting `/staff` redirects
 to `/login` when unauthenticated.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/App.jsx src/pages/auth/LoginPage.jsx src/pages/staff/
@@ -630,7 +630,7 @@ git commit -m "feat: add staff routes and role-based login redirect"
 All functions in this service take `staffId` as their first argument and filter
 bookings to that staff member only.
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 ```js
 // src/services/staffAppointmentService.test.js
@@ -682,7 +682,7 @@ describe('getMyDashboardStats', () => {
 Run: `npm test src/services/staffAppointmentService.test.js`
 Expected: FAIL — module not found
 
-- [ ] **Step 2: Create staffAppointmentService**
+- [x] **Step 2: Create staffAppointmentService**
 
 ```js
 // src/services/staffAppointmentService.js
@@ -828,12 +828,12 @@ export const getMyAppointmentDates = async (staffId, year, month) => {
 }
 ```
 
-- [ ] **Step 3: Run test**
+- [x] **Step 3: Run test**
 
 Run: `npm test src/services/staffAppointmentService.test.js`
 Expected: PASS (3 tests)
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/services/staffAppointmentService.js \
@@ -848,7 +848,7 @@ git commit -m "feat: add staff appointment service"
 **Files:**
 - Replace stub: `src/pages/staff/DashboardPage.jsx`
 
-- [ ] **Step 1: Replace stub with full implementation**
+- [x] **Step 1: Replace stub with full implementation**
 
 ```jsx
 // src/pages/staff/DashboardPage.jsx
@@ -993,7 +993,7 @@ const StaffDashboardPage = () => {
 export default StaffDashboardPage
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add src/pages/staff/DashboardPage.jsx
@@ -1012,7 +1012,7 @@ This component is used in the appointments page calendar view. It renders a mont
 grid, highlights dates that have appointments, and fires `onDateSelect` when a date
 is clicked.
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 ```jsx
 // src/components/staff/MonthCalendar.test.jsx
@@ -1075,7 +1075,7 @@ describe('MonthCalendar', () => {
 Run: `npm test src/components/staff/MonthCalendar.test.jsx`
 Expected: FAIL — MonthCalendar not found
 
-- [ ] **Step 2: Create MonthCalendar**
+- [x] **Step 2: Create MonthCalendar**
 
 ```jsx
 // src/components/staff/MonthCalendar.jsx
@@ -1209,12 +1209,12 @@ const MonthCalendar = ({
 export default MonthCalendar
 ```
 
-- [ ] **Step 3: Run test**
+- [x] **Step 3: Run test**
 
 Run: `npm test src/components/staff/MonthCalendar.test.jsx`
 Expected: PASS (3 tests)
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/components/staff/
@@ -1232,7 +1232,7 @@ This page has two views (List and Calendar) toggled by a button in the top bar.
 List view is the default. Calendar view shows the month grid alongside a filtered
 list for the selected date.
 
-- [ ] **Step 1: Create AppointmentsPage**
+- [x] **Step 1: Create AppointmentsPage**
 
 ```jsx
 // src/pages/staff/AppointmentsPage.jsx
@@ -1633,7 +1633,7 @@ const StaffAppointmentsPage = () => {
 export default StaffAppointmentsPage
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add src/pages/staff/AppointmentsPage.jsx
@@ -1649,7 +1649,7 @@ git commit -m "feat: add staff appointments page with list and calendar views"
 - Create: `src/services/staffLeaveService.test.js`
 - Replace stub: `src/pages/staff/LeaveRequestPage.jsx`
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 ```js
 // src/services/staffLeaveService.test.js
@@ -1708,7 +1708,7 @@ describe('getMyLeaveRequests', () => {
 Run: `npm test src/services/staffLeaveService.test.js`
 Expected: FAIL — module not found
 
-- [ ] **Step 2: Create staffLeaveService**
+- [x] **Step 2: Create staffLeaveService**
 
 ```js
 // src/services/staffLeaveService.js
@@ -1748,12 +1748,12 @@ export const getMyLeaveRequests = async (staffId) => {
 }
 ```
 
-- [ ] **Step 3: Run test**
+- [x] **Step 3: Run test**
 
 Run: `npm test src/services/staffLeaveService.test.js`
 Expected: PASS (3 tests)
 
-- [ ] **Step 4: Create LeaveRequestPage**
+- [x] **Step 4: Create LeaveRequestPage**
 
 ```jsx
 // src/pages/staff/LeaveRequestPage.jsx
@@ -1989,7 +1989,7 @@ const StaffLeaveRequestPage = () => {
 export default StaffLeaveRequestPage
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/services/staffLeaveService.js \
@@ -2016,7 +2016,7 @@ Uploading to Supabase Storage requires a separate integration; for now the field
 accepts any valid URL (e.g., an externally hosted image or the Supabase Storage public
 URL after upload via the dashboard). A file-upload UI can be added as a follow-up.
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 ```js
 // src/services/staffProfileService.test.js
@@ -2082,7 +2082,7 @@ describe('updateMyPassword', () => {
 Run: `npm test src/services/staffProfileService.test.js`
 Expected: FAIL — module not found
 
-- [ ] **Step 2: Create staffProfileService**
+- [x] **Step 2: Create staffProfileService**
 
 ```js
 // src/services/staffProfileService.js
@@ -2132,12 +2132,12 @@ export const updateMyPassword = async (newPassword) => {
 }
 ```
 
-- [ ] **Step 3: Run test**
+- [x] **Step 3: Run test**
 
 Run: `npm test src/services/staffProfileService.test.js`
 Expected: PASS (4 tests)
 
-- [ ] **Step 4: Create ProfileSettingsPage**
+- [x] **Step 4: Create ProfileSettingsPage**
 
 ```jsx
 // src/pages/staff/ProfileSettingsPage.jsx
@@ -2484,7 +2484,7 @@ const StaffProfileSettingsPage = () => {
 export default StaffProfileSettingsPage
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/services/staffProfileService.js \
@@ -2497,7 +2497,7 @@ git commit -m "feat: add staff profile service and profile settings page"
 
 ## Task 9: Final Integration Check
 
-- [ ] **Step 1: Run all tests**
+- [x] **Step 1: Run all tests**
 
 ```bash
 npm test
@@ -2505,7 +2505,7 @@ npm test
 
 Expected: All tests pass. Fix any failures before proceeding.
 
-- [ ] **Step 2: Run dev server**
+- [x] **Step 2: Run dev server**
 
 ```bash
 npm run dev
@@ -2513,7 +2513,7 @@ npm run dev
 
 Open `http://localhost:5173`.
 
-- [ ] **Step 3: Smoke test the full staff flow**
+- [x] **Step 3: Smoke test the full staff flow**
 
 Using a Supabase `staff` role account, verify each step:
 
@@ -2539,7 +2539,7 @@ Using a Supabase `staff` role account, verify each step:
 19. Update contact/social → success message
 20. Logout → back to `/login`
 
-- [ ] **Step 4: Run lint**
+- [x] **Step 4: Run lint**
 
 ```bash
 npm run lint
@@ -2547,7 +2547,7 @@ npm run lint
 
 Fix any linting errors.
 
-- [ ] **Step 5: Final commit**
+- [x] **Step 5: Final commit**
 
 ```bash
 git add -A
