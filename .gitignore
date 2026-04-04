@@ -7,6 +7,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+.claude
+CLAUDE.md
+agent guide
 node_modules
 dist
 dist-ssr

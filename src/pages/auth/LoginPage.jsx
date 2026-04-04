@@ -2,10 +2,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
-import { signIn } from '../../services/authService'
+import { signIn, getProfile } from '../../services/authService'
+import useAuthStore from '../../store/authStore'
 
 const LoginPage = () => {
   const navigate = useNavigate()
+  const { setUser, setProfile, setLoading: setAuthLoading } = useAuthStore()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -17,12 +19,17 @@ const LoginPage = () => {
     setError('')
     setLoading(true)
     try {
-      await signIn(email, password)
+      setAuthLoading(true)
+      const data = await signIn(email, password)
+      const profile = await getProfile(data.user.id)
+      setUser(data.user)
+      setProfile(profile)
       navigate('/admin')
     } catch (err) {
       setError(err.message || 'Login failed. Please try again.')
     } finally {
       setLoading(false)
+      setAuthLoading(false)
     }
   }
 

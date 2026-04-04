@@ -35,9 +35,12 @@ const useAuthUser = () => {
           } catch (err) {
             console.error('Auth state change error:', err)
             clear()
+          } finally {
+            setLoading(false)
           }
         } else {
           clear()
+          setLoading(false)
         }
       }
     )
