@@ -10,9 +10,7 @@ vi.mock('./supabaseClient', () => ({
 import { supabase } from './supabaseClient'
 import {
   updateMyProfile,
-  updateMyStaffDetails,
   updateMyPassword,
-  getMyFullProfile,
 } from './staffProfileService'
 import { createQueryBuilder } from '../test/mocks/supabaseMock'
 
