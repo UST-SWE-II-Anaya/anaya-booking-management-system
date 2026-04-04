@@ -7,7 +7,8 @@ import useAuthStore from '../../store/authStore'
 
 const LoginPage = () => {
   const navigate = useNavigate()
-  const { setUser, setProfile, setLoading: setAuthLoading } = useAuthStore()
+  const setUser = useAuthStore((s) => s.setUser)
+  const setProfile = useAuthStore((s) => s.setProfile)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -19,7 +20,6 @@ const LoginPage = () => {
     setError('')
     setLoading(true)
     try {
-      setAuthLoading(true)
       const data = await signIn(email, password)
       const profile = await getProfile(data.user.id)
       setUser(data.user)
@@ -29,7 +29,6 @@ const LoginPage = () => {
       setError(err.message || 'Login failed. Please try again.')
     } finally {
       setLoading(false)
-      setAuthLoading(false)
     }
   }
 

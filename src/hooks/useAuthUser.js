@@ -8,44 +8,69 @@ const useAuthUser = () => {
   const { setUser, setProfile, setLoading, clear } = useAuthStore()
 
   useEffect(() => {
-    const init = async () => {
+    let mounted = true
+    let isInitialized = false
+
+    const initSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession()
         if (session?.user) {
           const profile = await getProfile(session.user.id)
-          setUser(session.user)
-          setProfile(profile)
+          if (mounted) {
+            setUser(session.user)
+            setProfile(profile)
+          }
+        } else if (mounted) {
+          clear()
         }
       } catch (err) {
         console.error('Auth init error:', err)
+        if (mounted) clear()
       } finally {
-        setLoading(false)
+        if (mounted) {
+          isInitialized = true
+          setLoading(false)
+        }
       }
     }
 
-    init()
+    initSession()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return
+        if (event === 'INITIAL_SESSION' || !isInitialized) {
+          // let initSession handle the initial load
+          return
+        }
+
         if (session?.user) {
           try {
+            setLoading(true)
             const profile = await getProfile(session.user.id)
-            setUser(session.user)
-            setProfile(profile)
+            if (mounted) {
+              setUser(session.user)
+              setProfile(profile)
+            }
           } catch (err) {
             console.error('Auth state change error:', err)
-            clear()
+            if (mounted) clear()
           } finally {
-            setLoading(false)
+            if (mounted) setLoading(false)
           }
         } else {
-          clear()
-          setLoading(false)
+          if (mounted) {
+            clear()
+            setLoading(false)
+          }
         }
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
   }, [])
 }
 
