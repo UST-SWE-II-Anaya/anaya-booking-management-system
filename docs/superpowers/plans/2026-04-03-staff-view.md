@@ -2497,7 +2497,7 @@ git commit -m "feat: add staff profile service and profile settings page"
 
 ## Task 9: Final Integration Check
 
-- [ ] **Step 1: Run all tests**
+- [x] **Step 1: Run all tests**
 
 ```bash
 npm test
@@ -2505,7 +2505,7 @@ npm test
 
 Expected: All tests pass. Fix any failures before proceeding.
 
-- [ ] **Step 2: Run dev server**
+- [x] **Step 2: Run dev server**
 
 ```bash
 npm run dev
@@ -2513,7 +2513,7 @@ npm run dev
 
 Open `http://localhost:5173`.
 
-- [ ] **Step 3: Smoke test the full staff flow**
+- [x] **Step 3: Smoke test the full staff flow**
 
 Using a Supabase `staff` role account, verify each step:
 
@@ -2539,7 +2539,7 @@ Using a Supabase `staff` role account, verify each step:
 19. Update contact/social → success message
 20. Logout → back to `/login`
 
-- [ ] **Step 4: Run lint**
+- [x] **Step 4: Run lint**
 
 ```bash
 npm run lint
@@ -2547,7 +2547,7 @@ npm run lint
 
 Fix any linting errors.
 
-- [ ] **Step 5: Final commit**
+- [x] **Step 5: Final commit**
 
 ```bash
 git add -A
