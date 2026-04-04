@@ -3,12 +3,9 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 import { signIn, getProfile } from '../../services/authService'
-import useAuthStore from '../../store/authStore'
 
 const LoginPage = () => {
   const navigate = useNavigate()
-  const setUser = useAuthStore((s) => s.setUser)
-  const setProfile = useAuthStore((s) => s.setProfile)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -20,11 +17,9 @@ const LoginPage = () => {
     setError('')
     setLoading(true)
     try {
-      const data = await signIn(email, password)
-      const profile = await getProfile(data.user.id)
-      setUser(data.user)
-      setProfile(profile)
-      navigate('/admin')
+      const { user } = await signIn(email, password)
+      const profile = await getProfile(user.id)
+      navigate(profile.role === 'admin' ? '/admin' : '/staff')
     } catch (err) {
       setError(err.message || 'Login failed. Please try again.')
     } finally {
@@ -40,7 +35,7 @@ const LoginPage = () => {
           <h1 className="font-serif text-2xl font-semibold text-[#2C2C2C]">
             Anaya
           </h1>
-          <p className="text-sm text-gray-500 mt-1">Admin Portal</p>
+          <p className="text-sm text-gray-500 mt-1">Staff &amp; Admin Portal</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -61,7 +56,7 @@ const LoginPage = () => {
               className="w-full px-3 py-2.5 border border-gray-200 rounded-lg
                 text-sm focus:outline-none focus:ring-2 focus:ring-[#8A956D]/40
                 focus:border-[#8A956D]"
-              placeholder="admin@anaya.com"
+              placeholder="you@anaya.com"
             />
           </div>
 

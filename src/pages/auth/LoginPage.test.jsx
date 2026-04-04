@@ -1,4 +1,4 @@
-// src/pages/auth/LoginPage.test.jsx
+// src/pages/auth/LoginPage.test.jsx  (replace the existing file)
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -15,7 +15,7 @@ vi.mock('../../services/authService', () => ({
   getProfile: vi.fn(),
 }))
 
-import { signIn } from '../../services/authService'
+import { signIn, getProfile } from '../../services/authService'
 import LoginPage from './LoginPage'
 
 const renderLogin = () =>
@@ -28,29 +28,35 @@ const renderLogin = () =>
 beforeEach(() => vi.clearAllMocks())
 
 describe('LoginPage', () => {
-  it('renders email and password inputs', () => {
+  it('redirects admin role to /admin', async () => {
+    signIn.mockResolvedValue({ user: { id: 'u1' } })
+    getProfile.mockResolvedValue({ role: 'admin' })
     renderLogin()
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
+    await userEvent.type(screen.getByLabelText(/email/i), 'admin@anaya.com')
+    await userEvent.type(screen.getByLabelText(/password/i), 'pass')
+    await userEvent.click(screen.getByRole('button', { name: /sign in/i }))
+    await waitFor(() =>
+      expect(mockNavigate).toHaveBeenCalledWith('/admin')
+    )
   })
 
-  it('shows error when non-admin logs in', async () => {
-    signIn.mockResolvedValue({
-      user: { id: 'x' },
-      session: {},
-    })
+  it('redirects staff role to /staff', async () => {
+    signIn.mockResolvedValue({ user: { id: 'u2' } })
+    getProfile.mockResolvedValue({ role: 'staff' })
     renderLogin()
     await userEvent.type(screen.getByLabelText(/email/i), 'staff@anaya.com')
-    await userEvent.type(screen.getByLabelText(/password/i), 'password123')
+    await userEvent.type(screen.getByLabelText(/password/i), 'pass')
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }))
-    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/admin'))
+    await waitFor(() =>
+      expect(mockNavigate).toHaveBeenCalledWith('/staff')
+    )
   })
 
-  it('shows error message on failed login', async () => {
+  it('shows error on failed login', async () => {
     signIn.mockRejectedValue(new Error('Invalid login credentials'))
     renderLogin()
     await userEvent.type(screen.getByLabelText(/email/i), 'bad@anaya.com')
-    await userEvent.type(screen.getByLabelText(/password/i), 'wrongpass')
+    await userEvent.type(screen.getByLabelText(/password/i), 'wrong')
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }))
     await waitFor(() =>
       expect(screen.getByText(/invalid login credentials/i)).toBeInTheDocument()
