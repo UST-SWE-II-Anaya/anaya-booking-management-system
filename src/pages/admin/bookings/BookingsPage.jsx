@@ -49,6 +49,7 @@ const BookingsPage = () => {
       .finally(() => setLoading(false))
   }, [status, search, page])
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load() }, [load])
 
   const totalPages = Math.ceil(count / pageSize)

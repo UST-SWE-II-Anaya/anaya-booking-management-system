@@ -8,9 +8,7 @@ vi.mock('./supabaseClient', () => ({
 import { supabase } from './supabaseClient'
 import {
   getBookings,
-  getBookingById,
   updateBookingStatus,
-  settleBalance,
 } from './bookingService'
 import { createQueryBuilder } from '../test/mocks/supabaseMock'
 

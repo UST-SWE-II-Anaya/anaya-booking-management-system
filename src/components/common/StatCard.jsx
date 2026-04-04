@@ -9,6 +9,7 @@ const colorMap = {
   red: 'bg-red-50 text-red-600',
 }
 
+// eslint-disable-next-line no-unused-vars
 const StatCard = ({ label, value, icon: Icon, color = 'green', sub }) => (
   <div className="bg-white rounded-xl border border-gray-100 p-5 flex
     items-start gap-4 shadow-sm">

@@ -6,7 +6,7 @@ vi.mock('./supabaseClient', () => ({
 }))
 
 import { supabase } from './supabaseClient'
-import { getInquiries, markRead, archiveInquiry } from './inquiryService'
+import { markRead } from './inquiryService'
 import { createQueryBuilder } from '../test/mocks/supabaseMock'
 
 beforeEach(() => vi.clearAllMocks())

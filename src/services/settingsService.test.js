@@ -6,7 +6,7 @@ vi.mock('./supabaseClient', () => ({
 }))
 
 import { supabase } from './supabaseClient'
-import { getSetting, upsertSetting } from './settingsService'
+import { getSetting } from './settingsService'
 import { createQueryBuilder } from '../test/mocks/supabaseMock'
 
 beforeEach(() => vi.clearAllMocks())

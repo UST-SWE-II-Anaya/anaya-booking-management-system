@@ -15,8 +15,6 @@ vi.mock('./supabaseClient', () => ({
 import { supabase } from './supabaseClient'
 import {
   signIn,
-  signOut,
-  getSession,
   getProfile,
 } from './authService'
 import { createQueryBuilder } from '../test/mocks/supabaseMock'

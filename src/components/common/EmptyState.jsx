@@ -5,7 +5,7 @@ import { Inbox } from 'lucide-react'
 const EmptyState = ({
   title = 'Nothing here yet',
   message = 'No records found.',
-  icon: Icon = Inbox,
+  icon: Icon = Inbox, // eslint-disable-line no-unused-vars
 }) => (
   <div className="flex flex-col items-center justify-center py-16 text-center">
     <div className="p-4 bg-gray-100 rounded-full mb-4">

@@ -33,7 +33,7 @@ const AdminSidebar = () => (
     </div>
 
     <nav className="flex-1 px-3 py-4 space-y-1">
-      {navItems.map(({ label, to, icon: Icon, end }) => (
+      {navItems.map(({ label, to, icon: Icon, end }) => ( // eslint-disable-line no-unused-vars
         <NavLink
           key={to}
           to={to}
