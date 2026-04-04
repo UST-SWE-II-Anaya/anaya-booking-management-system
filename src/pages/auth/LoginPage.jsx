@@ -3,9 +3,12 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 import { signIn, getProfile } from '../../services/authService'
+import useAuthStore from '../../store/authStore'
 
 const LoginPage = () => {
   const navigate = useNavigate()
+  const setUser = useAuthStore((s) => s.setUser)
+  const setProfile = useAuthStore((s) => s.setProfile)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -19,6 +22,8 @@ const LoginPage = () => {
     try {
       const { user } = await signIn(email, password)
       const profile = await getProfile(user.id)
+      setUser(user)
+      setProfile(profile)
       navigate(profile.role === 'admin' ? '/admin' : '/staff')
     } catch (err) {
       setError(err.message || 'Login failed. Please try again.')
