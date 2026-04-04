@@ -11,6 +11,32 @@ export const getStaff = async () => {
   return data
 }
 
+export const getLeaveRequests = async ({ status } = {}) => {
+  let query = supabase
+    .from('leave_requests')
+    .select(`
+      id, leave_type, start_date, end_date, reason, status, reviewed_at,
+      staff:profiles!leave_requests_staff_id_fkey(first_name, last_name),
+      reviewer:profiles!leave_requests_reviewed_by_fkey(first_name, last_name)
+    `)
+    .order('created_at', { ascending: false })
+  if (status) query = query.eq('status', status)
+  const { data, error } = await query
+  if (error) throw error
+  return data
+}
+
+export const reviewLeaveRequest = async (id, status, reviewedBy) => {
+  const { data, error } = await supabase
+    .from('leave_requests')
+    .update({ status, reviewed_by: reviewedBy, reviewed_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
 export const deactivateStaff = async (id) => {
   const { data, error } = await supabase
     .from('staff_details')
