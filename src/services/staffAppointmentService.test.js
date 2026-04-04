@@ -1,0 +1,43 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+vi.mock('./supabaseClient', () => ({
+  supabase: { from: vi.fn() },
+}))
+
+import { supabase } from './supabaseClient'
+import {
+  getMyAppointments,
+  getMyDashboardStats,
+  getMyAppointmentById,
+} from './staffAppointmentService'
+import { createQueryBuilder } from '../test/mocks/supabaseMock'
+
+beforeEach(() => vi.clearAllMocks())
+
+describe('getMyAppointments', () => {
+  it('filters bookings by staff_id', async () => {
+    const qb = createQueryBuilder({ data: [], error: null, count: 0 })
+    supabase.from.mockReturnValue(qb)
+    await getMyAppointments('staff-123', {})
+    expect(supabase.from).toHaveBeenCalledWith('bookings')
+    expect(qb.eq).toHaveBeenCalledWith('staff_id', 'staff-123')
+  })
+
+  it('throws on error', async () => {
+    const qb = createQueryBuilder({ data: null, error: new Error('RLS'), count: 0 })
+    supabase.from.mockReturnValue(qb)
+    await expect(getMyAppointments('staff-123', {})).rejects.toThrow('RLS')
+  })
+})
+
+describe('getMyDashboardStats', () => {
+  it('returns stats with expected keys', async () => {
+    const qb = createQueryBuilder({ data: [], error: null, count: 0 })
+    supabase.from.mockReturnValue(qb)
+    const stats = await getMyDashboardStats('staff-123')
+    expect(stats).toHaveProperty('upcomingCount')
+    expect(stats).toHaveProperty('todayCount')
+    expect(stats).toHaveProperty('todayDurationMinutes')
+    expect(stats).toHaveProperty('todaysAppointments')
+  })
+})
