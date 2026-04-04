@@ -3,6 +3,11 @@
 :root {
   --background: #ffffff;
   --foreground: #09090b;
+  --color-sage: #8A956D;
+  --color-rust: #CE845D;
+  --color-cream: #F9F8F5;
+  --color-charcoal: #2C2C2C;
+  --color-text: #4A4A4A;
 }
 
 @theme {
