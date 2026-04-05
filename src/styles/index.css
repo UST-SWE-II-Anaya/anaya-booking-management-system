@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --color-anaya-bg: #404040;
+  --color-anaya-green: #90987D;
+  --color-anaya-light: #FBF8F4;
+  --color-anaya-text: #2D2D2D;
+  --color-anaya-button: #929EB2;
+  --color-anaya-button-hover: #7b8aa0;
+  --color-anaya-error: #D32F2F;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--color-anaya-bg);
+  color: var(--color-anaya-text);
+  min-height: 100vh;
+}
