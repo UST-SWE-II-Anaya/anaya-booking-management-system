@@ -2,7 +2,7 @@ import Navbar from '../Navbar'
 
 export default function AuthLayout({ children, imageSrc }) {
   return (
-    <div className="min-h-screen flex flex-col bg-anaya-bg">
+    <div className="min-h-screen flex flex-col bg-[#3C3C3C]">
       <Navbar />
       
       <main className="flex-1 flex items-center justify-center p-4 sm:p-8">
@@ -26,7 +26,7 @@ export default function AuthLayout({ children, imageSrc }) {
           </div>
 
           {/* Right Panel - Form Area */}
-          <div className="w-full md:w-1/2 bg-anaya-light relative flex flex-col items-center justify-center px-10 py-12">
+          <div className="w-full md:w-1/2 bg-white relative flex flex-col items-center justify-center px-10 py-12">
             {/* The Form Content goes here */}
             <div className="w-full max-w-sm mx-auto flex flex-col items-center">
               {children}

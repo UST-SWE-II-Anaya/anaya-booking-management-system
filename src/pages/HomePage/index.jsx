@@ -8,8 +8,8 @@ const ValuePropCard = ({ title, description }) => (
   </div>
 )
 
-const ServiceCard = ({ title, imgUrl }) => (
-  <div className="relative group w-full aspect-square md:aspect-[4/3] overflow-hidden cursor-pointer shadow-md">
+const ServiceCard = ({ title, catId, imgUrl }) => (
+  <Link to={catId ? `/category/${catId}` : '#'} className="relative group w-full aspect-square md:aspect-[4/3] overflow-hidden cursor-pointer shadow-md block bg-white">
     {/* Generic background placeholder if image missing */}
     <div className="absolute inset-0 bg-anaya-accent/20 flex flex-col items-center justify-center p-4">
       {!imgUrl && (
@@ -34,9 +34,11 @@ const ServiceCard = ({ title, imgUrl }) => (
     {/* Text Content */}
     <div className="absolute bottom-4 left-6 text-white pointer-events-none">
       <h3 className="font-medium text-sm tracking-wide mb-1">{title}</h3>
-      <span className="text-xs flex items-center group-hover:underline">Learn more <span className="ml-1 leading-none">&gt;</span></span>
+      <span className="text-xs flex items-center group-hover:underline opacity-90">
+        Learn more <span className="ml-1 leading-none">&gt;</span>
+      </span>
     </div>
-  </div>
+  </Link>
 )
 
 export default function HomePage() {

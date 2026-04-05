@@ -10,9 +10,9 @@ export default function Navbar() {
 
       {/* Navigation Links */}
       <div className="hidden md:flex items-center space-x-8 text-white text-sm font-medium">
-        <Link to="#" className="hover:opacity-80 transition-opacity">Services</Link>
-        <Link to="#" className="hover:opacity-80 transition-opacity">About us</Link>
-        <Link to="#" className="hover:opacity-80 transition-opacity">Location</Link>
+        <Link to="/categories" className="hover:opacity-80 transition-opacity">Services</Link>
+        <Link to="/about" className="hover:opacity-80 transition-opacity">About us</Link>
+        <Link to="/location" className="hover:opacity-80 transition-opacity">Location</Link>
         <Link to="/login" className="hover:opacity-80 transition-opacity">Log in</Link>
         <Link to="/signup" className="hover:opacity-80 transition-opacity">Sign up</Link>
       </div>

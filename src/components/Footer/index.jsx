@@ -8,10 +8,10 @@ export default function Footer() {
           <img src="/logo.png" alt="ANAYA Aesthetic Studio" className="h-10 object-contain" />
         </Link>
         <div className="flex flex-col space-y-2 mt-4 text-xs font-medium">
-          <Link to="#" className="hover:opacity-80 transition-opacity">Services</Link>
-          <Link to="#" className="hover:opacity-80 transition-opacity">About us</Link>
-          <Link to="#" className="hover:opacity-80 transition-opacity">Location</Link>
-          <Link to="#" className="hover:opacity-80 transition-opacity">Book an appointment</Link>
+          <Link to="/categories" className="hover:opacity-80 transition-opacity">Services</Link>
+          <Link to="/about" className="hover:opacity-80 transition-opacity">About us</Link>
+          <Link to="/location" className="hover:opacity-80 transition-opacity">Location</Link>
+          <Link to="/services" className="hover:opacity-80 transition-opacity">Book an appointment</Link>
         </div>
       </div>
 
