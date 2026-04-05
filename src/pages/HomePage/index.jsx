@@ -11,7 +11,17 @@ const ValuePropCard = ({ title, description }) => (
 const ServiceCard = ({ title, imgUrl }) => (
   <div className="relative group w-full aspect-square md:aspect-[4/3] overflow-hidden cursor-pointer shadow-md">
     {/* Generic background placeholder if image missing */}
-    <div className="absolute inset-0 bg-anaya-accent/20"></div>
+    <div className="absolute inset-0 bg-anaya-accent/20 flex flex-col items-center justify-center p-4">
+      {!imgUrl && (
+        <>
+          <svg className="w-8 h-8 text-white/50 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span className="text-white/60 text-[0.65rem] text-center italic">Image placeholder<br/>(To be loaded from Supabase)</span>
+        </>
+      )}
+    </div>
+    
     {imgUrl && (
       <img 
         src={imgUrl} 
@@ -20,9 +30,9 @@ const ServiceCard = ({ title, imgUrl }) => (
       />
     )}
     {/* Gradient Overlay */}
-    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none"></div>
     {/* Text Content */}
-    <div className="absolute bottom-4 left-6 text-white">
+    <div className="absolute bottom-4 left-6 text-white pointer-events-none">
       <h3 className="font-medium text-sm tracking-wide mb-1">{title}</h3>
       <span className="text-xs flex items-center group-hover:underline">Learn more <span className="ml-1 leading-none">&gt;</span></span>
     </div>
@@ -33,24 +43,26 @@ export default function HomePage() {
   return (
     <PublicLayout>
       {/* 1. Hero Section */}
-      <section className="relative w-full h-[85vh] min-h-[600px] flex flex-col items-center justify-center pt-20">
-        {/* Hero Background Placeholder */}
-        <div className="absolute inset-0 bg-neutral-800 -z-10">
+      <section className="relative w-full h-[85vh] min-h-[600px] flex flex-col items-center justify-center pt-20 overflow-hidden z-0">
+        {/* Hero Background */}
+        <div className="absolute inset-0 bg-neutral-900 -z-10">
            <img 
-              src="https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?q=80&w=2670&auto=format&fit=crop" 
-              alt="Manicure placeholder"
-              className="w-full h-full object-cover opacity-60 mix-blend-overlay grayscale"
+              src="/hero.png" 
+              alt="Manicure hero"
+              className="w-full h-full object-cover opacity-60"
            />
+           {/* Dark Gradient Overlay for text readability */}
+           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/80"></div>
         </div>
 
-        <h1 className="text-4xl md:text-5xl font-serif text-white tracking-widest text-center mb-6 drop-shadow-md">
+        <h1 className="relative text-4xl md:text-5xl font-serif text-white tracking-widest text-center mb-6 drop-shadow-md z-10">
           Your Everyday Reset
         </h1>
-        <p className="text-white text-xs md:text-sm text-center max-w-lg mb-12 drop-shadow leading-relaxed px-4">
+        <p className="relative text-white text-xs md:text-sm text-center max-w-lg mb-12 drop-shadow leading-relaxed px-4 z-10">
           We combine advanced aesthetic techniques with personalized care to help you look and feel your absolute best. Start your journey today.
         </p>
 
-        <Link to="/services">
+        <Link to="/services" className="relative z-10">
           <button className="bg-anaya-accent hover:bg-anaya-accent-hover text-white text-sm font-medium py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105">
             View Services & Book
           </button>
@@ -78,17 +90,17 @@ export default function HomePage() {
           />
         </div>
       </section>
-
+      
       {/* 3. Popular Services */}
       <section className="w-full bg-anaya-bg py-24 px-8 md:px-16 lg:px-32">
         <h2 className="text-3xl font-serif text-center tracking-wide mb-16 text-anaya-text">
           Our most popular services
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-10 max-w-7xl mx-auto">
-          {/* Note: I am passing external realistic unsplash images temporarily to match your figma screenshot's look rather than leaving it as a blank gray block */}
-          <ServiceCard title="Facial Care" imgUrl="https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=800&auto=format&fit=crop&q=60" />
-          <ServiceCard title="Hand Care" imgUrl="https://images.unsplash.com/photo-1542840410-3092f99611a3?w=800&auto=format&fit=crop&q=60" />
-          <ServiceCard title="Nail Care" imgUrl="https://images.unsplash.com/photo-1598901968846-9c7bd5ea9470?w=800&auto=format&fit=crop&q=60" />
+          {/* Using text/icon placeholders as requested for backend integration later */}
+          <ServiceCard title="Facial Care" />
+          <ServiceCard title="Hand Care" />
+          <ServiceCard title="Nail Care" />
         </div>
       </section>
 
