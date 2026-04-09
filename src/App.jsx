@@ -15,8 +15,8 @@ import CustomersPage from './pages/admin/customers/CustomersPage'
 import CustomerDetailPage from './pages/admin/customers/CustomerDetailPage'
 import StaffPage from './pages/admin/staff/StaffPage'
 import LeaveRequestsPage from './pages/admin/staff/LeaveRequestsPage'
-import CategoriesPage from './pages/admin/services/CategoriesPage'
-import ServicesPage from './pages/admin/services/ServicesPage'
+import AdminCategoriesPage from './pages/admin/services/CategoriesPage'
+import AdminServicesPage from './pages/admin/services/ServicesPage'
 import InquiriesPage from './pages/admin/inquiries/InquiriesPage'
 import SettingsPage from './pages/admin/settings/SettingsPage'
 
@@ -26,12 +26,33 @@ import StaffAppointmentsPage from './pages/staff/AppointmentsPage'
 import StaffLeaveRequestPage from './pages/staff/LeaveRequestPage'
 import StaffProfileSettingsPage from './pages/staff/ProfileSettingsPage'
 
+// Public pages
+import HomePage from './pages/HomePage'
+import RegisterPage from './pages/RegisterPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import PublicCategoriesPage from './pages/CategoriesPage'
+import CategoryDetailPage from './pages/CategoryDetailPage'
+import PublicServicesPage from './pages/ServicesPage'
+import AboutPage from './pages/AboutPage'
+import LocationPage from './pages/LocationPage'
+
 const App = () => {
   useAuthUser()
 
   return (
     <Routes>
+      {/* Auth */}
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
+      {/* Public routes */}
+      <Route path="/" element={<HomePage />} />
+      <Route path="/categories" element={<PublicCategoriesPage />} />
+      <Route path="/category/:slug" element={<CategoryDetailPage />} />
+      <Route path="/services" element={<PublicServicesPage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/location" element={<LocationPage />} />
 
       {/* Admin routes */}
       <Route element={<AdminRoute />}>
@@ -43,8 +64,8 @@ const App = () => {
           <Route path="/admin/customers/:id" element={<CustomerDetailPage />} />
           <Route path="/admin/staff" element={<StaffPage />} />
           <Route path="/admin/staff/leave-requests" element={<LeaveRequestsPage />} />
-          <Route path="/admin/services" element={<CategoriesPage />} />
-          <Route path="/admin/services/:categoryId" element={<ServicesPage />} />
+          <Route path="/admin/services" element={<AdminCategoriesPage />} />
+          <Route path="/admin/services/:categoryId" element={<AdminServicesPage />} />
           <Route path="/admin/inquiries" element={<InquiriesPage />} />
           <Route path="/admin/settings" element={<SettingsPage />} />
         </Route>
