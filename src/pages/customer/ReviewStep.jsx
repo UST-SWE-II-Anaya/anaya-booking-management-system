@@ -1,7 +1,7 @@
+import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import useBookingStore from '../../store/bookingStore'
-import useAuthStore from '../../store/authStore'
 import { createBooking } from '../../services/customerBookingService'
 import { formatDuration } from '../../utils/bookingUtils'
 
@@ -24,6 +24,7 @@ const ReviewStep = () => {
     setBookingNotes,
     clearBooking,
   } = useBookingStore()
+  const [submitting, setSubmitting] = useState(false)
 
   if (!selectedDate || !selectedTime) {
     navigate('/booking/datetime', { replace: true })
@@ -41,13 +42,10 @@ const ReviewStep = () => {
   const endMM = String(endTotal % 60).padStart(2, '0')
   const endTime = `${endHH}:${endMM}`
 
-  // Format display date
-  const d = new Date(selectedDate + 'T00:00:00')
-  const displayDate = d.toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  })
+  const displayDate = new Date(selectedDate + 'T00:00:00').toLocaleDateString(
+    'en-US',
+    { weekday: 'long', month: 'long', day: 'numeric' }
+  )
 
   const buildPayload = () => ({
     staff_id: selectedStaffId,
@@ -67,6 +65,7 @@ const ReviewStep = () => {
   })
 
   const handleReserve = async (goToPayment = false) => {
+    setSubmitting(true)
     try {
       const booking = await createBooking(buildPayload())
       if (goToPayment) {
@@ -82,6 +81,8 @@ const ReviewStep = () => {
       } else {
         toast.error('Something went wrong. Please try again.')
       }
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -95,17 +96,17 @@ const ReviewStep = () => {
           ← Go Back to Previous Page
         </Link>
         <div className="flex gap-8 items-start">
-          {/* Left content */}
+          {/* Left: policies + notes */}
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-anaya-text mb-6">
               Review and Confirm
             </h1>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-5 mb-4">
+            <div className="mb-5">
               <h2 className="font-semibold text-anaya-text mb-2">
                 Cancellation Policy
               </h2>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 leading-relaxed">
                 You are free to cancel this booking request up to 12 hours of
                 the initial appointment reservation time, as long as you
                 haven't completed the down payment step. Please finalize your
@@ -113,11 +114,11 @@ const ReviewStep = () => {
               </p>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-5 mb-4">
-              <h2 className="font-semibold text-anaya-text mb-3">
+            <div className="mb-5">
+              <h2 className="font-semibold text-anaya-text mb-2">
                 Important info
               </h2>
-              <ul className="space-y-2 text-sm text-gray-600">
+              <ul className="space-y-2 text-sm text-gray-600 leading-relaxed">
                 <li>
                   <span className="font-medium text-anaya-text">
                     Securing Your Slot:{' '}
@@ -143,73 +144,63 @@ const ReviewStep = () => {
               </ul>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
+            <div className="mb-6">
               <h2 className="font-semibold text-anaya-text mb-2">
                 Booking Notes
               </h2>
               <textarea
                 value={bookingNotes}
                 onChange={(e) => setBookingNotes(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg p-3 text-sm resize-none focus:outline-none focus:border-anaya-accent"
+                className="w-full border border-gray-200 rounded-lg p-3 text-sm resize-none focus:outline-none focus:border-anaya-accent bg-white"
                 rows={4}
                 placeholder="Include comments or requests about your booking"
               />
             </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => handleReserve(false)}
-                className="flex-1 border border-anaya-accent text-anaya-accent py-3 rounded-lg font-medium hover:bg-anaya-accent/5 transition-colors"
-              >
-                Reserve Appointment
-              </button>
-              <button
-                onClick={() => handleReserve(true)}
-                className="flex-1 bg-anaya-accent hover:bg-anaya-accent-hover text-white py-3 rounded-lg font-medium transition-colors"
-              >
-                Reserve Appointment and Proceed to Payment
-              </button>
-            </div>
           </div>
 
-          {/* Right summary sidebar */}
+          {/* Right: booking summary + actions */}
           <div className="w-72 shrink-0 bg-white border border-gray-200 rounded-xl p-5 h-fit sticky top-6 shadow-sm">
-            <h2 className="font-semibold text-lg mb-4 text-anaya-text">
+            <h2 className="font-semibold text-lg mb-3 text-anaya-text">
               Your Booking
             </h2>
 
             <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-              <span>📅</span>
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
               <span>{displayDate}</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-              <span>🕐</span>
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
               <span>
-                {to12h(selectedTime)} – {to12h(endTime)} (
-                {formatDuration(totalDuration)})
+                {to12h(selectedTime)} – {to12h(endTime)}{' '}
+                ({formatDuration(totalDuration)})
               </span>
             </div>
 
             <ul className="space-y-2 mb-4">
               {cart.map((s) => (
-                <li
-                  key={s.id}
-                  className="flex justify-between text-sm text-anaya-text"
-                >
-                  <div>
-                    <p className="font-medium">{s.name}</p>
+                <li key={s.id} className="flex justify-between text-sm text-anaya-text">
+                  <div className="flex-1 pr-2">
+                    <p className="font-medium leading-snug">{s.name}</p>
                     <p className="text-xs text-gray-400">
                       {formatDuration(s.duration_minutes)} with any professional
                     </p>
                   </div>
-                  <span className="font-medium shrink-0 ml-2">
+                  <span className="font-medium shrink-0">
                     ₱{Number(s.price).toLocaleString()}
                   </span>
                 </li>
               ))}
             </ul>
 
-            <div className="border-t border-gray-100 pt-3 space-y-2 text-sm">
+            <div className="border-t border-gray-100 pt-3 space-y-2 text-sm mb-5">
               <div className="flex justify-between text-gray-500">
                 <span>Subtotal:</span>
                 <span>₱{subtotal.toLocaleString()}</span>
@@ -219,13 +210,36 @@ const ReviewStep = () => {
                 <span>₱{subtotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-gray-500">
-                <span>Down Payment (10%):</span>
+                <span>
+                  Down Payment
+                  <br />
+                  <span className="text-xs">(10% of Total):</span>
+                </span>
                 <span>₱{downPayment.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-gray-500">
                 <span>Pay at venue:</span>
                 <span>₱{balance.toFixed(2)}</span>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <button
+                onClick={() => handleReserve(false)}
+                disabled={submitting}
+                className="w-full border border-anaya-accent text-anaya-accent py-2.5 rounded-lg text-sm font-medium hover:bg-anaya-accent/5 transition-colors disabled:opacity-50"
+              >
+                Reserve Appointment
+              </button>
+              <button
+                onClick={() => handleReserve(true)}
+                disabled={submitting}
+                className="w-full bg-anaya-accent hover:bg-anaya-accent-hover text-white py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                Reserve Appointment and
+                <br />
+                Proceed to Payment
+              </button>
             </div>
           </div>
         </div>
