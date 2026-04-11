@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Pencil } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import useAuthStore from '../../store/authStore'
 import { getMyProfile, uploadAvatar, updateMyProfile } from '../../services/customerProfileService'
@@ -13,6 +12,12 @@ const FIELDS = [
   ['Gender', 'gender'],
 ]
 
+const AvatarPlaceholder = ({ name }) => (
+  <div className="w-24 h-24 rounded-full bg-anaya-accent/20 flex items-center justify-center text-2xl font-bold text-anaya-accent">
+    {name?.[0]?.toUpperCase() ?? '?'}
+  </div>
+)
+
 const Profile = () => {
   const { user } = useAuthStore()
   const [profile, setProfile] = useState(null)
@@ -21,7 +26,7 @@ const Profile = () => {
   useEffect(() => {
     if (!user?.id) return
     getMyProfile(user.id).then(setProfile)
-  }, [])
+  }, [user?.id])
 
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0]
@@ -49,46 +54,52 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-anaya-bg">
-      <div className="max-w-2xl mx-auto px-6 py-10">
-        <h1 className="text-3xl font-bold text-anaya-text mb-8">Profile</h1>
+      <div className="max-w-lg mx-auto px-6 py-10">
+        <h1 className="text-3xl font-bold text-anaya-text mb-6">Profile</h1>
 
-        <div className="bg-white border border-gray-200 rounded-2xl p-8">
-          {/* Avatar */}
-          <div className="flex flex-col items-center mb-8">
-            <div className="relative">
+        <div className="bg-white border border-gray-200 rounded-2xl p-8 flex flex-col items-center">
+          {/* Avatar with pencil overlay */}
+          <div className="relative mb-2">
+            {profile.avatar_url ? (
               <img
-                src={profile.avatar_url ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=90987D&color=fff&size=128`}
+                src={profile.avatar_url}
                 alt="Avatar"
-                className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-md"
+                className="w-24 h-24 rounded-full object-cover"
               />
-              <label className="absolute bottom-0 right-0 bg-white border border-gray-200 rounded-full p-1.5 cursor-pointer shadow-sm hover:bg-gray-50 transition-colors">
-                <Pencil size={14} className="text-gray-600" />
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleAvatarChange}
-                  disabled={uploading}
-                />
-              </label>
-            </div>
-            {uploading && <p className="text-xs text-gray-400 mt-2">Uploading...</p>}
-            <h2 className="text-xl font-semibold text-anaya-text mt-3">{fullName}</h2>
+            ) : (
+              <AvatarPlaceholder name={profile.first_name} />
+            )}
+            <label className="absolute bottom-0 right-0 bg-white border border-gray-200 rounded-full p-1 cursor-pointer shadow-sm hover:bg-gray-50 transition-colors">
+              <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a4 4 0 01-1.414.828l-3 1 1-3a4 4 0 01.828-1.414z" />
+              </svg>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarChange}
+                disabled={uploading}
+              />
+            </label>
           </div>
 
+          {uploading && <p className="text-xs text-gray-400 mb-1">Uploading...</p>}
+
+          <h2 className="text-lg font-semibold text-anaya-text mb-6">{fullName}</h2>
+
           {/* Fields */}
-          <div className="space-y-4 mb-8">
+          <div className="w-full space-y-4 mb-8">
             {FIELDS.map(([label, key]) => (
               <div key={key}>
                 <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-                <p className="text-sm font-medium text-anaya-text">{profile[key] ?? '—'}</p>
+                <p className="text-sm text-anaya-text">{profile[key] ?? '—'}</p>
               </div>
             ))}
           </div>
 
           <Link
             to="/profile/edit"
-            className="block w-full bg-anaya-accent hover:bg-anaya-accent-hover text-white py-3 rounded-xl font-medium text-center transition-colors"
+            className="bg-anaya-accent hover:bg-anaya-accent-hover text-white px-10 py-2.5 rounded-full font-medium text-center transition-colors"
           >
             Edit
           </Link>
