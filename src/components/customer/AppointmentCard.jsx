@@ -1,18 +1,25 @@
 import clsx from 'clsx'
 import { formatDuration } from '../../utils/bookingUtils'
 
-const STATUS_LABEL = {
+const DOWNPAYMENT_LABEL = {
   pending: 'Pending',
   paid: 'Checking',
   verified: 'Paid',
   denied: 'Denied',
 }
 
-const STATUS_COLORS = {
-  pending: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  paid: 'bg-blue-50 text-blue-700 border-blue-200',
-  verified: 'bg-green-50 text-green-700 border-green-200',
-  denied: 'bg-red-50 text-red-700 border-red-200',
+const BOOKING_STATUS_COLOR = {
+  upcoming: 'text-anaya-green',
+  finished: 'text-gray-500',
+  cancelled: 'text-red-500',
+  no_show: 'text-red-400',
+}
+
+const DOWNPAYMENT_COLOR = {
+  pending: 'text-yellow-600',
+  paid: 'text-blue-600',
+  verified: 'text-green-600',
+  denied: 'text-red-600',
 }
 
 const to12h = (time24) => {
@@ -26,37 +33,31 @@ const to12h = (time24) => {
 const AppointmentCard = ({ booking, onViewDetail, onPay, onCancel }) => {
   const services = booking.booking_services ?? []
   const isPending = booking.downpayment_status === 'pending'
-  const deadline = booking.payment_deadline
-    ? new Date(booking.payment_deadline)
-    : null
-  const hoursLeft = deadline
-    ? Math.max(0, Math.ceil((deadline - Date.now()) / 3_600_000))
-    : 0
+  const isUpcoming = booking.booking_status === 'upcoming'
+  const deadline = booking.payment_deadline ? new Date(booking.payment_deadline) : null
+  const hoursLeft = deadline ? Math.max(0, Math.ceil((deadline - Date.now()) / 3_600_000)) : 0
   const showCountdown = isPending && deadline && deadline > Date.now()
 
   const displayDate = booking.appointment_date
-    ? new Date(booking.appointment_date + 'T00:00:00').toLocaleDateString(
-        'en-US',
-        { weekday: 'long', month: 'long', day: 'numeric' }
-      )
+    ? new Date(booking.appointment_date + 'T00:00:00').toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+      })
     : ''
 
-  const startTime = booking.start_time
-    ? to12h(booking.start_time.slice(0, 5))
-    : ''
+  const startTime = booking.start_time ? to12h(booking.start_time.slice(0, 5)) : ''
 
   return (
     <div
-      className="bg-white border border-gray-200 rounded-xl p-5 cursor-pointer hover:border-anaya-accent/50 transition-colors"
+      className="bg-white border border-gray-200 rounded-xl p-5 cursor-pointer hover:border-gray-300 transition-colors"
       onClick={() => onViewDetail(booking)}
     >
-      {/* Top row */}
-      <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm mb-3">
+      {/* Top info row */}
+      <div className="flex flex-wrap gap-x-8 gap-y-1 text-sm mb-3">
         <div>
           <span className="text-xs text-gray-400">Appointment ID</span>
-          <p className="font-semibold text-anaya-text">
-            #{booking.reference_id}
-          </p>
+          <p className="font-semibold text-anaya-text">#{booking.reference_id}</p>
         </div>
         <div>
           <span className="text-xs text-gray-400">Date</span>
@@ -72,53 +73,80 @@ const AppointmentCard = ({ booking, onViewDetail, onPay, onCancel }) => {
             {formatDuration(booking.total_duration_minutes ?? 0)}
           </p>
         </div>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <span className="text-xs text-gray-400">Service/s</span>
           <div className="font-medium text-anaya-text">
             {services.map((bs) => (
-              <p key={bs.id} className="text-sm">
+              <p key={bs.id} className="text-sm truncate">
                 [{bs.services?.service_categories?.name}] {bs.services?.name}
               </p>
             ))}
           </div>
         </div>
-        <div>
-          <span className="text-xs text-gray-400">Balance</span>
-          <p className="font-semibold text-anaya-text">
-            ₱{Number(booking.remaining_balance).toLocaleString()}
-          </p>
+        <div className="flex flex-col items-end gap-2">
+          <div>
+            <span className="text-xs text-gray-400 block text-right">Balance</span>
+            <p className="font-semibold text-anaya-text text-right">
+              ₱{Number(booking.remaining_balance).toLocaleString()}
+            </p>
+          </div>
+          {/* Action buttons aligned top-right */}
+          {isUpcoming && (
+            <div
+              className="flex flex-col gap-1.5 items-end"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {isPending && (
+                <button
+                  onClick={() => onPay(booking)}
+                  className="bg-anaya-accent hover:bg-anaya-accent-hover text-white text-xs px-4 py-1.5 rounded-full font-medium transition-colors whitespace-nowrap"
+                >
+                  Pay Down Payment
+                </button>
+              )}
+              <button
+                onClick={() => onCancel(booking)}
+                className="bg-anaya-accent hover:bg-anaya-accent-hover text-white text-xs px-4 py-1.5 rounded-full font-medium transition-colors whitespace-nowrap"
+              >
+                Cancel Reservation
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
+      {/* Services breakdown (for multi-service bookings) */}
+      {services.length > 1 && (
+        <div className="mb-3 pl-0">
+          {services.map((bs) => (
+            <div key={bs.id} className="flex justify-between text-sm text-gray-500 mb-0.5">
+              <span>[{bs.services?.service_categories?.name}] {bs.services?.name}</span>
+              <span className="shrink-0 ml-4">
+                ₱{Number(bs.price_at_booking).toLocaleString()}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Status row */}
-      <div className="flex flex-wrap gap-3 items-center mb-3">
+      <div className="flex flex-wrap gap-x-8 gap-y-1 items-center">
         <div>
-          <span className="text-xs text-gray-400 block mb-1">
-            Appointment Status
-          </span>
-          <span className="text-xs font-medium text-anaya-green capitalize">
-            {booking.booking_status}
-          </span>
-        </div>
-        <div>
-          <span className="text-xs text-gray-400 block mb-1">
-            Down Payment Status
-          </span>
-          <span
-            className={clsx(
-              'text-xs font-medium border rounded-full px-2 py-0.5',
-              STATUS_COLORS[booking.downpayment_status] ??
-                'bg-gray-50 text-gray-600 border-gray-200'
+          <span className="text-xs text-gray-400 block">Appointment Status</span>
+          <span className={clsx('text-xs font-medium capitalize', BOOKING_STATUS_COLOR[booking.booking_status] ?? 'text-gray-500')}>
+            {booking.booking_status === 'no_show' ? 'No Show' : (
+              booking.booking_status.charAt(0).toUpperCase() + booking.booking_status.slice(1)
             )}
-          >
-            {STATUS_LABEL[booking.downpayment_status] ??
-              booking.downpayment_status}
           </span>
         </div>
         <div>
-          <span className="text-xs text-gray-400 block mb-1">
-            Down Payment Total
+          <span className="text-xs text-gray-400 block">Down Payment Status</span>
+          <span className={clsx('text-xs font-medium', DOWNPAYMENT_COLOR[booking.downpayment_status] ?? 'text-gray-500')}>
+            {DOWNPAYMENT_LABEL[booking.downpayment_status] ?? booking.downpayment_status}
           </span>
+        </div>
+        <div>
+          <span className="text-xs text-gray-400 block">Down Payment Total</span>
           <span className="text-xs font-medium text-anaya-text">
             ₱{Number(booking.downpayment_amount).toFixed(2)}
           </span>
@@ -129,29 +157,6 @@ const AppointmentCard = ({ booking, onViewDetail, onPay, onCancel }) => {
           </span>
         )}
       </div>
-
-      {/* Action buttons */}
-      {booking.booking_status === 'upcoming' && (
-        <div
-          className="flex gap-2 pt-1"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {isPending && (
-            <button
-              onClick={() => onPay(booking)}
-              className="bg-anaya-accent hover:bg-anaya-accent-hover text-white text-xs px-4 py-2 rounded-full font-medium transition-colors"
-            >
-              Pay Down Payment
-            </button>
-          )}
-          <button
-            onClick={() => onCancel(booking)}
-            className="bg-anaya-accent hover:bg-anaya-accent-hover text-white text-xs px-4 py-2 rounded-full font-medium transition-colors"
-          >
-            Cancel Reservation
-          </button>
-        </div>
-      )}
     </div>
   )
 }
