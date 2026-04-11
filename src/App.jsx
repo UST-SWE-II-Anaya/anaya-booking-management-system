@@ -1,5 +1,6 @@
 // src/App.jsx
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 import useAuthUser from './hooks/useAuthUser'
 import AdminRoute from './components/layout/AdminRoute'
 import AdminLayout from './components/layout/AdminLayout'
@@ -26,6 +27,19 @@ import StaffAppointmentsPage from './pages/staff/AppointmentsPage'
 import StaffLeaveRequestPage from './pages/staff/LeaveRequestPage'
 import StaffProfileSettingsPage from './pages/staff/ProfileSettingsPage'
 
+// Customer pages
+import CustomerRoute from './components/layout/CustomerRoute'
+import ServicesStep from './pages/customer/ServicesStep'
+import StaffStep from './pages/customer/StaffStep'
+import DateTimeStep from './pages/customer/DateTimeStep'
+import ReviewStep from './pages/customer/ReviewStep'
+import PaymentStep from './pages/customer/PaymentStep'
+import SuccessPage from './pages/customer/SuccessPage'
+import Dashboard from './pages/customer/Dashboard'
+import AppointmentsHistory from './pages/customer/AppointmentsHistory'
+import Profile from './pages/customer/Profile'
+import ProfileEdit from './pages/customer/ProfileEdit'
+
 // Public pages
 import HomePage from './pages/HomePage'
 import RegisterPage from './pages/RegisterPage'
@@ -40,7 +54,9 @@ const App = () => {
   useAuthUser()
 
   return (
-    <Routes>
+    <>
+      <Toaster />
+      <Routes>
       {/* Auth */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<RegisterPage />} />
@@ -81,8 +97,23 @@ const App = () => {
         </Route>
       </Route>
 
+      {/* Customer routes */}
+      <Route element={<CustomerRoute />}>
+        <Route path="/booking/services" element={<ServicesStep />} />
+        <Route path="/booking/staff" element={<StaffStep />} />
+        <Route path="/booking/datetime" element={<DateTimeStep />} />
+        <Route path="/booking/review" element={<ReviewStep />} />
+        <Route path="/booking/payment/:bookingId" element={<PaymentStep />} />
+        <Route path="/booking/success/:bookingId" element={<SuccessPage />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/appointments/history" element={<AppointmentsHistory />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/edit" element={<ProfileEdit />} />
+      </Route>
+
       <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
+      </Routes>
+    </>
   )
 }
 
