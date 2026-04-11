@@ -84,3 +84,19 @@ export const deleteService = async (id) => {
     .eq('id', id)
   if (error) throw error
 }
+
+export const getAllActiveServices = async () => {
+  const { data, error } = await supabase
+    .from('services')
+    .select('id, name, duration_minutes, price, service_categories(name)')
+    .eq('is_active', true)
+    .order('name')
+  if (error) throw error
+  return data.map((s) => ({
+    id: s.id,
+    name: s.name,
+    category_name: s.service_categories.name,
+    duration_minutes: s.duration_minutes,
+    price: s.price,
+  }))
+}
