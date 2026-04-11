@@ -27,7 +27,7 @@ const ProfileEdit = () => {
         gender: p.gender ?? '',
       })
     })
-  }, [])
+  }, [user?.id])
 
   const handleSave = async () => {
     setSaving(true)
@@ -46,39 +46,48 @@ const ProfileEdit = () => {
 
   return (
     <div className="min-h-screen bg-anaya-bg">
-      <div className="max-w-2xl mx-auto px-6 py-10">
-        <h1 className="text-3xl font-bold text-anaya-text mb-8">Edit User Detail</h1>
+      <div className="max-w-lg mx-auto px-6 py-10">
+        <h1 className="text-3xl font-bold text-anaya-text mb-6">
+          Edit User Detail
+        </h1>
 
         <div className="bg-white border border-gray-200 rounded-2xl p-8">
-          <div className="space-y-5">
-            {/* First + Last Name row */}
+          <div className="space-y-4">
+            {/* First + Last Name */}
             <div className="flex gap-4">
               <div className="flex-1">
-                <label className="block text-sm font-medium text-anaya-text mb-1">First Name</label>
+                <label className="block text-sm font-medium text-anaya-text mb-1">
+                  First Name
+                </label>
                 <input
                   type="text"
                   value={form.first_name}
                   onChange={onChange('first_name')}
                   placeholder="Jane"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-anaya-accent"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-anaya-accent bg-white"
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-sm font-medium text-anaya-text mb-1">Last Name</label>
+                <label className="block text-sm font-medium text-anaya-text mb-1">
+                  Last Name
+                </label>
                 <input
                   type="text"
                   value={form.last_name}
                   onChange={onChange('last_name')}
                   placeholder="Doe"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-anaya-accent"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-anaya-accent bg-white"
                 />
               </div>
             </div>
 
+            {/* Phone Number */}
             <div>
-              <label className="block text-sm font-medium text-anaya-text mb-1">Phone Number</label>
+              <label className="block text-sm font-medium text-anaya-text mb-1">
+                Phone Number
+              </label>
               <div className="flex">
-                <span className="inline-flex items-center px-3 border border-r-0 border-gray-200 rounded-l-lg bg-gray-50 text-sm text-gray-500">
+                <span className="inline-flex items-center px-3 border border-r-0 border-gray-200 rounded-l-lg bg-gray-50 text-sm text-gray-500 select-none">
                   +63
                 </span>
                 <input
@@ -86,23 +95,29 @@ const ProfileEdit = () => {
                   value={form.phone_number}
                   onChange={onChange('phone_number')}
                   placeholder="123 456 7890"
-                  className="flex-1 border border-gray-200 rounded-r-lg px-3 py-2.5 text-sm focus:outline-none focus:border-anaya-accent"
+                  className="flex-1 border border-gray-200 rounded-r-lg px-3 py-2.5 text-sm focus:outline-none focus:border-anaya-accent bg-white"
                 />
               </div>
             </div>
 
+            {/* Date of Birth */}
             <div>
-              <label className="block text-sm font-medium text-anaya-text mb-1">Date of Birth</label>
+              <label className="block text-sm font-medium text-anaya-text mb-1">
+                Date of Birth
+              </label>
               <input
                 type="date"
                 value={form.date_of_birth}
                 onChange={onChange('date_of_birth')}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-anaya-accent"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-anaya-accent bg-white"
               />
             </div>
 
+            {/* Gender */}
             <div>
-              <label className="block text-sm font-medium text-anaya-text mb-1">Gender</label>
+              <label className="block text-sm font-medium text-anaya-text mb-1">
+                Gender
+              </label>
               <select
                 value={form.gender}
                 onChange={onChange('gender')}
@@ -116,17 +131,18 @@ const ProfileEdit = () => {
             </div>
           </div>
 
+          {/* Actions */}
           <div className="flex gap-3 mt-8">
             <button
               onClick={() => navigate('/profile')}
-              className="flex-1 border border-gray-300 text-anaya-text py-3 rounded-xl font-medium hover:border-anaya-accent transition-colors"
+              className="flex-1 border border-gray-300 text-anaya-text py-2.5 rounded-full font-medium hover:border-anaya-accent transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex-1 bg-anaya-accent hover:bg-anaya-accent-hover text-white py-3 rounded-xl font-medium transition-colors disabled:opacity-50"
+              className="flex-1 bg-anaya-accent hover:bg-anaya-accent-hover text-white py-2.5 rounded-full font-medium transition-colors disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save'}
             </button>
