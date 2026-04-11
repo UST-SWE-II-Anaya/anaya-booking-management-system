@@ -47,3 +47,9 @@ export const deactivateStaff = async (id) => {
   if (error) throw error
   return data
 }
+
+export const getStaffList = async () => {
+  const { data, error } = await supabase.rpc('get_staff_list')
+  if (error) throw error
+  return data
+}
