@@ -11,29 +11,43 @@ const GENERIC_OPTIONS = [
     preference: 'any',
     label: 'Any professional',
     subtitle: 'for maximum availability',
+    icon: (
+      <svg viewBox="0 0 40 40" fill="none" className="w-7 h-7 text-blue-400">
+        <circle cx="14" cy="13" r="5" fill="currentColor" opacity="0.7" />
+        <circle cx="26" cy="13" r="5" fill="currentColor" opacity="0.9" />
+        <path d="M4 34c0-6 4.5-10 10-10h12c5.5 0 10 4 10 10" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.7" />
+      </svg>
+    ),
   },
   {
     id: 'any_female',
     preference: 'any_female',
     label: 'Any female professional',
     subtitle: 'any female professional available',
+    icon: (
+      <svg viewBox="0 0 40 40" fill="none" className="w-7 h-7 text-blue-400">
+        <circle cx="20" cy="13" r="7" fill="currentColor" opacity="0.85" />
+        <path d="M8 36c0-7 5.4-12 12-12s12 5 12 12" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.85" />
+      </svg>
+    ),
   },
   {
     id: 'any_male',
     preference: 'any_male',
     label: 'Any male professional',
     subtitle: 'any male professional available',
+    icon: (
+      <svg viewBox="0 0 40 40" fill="none" className="w-7 h-7 text-blue-400">
+        <circle cx="20" cy="13" r="7" fill="currentColor" opacity="0.85" />
+        <path d="M8 36c0-7 5.4-12 12-12s12 5 12 12" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.85" />
+      </svg>
+    ),
   },
 ]
 
 const StaffStep = () => {
   const navigate = useNavigate()
-  const {
-    cart,
-    staffPreference,
-    setStaffPreference,
-    setSelectedStaff,
-  } = useBookingStore()
+  const { cart, staffPreference, setStaffPreference, setSelectedStaff } = useBookingStore()
   const [staff, setStaff] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -73,7 +87,8 @@ const StaffStep = () => {
               Select a Professional
             </h1>
 
-            <div className="space-y-3 mb-6">
+            {/* Generic preference cards */}
+            <div className="space-y-3 mb-3">
               {GENERIC_OPTIONS.map((opt) => {
                 const isSelected = staffPreference === opt.preference
                 return (
@@ -81,23 +96,24 @@ const StaffStep = () => {
                     key={opt.id}
                     onClick={() => handleGenericSelect(opt.preference)}
                     className={clsx(
-                      'w-full flex items-center gap-4 p-4 rounded-xl border',
-                      'text-left transition-colors',
+                      'w-full flex items-center gap-4 p-4 rounded-xl border text-left transition-colors',
                       isSelected
                         ? 'bg-anaya-accent/10 border-anaya-accent'
                         : 'bg-white border-gray-200 hover:border-anaya-accent'
                     )}
                   >
-                    <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-2xl shrink-0">
-                      {opt.id === 'any' ? '👥' : '👤'}
+                    <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                      {opt.icon}
                     </div>
                     <div className="flex-1">
                       <p className="font-medium text-anaya-text">{opt.label}</p>
                       <p className="text-sm text-gray-400">{opt.subtitle}</p>
                     </div>
                     {isSelected ? (
-                      <div className="w-8 h-8 rounded-full bg-anaya-accent flex items-center justify-center text-white text-sm shrink-0">
-                        ✓
+                      <div className="w-8 h-8 rounded-full bg-anaya-accent flex items-center justify-center text-white shrink-0">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
                       </div>
                     ) : (
                       <span className="text-sm border border-anaya-accent text-anaya-accent px-3 py-1 rounded-full shrink-0">
@@ -109,38 +125,45 @@ const StaffStep = () => {
               })}
             </div>
 
+            {/* Specific staff cards */}
             {!loading && staff.length > 0 && (
-              <div className="space-y-3">
-                {staff.map((s) => (
-                  <button
-                    key={s.id}
-                    onClick={() => handleSpecificSelect(s.id)}
-                    className={clsx(
-                      'w-full flex items-center gap-4 p-4 rounded-xl border',
-                      'bg-white border-gray-200 hover:border-anaya-accent',
-                      'text-left transition-colors'
-                    )}
-                  >
-                    {s.avatar_url ? (
-                      <img
-                        src={s.avatar_url}
-                        alt={s.first_name}
-                        className="w-12 h-12 rounded-full object-cover shrink-0"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-base font-bold text-gray-500 shrink-0">
-                        {s.first_name?.[0]}{s.last_name?.[0]}
-                      </div>
-                    )}
-                    <span className="flex-1 font-medium text-anaya-text">
-                      {s.first_name} {s.last_name}
-                    </span>
-                    <span className="text-sm border border-anaya-accent text-anaya-accent px-3 py-1 rounded-full shrink-0">
-                      Select
-                    </span>
-                  </button>
-                ))}
+              <div className="space-y-3 mt-3">
+                {staff.map((s) => {
+                  const isSelected = staffPreference === 'specific'
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => handleSpecificSelect(s.id)}
+                      className={clsx(
+                        'w-full flex items-center gap-4 p-4 rounded-xl border text-left transition-colors',
+                        'bg-white border-gray-200 hover:border-anaya-accent'
+                      )}
+                    >
+                      {s.avatar_url ? (
+                        <img
+                          src={s.avatar_url}
+                          alt={`${s.first_name} ${s.last_name}`}
+                          className="w-12 h-12 rounded-full object-cover shrink-0"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-sm font-bold text-gray-500 shrink-0">
+                          {s.first_name?.[0]}{s.last_name?.[0]}
+                        </div>
+                      )}
+                      <span className="flex-1 font-medium text-anaya-text">
+                        {s.first_name} {s.last_name}
+                      </span>
+                      <span className="text-sm border border-anaya-accent text-anaya-accent px-3 py-1 rounded-full shrink-0">
+                        Select
+                      </span>
+                    </button>
+                  )
+                })}
               </div>
+            )}
+
+            {loading && (
+              <p className="text-sm text-gray-400 mt-4">Loading professionals...</p>
             )}
           </div>
 
