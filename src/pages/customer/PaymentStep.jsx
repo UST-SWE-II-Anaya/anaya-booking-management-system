@@ -13,6 +13,34 @@ const to12h = (time24) => {
   return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
 }
 
+// GCash QR placeholder — replace src with actual QR image paths when available
+const GCashCard = ({ number }) => (
+  <div className="flex-1 flex flex-col items-center">
+    <div className="w-full rounded-xl overflow-hidden border-2 border-blue-200 bg-blue-600 flex flex-col items-center py-4 px-3">
+      <div className="flex items-center gap-1.5 mb-3">
+        <div className="bg-white rounded-full w-6 h-6 flex items-center justify-center">
+          <span className="text-blue-600 font-black text-xs">G</span>
+        </div>
+        <span className="text-white font-bold text-sm tracking-wide">GCash</span>
+      </div>
+      <p className="text-blue-200 text-xs mb-2 font-medium tracking-wider">SCAN TO PAY HERE</p>
+      {/* Replace with: <img src={`/gcash-qr-${number}.png`} ... /> when QR images are available */}
+      <div className="w-28 h-28 bg-white rounded-lg flex items-center justify-center">
+        <div className="grid grid-cols-5 gap-0.5 p-2 w-full h-full">
+          {Array.from({ length: 25 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-gray-800 rounded-sm"
+              style={{ opacity: Math.random() > 0.4 ? 1 : 0 }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+    <p className="text-sm font-semibold text-anaya-text mt-2">GCASH #{number}</p>
+  </div>
+)
+
 const PaymentStep = () => {
   const { bookingId } = useParams()
   const navigate = useNavigate()
@@ -82,7 +110,7 @@ const PaymentStep = () => {
       if (updateErr) throw updateErr
 
       navigate(`/booking/success/${bookingId}`)
-    } catch (err) {
+    } catch {
       toast.error('Payment submission failed. Please try again.')
     } finally {
       setSubmitting(false)
@@ -99,18 +127,13 @@ const PaymentStep = () => {
   const subtotal = booking.subtotal ?? 0
   const downPayment = booking.downpayment_amount ?? 0
   const balance = booking.remaining_balance ?? 0
-
-  const startTime = booking.start_time
-    ? to12h(booking.start_time.slice(0, 5))
-    : ''
   const totalMins = booking.total_duration_minutes ?? 0
-  const [startH, startM] = (booking.start_time ?? '00:00')
-    .split(':')
-    .map(Number)
+  const startTimeStr = (booking.start_time ?? '00:00').slice(0, 5)
+  const [startH, startM] = startTimeStr.split(':').map(Number)
   const endTotal = startH * 60 + startM + totalMins
-  const endHH = String(Math.floor(endTotal / 60)).padStart(2, '0')
-  const endMM = String(endTotal % 60).padStart(2, '0')
-  const endTime = to12h(`${endHH}:${endMM}`)
+  const endTime = to12h(
+    `${String(Math.floor(endTotal / 60)).padStart(2, '0')}:${String(endTotal % 60).padStart(2, '0')}`
+  )
 
   const displayDate = booking.appointment_date
     ? new Date(booking.appointment_date + 'T00:00:00').toLocaleDateString(
@@ -139,20 +162,9 @@ const PaymentStep = () => {
             </p>
 
             {/* GCash QR codes */}
-            <div className="flex gap-4 mb-8">
-              {[1, 2].map((n) => (
-                <div
-                  key={n}
-                  className="flex-1 border-2 border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center bg-white min-h-[160px]"
-                >
-                  <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center mb-2">
-                    <span className="text-3xl">📱</span>
-                  </div>
-                  <p className="text-sm font-semibold text-anaya-text">
-                    GCASH #{n}
-                  </p>
-                </div>
-              ))}
+            <div className="flex gap-6 mb-8 max-w-sm">
+              <GCashCard number={1} />
+              <GCashCard number={2} />
             </div>
 
             <h2 className="font-semibold text-anaya-text mb-4">
@@ -170,8 +182,8 @@ const PaymentStep = () => {
                     onChange={(e) =>
                       setRefNumber(e.target.value.replace(/\D/g, '').slice(0, 13))
                     }
-                    placeholder="e.g. 1234567890123"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-anaya-accent"
+                    placeholder="e.g. 1234567890ABC"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-anaya-accent bg-white"
                   />
                 </div>
                 <div className="flex-1">
@@ -183,7 +195,7 @@ const PaymentStep = () => {
                     value={accountName}
                     onChange={(e) => setAccountName(e.target.value)}
                     placeholder="e.g. John Doe"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-anaya-accent"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-anaya-accent bg-white"
                   />
                 </div>
               </div>
@@ -193,27 +205,24 @@ const PaymentStep = () => {
                   Upload proof of payment*
                 </label>
                 <div
-                  onDragOver={(e) => {
-                    e.preventDefault()
-                    setDragOver(true)
-                  }}
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
                   onDragLeave={() => setDragOver(false)}
                   onDrop={(e) => {
                     e.preventDefault()
                     setDragOver(false)
                     handleFile(e.dataTransfer.files[0])
                   }}
-                  onClick={() =>
-                    document.getElementById('receipt-input').click()
-                  }
-                  className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
+                  onClick={() => document.getElementById('receipt-input').click()}
+                  className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors ${
                     dragOver
                       ? 'border-anaya-accent bg-anaya-accent/5'
                       : 'border-gray-300 bg-white hover:border-anaya-accent'
                   }`}
                 >
                   <div className="flex flex-col items-center gap-2">
-                    <span className="text-3xl text-gray-400">☁</span>
+                    <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
+                    </svg>
                     <p className="text-sm text-anaya-text font-medium">
                       {receipt ? receipt.name : 'Upload a file or drag and drop'}
                     </p>
@@ -233,38 +242,39 @@ const PaymentStep = () => {
 
           {/* Right sidebar */}
           <div className="w-72 shrink-0 bg-white border border-gray-200 rounded-xl p-5 h-fit sticky top-6 shadow-sm">
-            <h2 className="font-semibold text-lg mb-4 text-anaya-text">
+            <h2 className="font-semibold text-lg mb-3 text-anaya-text">
               Your Booking
             </h2>
 
             <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-              <span>📅</span>
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
               <span>{displayDate}</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-              <span>🕐</span>
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
               <span>
-                {startTime} – {endTime} ({formatDuration(totalMins)})
+                {to12h(startTimeStr)} – {endTime} ({formatDuration(totalMins)})
               </span>
             </div>
 
             <ul className="space-y-2 mb-4">
               {services.map((bs) => (
-                <li
-                  key={bs.id}
-                  className="flex justify-between text-sm text-anaya-text"
-                >
-                  <div>
-                    <p className="font-medium">
-                      [{bs.services?.service_categories?.name}]{' '}
-                      {bs.services?.name}
-                    </p>
+                <li key={bs.id} className="flex justify-between text-sm text-anaya-text">
+                  <div className="flex-1 pr-2">
+                    <p className="font-medium leading-snug">{bs.services?.name}</p>
                     <p className="text-xs text-gray-400">
-                      {formatDuration(bs.duration_at_booking)} with any
-                      professional
+                      {formatDuration(bs.duration_at_booking)} with any professional
                     </p>
                   </div>
-                  <span className="font-medium shrink-0 ml-2">
+                  <span className="font-medium shrink-0">
                     ₱{Number(bs.price_at_booking).toLocaleString()}
                   </span>
                 </li>
@@ -281,7 +291,11 @@ const PaymentStep = () => {
                 <span>₱{Number(subtotal).toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-gray-500">
-                <span>Down Payment (10%):</span>
+                <span>
+                  Down Payment
+                  <br />
+                  <span className="text-xs">(10% of Total):</span>
+                </span>
                 <span>₱{Number(downPayment).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-gray-500">
