@@ -6,13 +6,17 @@ import { getAllActiveServices } from '../../services/servicesCmsService'
 import { formatDuration } from '../../utils/bookingUtils'
 import BookingSidebar from '../../components/customer/BookingSidebar'
 
+// Categories whose names start with "Packages - " are grouped under a "Package" filter pill
+const isPackageCategory = (cat) => cat.startsWith('Packages - ')
+const packageSubname = (cat) => cat.replace('Packages - ', '')
+
 const ServicesStep = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { cart, addToCart, removeFromCart } = useBookingStore()
   const [services, setServices] = useState([])
-  const [categories, setCategories] = useState([])
-  const [selectedCategory, setSelectedCategory] = useState('All')
+  const [filterPills, setFilterPills] = useState([])
+  const [selectedFilter, setSelectedFilter] = useState('All')
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [selectedService, setSelectedService] = useState(null)
@@ -20,9 +24,20 @@ const ServicesStep = () => {
   useEffect(() => {
     getAllActiveServices().then((data) => {
       setServices(data)
-      const cats = ['All', ...new Set(data.map((s) => s.category_name))]
-      setCategories(cats)
+
+      // Build filter pills: All + unique category names, collapsing all "Packages - *" into "Package"
+      const seen = new Set()
+      const pills = ['All']
+      data.forEach((s) => {
+        const pill = isPackageCategory(s.category_name) ? 'Package' : s.category_name
+        if (!seen.has(pill)) {
+          seen.add(pill)
+          pills.push(pill)
+        }
+      })
+      setFilterPills(pills)
       setLoading(false)
+
       const preselect = searchParams.get('service')
       if (preselect) {
         const svc = data.find((s) => s.id === preselect)
@@ -31,26 +46,53 @@ const ServicesStep = () => {
     })
   }, [])
 
+  const matchesFilter = (svc) => {
+    if (selectedFilter === 'All') return true
+    if (selectedFilter === 'Package') return isPackageCategory(svc.category_name)
+    return svc.category_name === selectedFilter
+  }
+
   const filtered = services.filter((s) => {
-    const matchCat =
-      selectedCategory === 'All' || s.category_name === selectedCategory
     const matchSearch = s.name.toLowerCase().includes(search.toLowerCase())
-    return matchCat && matchSearch
+    return matchesFilter(s) && matchSearch
   })
 
   const isInCart = (id) => cart.some((c) => c.id === id)
 
+  // Group by category_name preserving order
   const grouped = filtered.reduce((acc, s) => {
     if (!acc[s.category_name]) acc[s.category_name] = []
     acc[s.category_name].push(s)
     return acc
   }, {})
 
+  // For rendering: group "Packages - *" categories under a "Package" parent heading
+  const renderGroups = () => {
+    const entries = Object.entries(grouped)
+    const result = []
+    let packageGroup = null
+
+    entries.forEach(([category, svcs]) => {
+      if (isPackageCategory(category)) {
+        if (!packageGroup) {
+          packageGroup = { label: 'Package', subcategories: [] }
+          result.push({ type: 'package-parent', data: packageGroup })
+        }
+        packageGroup.subcategories.push({ subname: packageSubname(category), svcs })
+      } else {
+        result.push({ type: 'category', label: category, svcs })
+      }
+    })
+    return result
+  }
+
   if (loading) return (
     <div className="min-h-screen bg-anaya-bg flex items-center justify-center">
       <p className="text-gray-500">Loading services...</p>
     </div>
   )
+
+  const groups = renderGroups()
 
   return (
     <div className="min-h-screen bg-anaya-bg">
@@ -62,6 +104,7 @@ const ServicesStep = () => {
           ← Go Back to Previous Page
         </Link>
         <div className="flex gap-8 items-start">
+          {/* Left: service list */}
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-anaya-text mb-1">
               Our Services
@@ -70,6 +113,7 @@ const ServicesStep = () => {
               Choose your treatments to create your perfect appointment.
             </p>
 
+            {/* Search */}
             <div className="relative mb-4">
               <input
                 type="text"
@@ -80,76 +124,84 @@ const ServicesStep = () => {
               />
             </div>
 
+            {/* Filter pills */}
             <div className="flex gap-2 flex-wrap mb-6">
-              {categories.map((cat) => (
+              {filterPills.map((pill) => (
                 <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
+                  key={pill}
+                  onClick={() => setSelectedFilter(pill)}
                   className={clsx(
                     'px-4 py-1.5 rounded-full text-sm font-medium border transition-colors',
-                    selectedCategory === cat
+                    selectedFilter === pill
                       ? 'bg-anaya-accent text-white border-anaya-accent'
                       : 'bg-white text-anaya-text border-gray-200 hover:border-anaya-accent'
                   )}
                 >
-                  {cat}
+                  {pill}
                 </button>
               ))}
             </div>
 
-            {Object.entries(grouped).map(([category, svcs]) => (
-              <div key={category} className="mb-6">
-                <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">
-                  {category}
-                </h2>
-                <div className="space-y-2">
-                  {svcs.map((svc) => {
-                    const inCart = isInCart(svc.id)
-                    return (
-                      <div
-                        key={svc.id}
-                        className={clsx(
-                          'bg-white rounded-lg border p-4 flex items-center justify-between',
-                          inCart ? 'border-anaya-accent' : 'border-gray-200'
-                        )}
-                      >
-                        <div
-                          className="flex-1 cursor-pointer"
-                          onClick={() => setSelectedService(svc)}
-                        >
-                          <p className="font-medium text-anaya-text">
-                            {svc.name}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-0.5">
-                            🕐 {formatDuration(svc.duration_minutes)}
-                          </p>
-                          <p className="text-sm font-semibold mt-1">
-                            ₱{Number(svc.price).toLocaleString()}
-                          </p>
+            {/* Service groups */}
+            {groups.length === 0 && (
+              <p className="text-gray-400 text-sm">No services found.</p>
+            )}
+
+            {groups.map((group, i) => {
+              if (group.type === 'package-parent') {
+                return (
+                  <div key="package-parent" className="mb-6">
+                    <h2 className="text-base font-bold text-anaya-text mb-3">
+                      {group.data.label}
+                    </h2>
+                    {group.data.subcategories.map(({ subname, svcs }) => (
+                      <div key={subname} className="mb-5">
+                        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                          {subname}
+                        </h3>
+                        <div className="space-y-2">
+                          {svcs.map((svc) => (
+                            <ServiceCard
+                              key={svc.id}
+                              svc={svc}
+                              inCart={isInCart(svc.id)}
+                              onInfo={() => setSelectedService(svc)}
+                              onToggle={() =>
+                                isInCart(svc.id) ? removeFromCart(svc.id) : addToCart(svc)
+                              }
+                            />
+                          ))}
                         </div>
-                        <button
-                          onClick={() =>
-                            inCart
-                              ? removeFromCart(svc.id)
-                              : addToCart(svc)
-                          }
-                          className={clsx(
-                            'ml-4 px-4 py-1.5 rounded-lg text-sm font-medium border transition-colors shrink-0',
-                            inCart
-                              ? 'bg-anaya-accent text-white border-anaya-accent'
-                              : 'bg-white text-anaya-text border-gray-300 hover:border-anaya-accent'
-                          )}
-                        >
-                          {inCart ? '✓ Added' : '+ Add'}
-                        </button>
                       </div>
-                    )
-                  })}
+                    ))}
+                  </div>
+                )
+              }
+
+              return (
+                <div key={group.label} className="mb-6">
+                  <h2 className="text-base font-bold text-anaya-text mb-3">
+                    {group.label}
+                  </h2>
+                  <div className="space-y-2">
+                    {group.svcs.map((svc) => (
+                      <ServiceCard
+                        key={svc.id}
+                        svc={svc}
+                        inCart={isInCart(svc.id)}
+                        onInfo={() => setSelectedService(svc)}
+                        onToggle={() =>
+                          isInCart(svc.id) ? removeFromCart(svc.id) : addToCart(svc)
+                        }
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
+          {/* Right: booking sidebar */}
           <BookingSidebar
             onContinue={() => navigate('/booking/staff')}
             continueDisabled={cart.length === 0}
@@ -157,6 +209,7 @@ const ServicesStep = () => {
         </div>
       </div>
 
+      {/* Service detail modal */}
       {selectedService && (
         <div
           className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
@@ -176,13 +229,16 @@ const ServicesStep = () => {
               {selectedService.name}
             </h2>
             <p className="text-sm text-gray-400 mb-4">
-              {selectedService.category_name}
+              {isPackageCategory(selectedService.category_name)
+                ? packageSubname(selectedService.category_name)
+                : selectedService.category_name}
             </p>
             <p className="text-lg font-bold text-anaya-text mb-1">
               ₱{Number(selectedService.price).toLocaleString()}
             </p>
-            <p className="text-sm text-gray-400 mb-6">
-              🕐 {formatDuration(selectedService.duration_minutes)}
+            <p className="text-sm text-gray-400 flex items-center gap-1 mb-6">
+              <span>🕐</span>
+              <span>{formatDuration(selectedService.duration_minutes)}</span>
             </p>
             <button
               onClick={() => {
@@ -199,5 +255,36 @@ const ServicesStep = () => {
     </div>
   )
 }
+
+const ServiceCard = ({ svc, inCart, onInfo, onToggle }) => (
+  <div
+    className={clsx(
+      'bg-white rounded-lg border p-4 flex items-center justify-between',
+      inCart ? 'border-anaya-accent' : 'border-gray-200'
+    )}
+  >
+    <div className="flex-1 cursor-pointer" onClick={onInfo}>
+      <p className="font-medium text-anaya-text">{svc.name}</p>
+      <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+        <span>🕐</span>
+        <span>{formatDuration(svc.duration_minutes)}</span>
+      </p>
+      <p className="text-sm font-semibold mt-1">
+        ₱{Number(svc.price).toLocaleString()}
+      </p>
+    </div>
+    <button
+      onClick={onToggle}
+      className={clsx(
+        'ml-4 px-4 py-1.5 rounded-lg text-sm font-medium border transition-colors shrink-0',
+        inCart
+          ? 'bg-anaya-accent text-white border-anaya-accent'
+          : 'bg-white text-anaya-text border-gray-300 hover:border-anaya-accent'
+      )}
+    >
+      {inCart ? '✓ Added' : '+ Add'}
+    </button>
+  </div>
+)
 
 export default ServicesStep

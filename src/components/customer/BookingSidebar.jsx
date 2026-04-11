@@ -1,42 +1,56 @@
-import { Link } from 'react-router-dom'
 import useBookingStore from '../../store/bookingStore'
 import { formatDuration } from '../../utils/bookingUtils'
 
+const DOWN_PAYMENT_RATE = 0.1
+
 const BookingSidebar = ({ onContinue, continueDisabled }) => {
-  const { cart } = useBookingStore()
+  const { cart, staffPreference, selectedStaffId } = useBookingStore()
   const subtotal = cart.reduce((sum, s) => sum + Number(s.price), 0)
   const totalDuration = cart.reduce((sum, s) => sum + s.duration_minutes, 0)
-  const downPayment = subtotal * 0.1
+  const downPayment = subtotal * DOWN_PAYMENT_RATE
+
+  const professionalLabel = () => {
+    if (!staffPreference || staffPreference === 'any') return 'any professional'
+    if (staffPreference === 'any_female') return 'any female professional'
+    if (staffPreference === 'any_male') return 'any male professional'
+    return 'specific professional'
+  }
 
   return (
     <div className="w-72 shrink-0 bg-white border border-gray-200 rounded-xl p-5 h-fit sticky top-6 shadow-sm">
       <h2 className="font-semibold text-lg mb-4 text-anaya-text">Your Booking</h2>
+
       {cart.length === 0 ? (
         <p className="text-sm text-gray-400 mb-4">No Services Selected</p>
       ) : (
-        <ul className="space-y-2 mb-4">
+        <ul className="space-y-3 mb-4">
           {cart.map((s) => (
             <li key={s.id} className="flex justify-between text-sm text-anaya-text">
-              <div>
-                <p className="font-medium">{s.name}</p>
-                <p className="text-xs text-gray-400">
-                  {formatDuration(s.duration_minutes)} with any professional
+              <div className="flex-1 pr-2">
+                <p className="font-medium leading-snug">{s.name}</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {formatDuration(s.duration_minutes)} with {professionalLabel()}
                 </p>
               </div>
-              <span className="font-medium shrink-0 ml-2">
+              <span className="font-medium shrink-0">
                 ₱{Number(s.price).toLocaleString()}
               </span>
             </li>
           ))}
         </ul>
       )}
+
       <div className="border-t border-gray-100 pt-3 space-y-2 text-sm mb-5">
-        <div className="flex justify-between text-anaya-text">
+        <div className="flex justify-between text-anaya-text font-medium">
           <span>Total:</span>
-          <span className="font-semibold">₱{subtotal.toLocaleString()}</span>
+          <span>₱{subtotal.toLocaleString()}</span>
         </div>
         <div className="flex justify-between text-gray-500">
-          <span>Down Payment<br />(10% of Total):</span>
+          <span>
+            Down Payment
+            <br />
+            <span className="text-xs">(10% of Total):</span>
+          </span>
           <span>₱{downPayment.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-gray-500">
@@ -48,6 +62,7 @@ const BookingSidebar = ({ onContinue, continueDisabled }) => {
           </span>
         </div>
       </div>
+
       <button
         onClick={onContinue}
         disabled={continueDisabled}
