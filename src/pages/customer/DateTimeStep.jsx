@@ -14,6 +14,15 @@ const to12h = (time24) => {
   return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
 }
 
+const formatDisplayDate = (isoDate) => {
+  const d = new Date(isoDate + 'T00:00:00')
+  return d.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
 const DateTimeStep = () => {
   const navigate = useNavigate()
   const { staffPreference, selectedStaffId, setDateTime } = useBookingStore()
@@ -21,7 +30,6 @@ const DateTimeStep = () => {
   const [slots, setSlots] = useState([])
   const [selectedTime, setSelectedTime] = useState(null)
   const [loadingSlots, setLoadingSlots] = useState(false)
-  const [displayDate, setDisplayDate] = useState('')
 
   if (!staffPreference) {
     navigate('/booking/staff', { replace: true })
@@ -32,17 +40,6 @@ const DateTimeStep = () => {
     setSelectedDate(date)
     setSelectedTime(null)
     setLoadingSlots(true)
-
-    const d = new Date(date + 'T00:00:00')
-    setDisplayDate(
-      d.toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-      })
-    )
-
     const staffId = staffPreference === 'specific' ? selectedStaffId : null
     try {
       const blocked = await getAvailableSlots(staffId, date, staffPreference)
@@ -78,30 +75,26 @@ const DateTimeStep = () => {
             />
 
             {selectedDate && (
-              <div className="mt-6">
-                <h2 className="font-semibold text-anaya-text mb-3">
-                  Available Times for {displayDate}
+              <div className="mt-6 bg-white rounded-xl border border-gray-200 p-5">
+                <h2 className="font-semibold text-anaya-text mb-4">
+                  Available Times for {formatDisplayDate(selectedDate)}
                 </h2>
                 {loadingSlots ? (
-                  <p className="text-sm text-gray-400">
-                    Loading available times...
-                  </p>
+                  <p className="text-sm text-gray-400">Loading available times...</p>
                 ) : (
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-6 gap-2">
                     {slots.map((slot) => (
                       <button
                         key={slot.time}
                         disabled={slot.blocked}
                         onClick={() => setSelectedTime(slot.time)}
                         className={clsx(
-                          'py-2 px-3 rounded-lg text-sm border transition-colors',
+                          'py-2 px-1 rounded-lg text-sm border transition-colors text-center',
                           slot.blocked &&
-                            'opacity-40 cursor-not-allowed bg-gray-100 border-gray-200 text-gray-400',
-                          !slot.blocked &&
-                            selectedTime === slot.time &&
+                            'opacity-40 cursor-not-allowed bg-gray-50 border-gray-200 text-gray-400',
+                          !slot.blocked && selectedTime === slot.time &&
                             'bg-anaya-accent text-white border-anaya-accent font-medium',
-                          !slot.blocked &&
-                            selectedTime !== slot.time &&
+                          !slot.blocked && selectedTime !== slot.time &&
                             'bg-white border-gray-200 hover:border-anaya-accent text-anaya-text'
                         )}
                       >
