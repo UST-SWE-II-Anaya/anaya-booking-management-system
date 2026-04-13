@@ -3,6 +3,7 @@ import clsx from 'clsx'
 
 export default function InputField({
   label,
+  name,
   type = 'text',
   placeholder,
   value,
@@ -24,6 +25,7 @@ export default function InputField({
       </label>
       <div className="relative">
         <input
+          name={name}
           type={currentType}
           placeholder={placeholder}
           value={value}

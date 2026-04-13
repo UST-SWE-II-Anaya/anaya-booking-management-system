@@ -88,7 +88,7 @@ export const deleteService = async (id) => {
 export const getAllActiveServices = async () => {
   const { data, error } = await supabase
     .from('services')
-    .select('id, name, duration_minutes, price, service_categories(name, display_order)')
+    .select('id, name, description, duration_minutes, price, service_categories(name, display_order)')
     .eq('is_active', true)
     .order('display_order', { referencedTable: 'service_categories' })
     .order('name')
@@ -96,6 +96,7 @@ export const getAllActiveServices = async () => {
   return data.map((s) => ({
     id: s.id,
     name: s.name,
+    description: s.description,
     category_name: s.service_categories.name,
     category_display_order: s.service_categories.display_order,
     duration_minutes: s.duration_minutes,

@@ -1,37 +1,78 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import PublicLayout from '../../components/PublicLayout'
 import ServiceFilterPills from '../../components/ServiceFilterPills'
 import BookableServiceCard from '../../components/BookableServiceCard'
-import { BOOKABLE_SERVICES } from '../../utils/mockData'
+import { getAllActiveServices } from '../../services/servicesCmsService'
+import Spinner from '../../components/common/Spinner'
+
+const isPackageCategory = (cat) => cat.startsWith('Packages - ')
+const packageSubname = (cat) => cat.replace('Packages - ', '')
 
 export default function ServicesPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState('Package') // Default per screenshots
+  const [services, setServices] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  // Derive all unique categories from the mock array so the pills dynamic generated
-  const allCategories = useMemo(() => {
-    return [...new Set(BOOKABLE_SERVICES.map(s => s.categoryName))]
+  useEffect(() => {
+    getAllActiveServices()
+      .then(setServices)
+      .catch(console.error)
+      .finally(() => setLoading(false))
   }, [])
+
+  // Map raw data into an easily filterable/groupable format
+  const mappedServices = useMemo(() => {
+    return services.map(s => {
+      // Create UI-friendly category and group names
+      const uiCategory = isPackageCategory(s.category_name) ? 'Package' : s.category_name
+      const uiGroup = isPackageCategory(s.category_name) ? packageSubname(s.category_name) : s.category_name
+      
+      return {
+        ...s,
+        uiCategory,
+        uiGroup,
+      }
+    })
+  }, [services])
+
+  const allCategories = useMemo(() => {
+    return [...new Set(mappedServices.map(s => s.uiCategory))]
+  }, [mappedServices])
 
   // Filter the list based on pill selected and search query
   const filteredServices = useMemo(() => {
-    return BOOKABLE_SERVICES.filter(service => {
-      const matchesCategory = service.categoryName === activeFilter
-      const matchesSearch = service.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            service.description.toLowerCase().includes(searchQuery.toLowerCase())
+    return mappedServices.filter(service => {
+      const matchesCategory = service.uiCategory === activeFilter
+      
+      const safeName = service.name ? service.name.toLowerCase() : ''
+      const safeDesc = service.description ? service.description.toLowerCase() : ''
+      const safeQuery = searchQuery.toLowerCase()
+
+      const matchesSearch = safeName.includes(safeQuery) || safeDesc.includes(safeQuery)
       return matchesCategory && matchesSearch
     })
-  }, [activeFilter, searchQuery])
+  }, [activeFilter, searchQuery, mappedServices])
 
   // Group the filtered services exactly as shown in the mockup under subtitle headers
   const groupedServices = useMemo(() => {
     return filteredServices.reduce((acc, curr) => {
-      const groupName = curr.groupName || 'Other'
+      const groupName = curr.uiGroup || 'Other'
       if (!acc[groupName]) acc[groupName] = []
       acc[groupName].push(curr)
       return acc
     }, {})
   }, [filteredServices])
+
+  if (loading) {
+    return (
+      <PublicLayout>
+        <div className="w-full min-h-[70vh] flex items-center justify-center bg-anaya-bg pt-32">
+          <Spinner />
+        </div>
+      </PublicLayout>
+    )
+  }
 
   return (
     <PublicLayout>
@@ -39,7 +80,9 @@ export default function ServicesPage() {
         
         <div className="max-w-4xl mx-auto w-full">
           {/* Header */}
-          <h1 className="text-2xl font-serif font-bold text-gray-900 tracking-wide mb-8">Our Services</h1>
+          <div className="flex justify-between items-end mb-8">
+            <h1 className="text-2xl font-serif font-bold text-gray-900 tracking-wide">Our Services</h1>
+          </div>
           
           {/* Global Search */}
           <div className="relative mb-10">
@@ -64,11 +107,11 @@ export default function ServicesPage() {
           />
 
           {/* Grouped Service Lists Output */}
-          {Object.entries(groupedServices).map(([groupName, services]) => (
+          {Object.entries(groupedServices).map(([groupName, groupList]) => (
             <div key={groupName} className="mb-12">
               <h3 className="font-bold text-gray-900 mb-4">{groupName}</h3>
               <div className="flex flex-col space-y-4 shadow-sm bg-white border border-gray-100 rounded-lg p-2 sm:p-4">
-                {services.map(service => (
+                {groupList.map(service => (
                   <BookableServiceCard key={service.id} service={service} />
                 ))}
               </div>

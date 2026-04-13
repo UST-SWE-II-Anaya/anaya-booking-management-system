@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import useBookingStore from '../../store/bookingStore'
@@ -25,8 +25,11 @@ const ReviewStep = () => {
     clearBooking,
   } = useBookingStore()
   const [submitting, setSubmitting] = useState(false)
+  // Tracks a successful submit so the date-guard below doesn't fire
+  // and override the post-booking navigation when clearBooking() wipes the dates.
+  const submittedRef = useRef(false)
 
-  if (!selectedDate || !selectedTime) {
+  if (!submittedRef.current && (!selectedDate || !selectedTime)) {
     navigate('/booking/datetime', { replace: true })
     return null
   }
@@ -68,10 +71,13 @@ const ReviewStep = () => {
     setSubmitting(true)
     try {
       const booking = await createBooking(buildPayload())
+      // Mark as submitted BEFORE clearing store so the guard above
+      // doesn't redirect to /booking/datetime when clearBooking() wipes the dates.
+      submittedRef.current = true
+      clearBooking()
       if (goToPayment) {
         navigate(`/booking/payment/${booking.id}`)
       } else {
-        clearBooking()
         navigate('/dashboard')
       }
     } catch (err) {

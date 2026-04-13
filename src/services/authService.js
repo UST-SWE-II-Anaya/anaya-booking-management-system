@@ -10,6 +10,32 @@ export const signIn = async (email, password) => {
   return data
 }
 
+/**
+ * Registers a new customer account.
+ * Metadata is stored in auth.users.raw_user_meta_data and consumed by
+ * the handle_new_user DB trigger to populate public.profiles automatically.
+ * @param {string} email
+ * @param {string} password
+ * @param {{ first_name: string, last_name: string, phone_number?: string, date_of_birth?: string }} metadata
+ */
+export const signUp = async (email, password, metadata = {}) => {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        first_name: metadata.first_name ?? '',
+        last_name: metadata.last_name ?? '',
+        phone_number: metadata.phone_number ?? '',
+        date_of_birth: metadata.date_of_birth ?? '',
+        role: 'customer',
+      },
+    },
+  })
+  if (error) throw error
+  return data
+}
+
 export const signOut = async () => {
   const { error } = await supabase.auth.signOut()
   if (error) throw error

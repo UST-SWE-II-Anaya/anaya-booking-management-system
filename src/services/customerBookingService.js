@@ -52,13 +52,12 @@ export const getMyBookingById = async (id) => {
 }
 
 export const cancelMyBooking = async (id, userId) => {
+  // Only send booking_status — the database trigger (enforce_customer_booking_update)
+  // treats cancelled_at and cancelled_by as protected fields and rejects updates that
+  // include them. The trigger auto-sets both fields server-side upon cancellation.
   const { error } = await supabase
     .from('bookings')
-    .update({
-      booking_status: 'cancelled',
-      cancelled_at: new Date().toISOString(),
-      cancelled_by: userId,
-    })
+    .update({ booking_status: 'cancelled' })
     .eq('id', id)
     .eq('customer_id', userId)
   if (error) throw error

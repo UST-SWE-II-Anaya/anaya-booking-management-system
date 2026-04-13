@@ -1,12 +1,25 @@
 import { useNavigate } from 'react-router-dom'
+import { formatDuration } from '../../utils/bookingUtils'
+import useAuthStore from '../../store/authStore'
+import useBookingStore from '../../store/bookingStore'
 
 export default function BookableServiceCard({ service }) {
   const navigate = useNavigate()
-  
+  const { user } = useAuthStore()
+  const { addToCart, cart } = useBookingStore()
+
   const handleBook = () => {
-    // For unauthenticated public view, clicking Book redirects to login.
-    // In the future, this might check an auth context first.
-    navigate('/login')
+    if (user) {
+      // Already logged in — add to cart (if not already there) and go to booking flow
+      if (!cart.find((c) => c.id === service.id)) {
+        addToCart(service)
+      }
+      navigate('/booking/services')
+    } else {
+      // Not logged in — send to login with a redirect back to booking/services
+      // with this service pre-selected via the ?service= query param
+      navigate(`/login?redirect=/booking/services%3Fservice%3D${service.id}`)
+    }
   }
 
   return (
@@ -20,7 +33,7 @@ export default function BookableServiceCard({ service }) {
           <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          {service.duration}
+          {service.duration_minutes ? formatDuration(service.duration_minutes) : service.duration}
         </div>
         
         <p className="text-[0.7rem] text-gray-700 leading-relaxed max-w-md">

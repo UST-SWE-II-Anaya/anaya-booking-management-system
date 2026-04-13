@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import PublicLayout from '../../components/PublicLayout'
+import { getCategories } from '../../services/servicesCmsService'
 
 const ValuePropCard = ({ title, description }) => (
   <div className="flex flex-col mb-8 md:mb-0 pr-4">
@@ -42,6 +44,14 @@ const ServiceCard = ({ title, catId, imgUrl }) => (
 )
 
 export default function HomePage() {
+  const [categories, setCategories] = useState([])
+
+  useEffect(() => {
+    getCategories()
+      .then((data) => setCategories(data.slice(0, 3)))
+      .catch(console.error)
+  }, [])
+
   return (
     <PublicLayout>
       {/* 1. Hero Section */}
@@ -99,10 +109,13 @@ export default function HomePage() {
           Our most popular services
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-10 max-w-7xl mx-auto">
-          {/* Using text/icon placeholders as requested for backend integration later */}
-          <ServiceCard title="Facial Care" />
-          <ServiceCard title="Hand Care" />
-          <ServiceCard title="Nail Care" />
+          {categories.length > 0 ? (
+            categories.map((cat) => (
+              <ServiceCard key={cat.id} title={cat.name} catId={cat.id} imgUrl={cat.image_url} />
+            ))
+          ) : (
+            <p className="text-gray-500 text-center col-span-1 md:col-span-3">Loading services...</p>
+          )}
         </div>
       </section>
 
