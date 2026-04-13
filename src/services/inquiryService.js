@@ -12,6 +12,14 @@ export const getInquiries = async ({ status } = {}) => {
   return data
 }
 
+export const createInquiry = async (inquiryData) => {
+  const { error } = await supabase
+    .from('inquiries')
+    .insert([inquiryData])
+  if (error) throw error
+  return true
+}
+
 export const markRead = async (id) => {
   const { data, error } = await supabase
     .from('inquiries')

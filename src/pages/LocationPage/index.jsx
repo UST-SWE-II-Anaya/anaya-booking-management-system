@@ -1,4 +1,7 @@
+import { useState } from 'react'
+import { toast } from 'react-hot-toast'
 import PublicLayout from '../../components/PublicLayout'
+import { createInquiry } from '../../services/inquiryService'
 
 const ContactCard = ({ title, content }) => (
   <div className="bg-[#B9C6DF] rounded-sm py-12 px-6 flex flex-col items-center justify-center text-center shadow-sm w-full min-h-[200px]">
@@ -8,6 +11,46 @@ const ContactCard = ({ title, content }) => (
 )
 
 export default function LocationPage() {
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [email, setEmail] = useState('')
+  const [message, setMessage] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleMessageChange = (e) => {
+    if (e.target.value.length <= 1000) {
+      setMessage(e.target.value)
+    }
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!firstName.trim() || !lastName.trim() || !email.trim() || !message.trim()) {
+      toast.error('Please fill in all fields')
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      await createInquiry({
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        email: email.trim(),
+        message: message.trim()
+      })
+      toast.success('Your message has been sent successfully!')
+      setFirstName('')
+      setLastName('')
+      setEmail('')
+      setMessage('')
+    } catch (error) {
+      console.error('Error sending inquiry:', error)
+      toast.error('Failed to send message. Please try again later.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <PublicLayout>
       <div className="w-full bg-anaya-light pt-32 min-h-screen">
@@ -56,7 +99,7 @@ export default function LocationPage() {
 
           {/* Right Form */}
           <div className="w-full md:w-2/3">
-            <form className="flex flex-col space-y-6" onSubmit={(e) => e.preventDefault()}>
+            <form className="flex flex-col space-y-6" onSubmit={handleSubmit}>
               
               {/* Name Field (First & Last) */}
               <div>
@@ -65,6 +108,8 @@ export default function LocationPage() {
                   <div className="w-full">
                     <input 
                       type="text" 
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
                       className="w-full border border-gray-400 bg-white rounded-md p-2 text-sm focus:outline-none focus:border-anaya-accent"
                     />
                     <label className="block text-[0.65rem] text-gray-500 mt-1">First</label>
@@ -72,6 +117,8 @@ export default function LocationPage() {
                   <div className="w-full">
                     <input 
                       type="text" 
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
                       className="w-full border border-gray-400 bg-white rounded-md p-2 text-sm focus:outline-none focus:border-anaya-accent"
                     />
                     <label className="block text-[0.65rem] text-gray-500 mt-1">Last</label>
@@ -84,6 +131,8 @@ export default function LocationPage() {
                 <label className="block text-xs font-bold text-gray-900 mb-2">Email</label>
                 <input 
                   type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full border border-gray-400 bg-white rounded-md p-2 text-sm focus:outline-none focus:border-anaya-accent"
                 />
               </div>
@@ -93,17 +142,23 @@ export default function LocationPage() {
                 <label className="block text-xs font-bold text-gray-900 mb-2">Comments</label>
                 <textarea 
                   rows="5"
+                  value={message}
+                  onChange={handleMessageChange}
                   className="w-full border border-gray-400 bg-white rounded-md p-2 text-sm focus:outline-none focus:border-anaya-accent resize-y"
                 ></textarea>
+                <div className="text-right text-[0.65rem] text-gray-500 mt-1">
+                  {message.length} / 1000 characters
+                </div>
               </div>
 
               {/* Submit Button */}
               <div className="pt-2">
                 <button 
                   type="submit" 
-                  className="bg-anaya-accent hover:bg-anaya-accent-hover text-white text-xs font-bold py-3 px-8 rounded-full shadow-sm transition-colors"
+                  disabled={isSubmitting}
+                  className="bg-anaya-accent hover:bg-anaya-accent-hover text-white text-xs font-bold py-3 px-8 rounded-full shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Send Message
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
                 </button>
               </div>
 
