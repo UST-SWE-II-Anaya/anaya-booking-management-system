@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { toast } from 'react-hot-toast'
 import PublicLayout from '../../components/PublicLayout'
 import { createInquiry } from '../../services/inquiryService'
+import useSiteSettings from '../../hooks/useSiteSettings'
 
 const ContactCard = ({ title, content }) => (
   <div className="bg-[#B9C6DF] rounded-sm py-12 px-6 flex flex-col items-center justify-center text-center shadow-sm w-full min-h-[200px]">
@@ -11,6 +12,7 @@ const ContactCard = ({ title, content }) => (
 )
 
 export default function LocationPage() {
+  const { settings } = useSiteSettings()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
@@ -62,15 +64,15 @@ export default function LocationPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <ContactCard 
               title="Address" 
-              content={<>The ONE Building,<br/>M.F., Jhocson St.,<br/>Manila, Philippines</>} 
+              content={settings?.contact_info?.address || 'The ONE Building, M.F., Jhocson St., Manila, Philippines'} 
             />
             <ContactCard 
               title="Phone" 
-              content="+63 945 977 8163" 
+              content={settings?.contact_info?.phone || '+63 945 977 8163'} 
             />
             <ContactCard 
               title="Email" 
-              content={<>anayaaesthetic.studio<br/>@gmail.com</>} 
+              content={settings?.contact_info?.email || 'anayaaesthetic.studio@gmail.com'} 
             />
           </div>
         </div>

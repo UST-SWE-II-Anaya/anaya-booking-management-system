@@ -1,6 +1,29 @@
 import { Link } from 'react-router-dom'
+import useSiteSettings from '../../hooks/useSiteSettings'
 
 export default function Footer() {
+  const { settings } = useSiteSettings()
+
+  const contact = {
+    address: settings?.contact_info?.address || 'The ONE Building, M.F., Jhocson St., Manila, Philippines',
+    phone: settings?.contact_info?.phone || '+63 945 977 8163',
+    email: settings?.contact_info?.email || 'anayesthetic.studio@gmail.com',
+  }
+
+  const hours = {
+    start: settings?.operating_hours?.start || '09:00',
+    end: settings?.operating_hours?.end || '18:00',
+  }
+
+  const formatTime = (time) => {
+    if (!time) return ''
+    const [h, m] = time.split(':')
+    const hour = parseInt(h, 10)
+    const ampm = hour >= 12 ? 'pm' : 'am'
+    const disp = hour % 12 || 12
+    return `${disp}${parseInt(m, 10) ? `:${m}` : ''} ${ampm}`
+  }
+
   return (
     <footer className="w-full bg-anaya-green-dark text-white py-12 px-8 flex flex-col md:flex-row justify-between items-start md:items-center">
       <div className="flex flex-col mb-8 md:mb-0">
@@ -19,13 +42,13 @@ export default function Footer() {
         <div className="flex flex-col space-y-4 mb-8 md:mb-0 max-w-xs">
           <div>
             <h4 className="font-bold mb-1 uppercase tracking-wider">Contacts & Address</h4>
-            <p>The ONE Building, M.F., Jhocson St., Manila, Philippines</p>
+            <p>{contact.address}</p>
           </div>
-          <p>+63 945 977 8163</p>
-          <p>anayesthetic.studio@gmail.com</p>
+          <p>{contact.phone}</p>
+          <p>{contact.email}</p>
           <div>
             <h4 className="font-bold mt-2 mb-1 uppercase tracking-wider">Hours</h4>
-            <p>9 am - 6 pm</p>
+            <p>{formatTime(hours.start)} - {formatTime(hours.end)}</p>
           </div>
         </div>
 
