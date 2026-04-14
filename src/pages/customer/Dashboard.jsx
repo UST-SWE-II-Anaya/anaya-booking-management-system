@@ -5,6 +5,8 @@ import useAuthStore from '../../store/authStore'
 import { getMyBookings, cancelMyBooking } from '../../services/customerBookingService'
 import AppointmentCard from '../../components/customer/AppointmentCard'
 import AppointmentDetailModal from '../../components/customer/AppointmentDetailModal'
+import Navbar from '../../components/Navbar'
+import Footer from '../../components/Footer'
 
 const CalendarIcon = () => (
   <svg className="w-16 h-16 text-gray-300 mb-5" fill="none" stroke="currentColor" strokeWidth="1.2" viewBox="0 0 24 24">
@@ -52,14 +54,11 @@ const Dashboard = () => {
   )
 
   return (
-    <div className="min-h-screen bg-anaya-bg">
-      <div className="max-w-4xl mx-auto px-6 py-10">
-        <Link
-          to="/"
-          className="text-sm text-gray-500 hover:underline mb-4 inline-block"
-        >
-          ← Go Back to Landing Page
-        </Link>
+    <div className="min-h-screen bg-anaya-bg flex flex-col">
+      <Navbar />
+
+      <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-10">
+
         {bookings.length === 0 ? (
           /* Empty state */
           <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -124,7 +123,9 @@ const Dashboard = () => {
             </div>
           </>
         )}
-      </div>
+      </main>
+
+      <Footer />
 
       <AppointmentDetailModal
         booking={selectedBooking}

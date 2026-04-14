@@ -39,7 +39,7 @@ const BookingCalendar = ({ onDateSelect, selectedDate }) => {
     year === today.getFullYear()
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 max-w-sm">
+    <div className="bg-white rounded-xl border border-gray-200 p-5">
       <div className="flex justify-between items-center mb-4">
         <button
           onClick={() => setViewDate(new Date(year, month - 1, 1))}

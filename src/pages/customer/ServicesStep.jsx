@@ -98,10 +98,10 @@ const ServicesStep = () => {
     <div className="min-h-screen bg-anaya-bg">
       <div className="max-w-6xl mx-auto px-6 py-8">
         <Link
-          to="/"
-          className="text-sm text-gray-500 hover:underline mb-4 inline-block"
+          to="/dashboard"
+          className="text-sm text-gray-400 hover:text-gray-600 mb-4 inline-flex items-center gap-1 transition-colors"
         >
-          ← Go Back to Previous Page
+          ← Go back to My Appointments
         </Link>
         <div className="flex gap-8 items-start">
           {/* Left: service list */}

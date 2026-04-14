@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import useAuthStore from '../../store/authStore'
 import { getMyPastBookings } from '../../services/customerBookingService'
 import AppointmentCard from '../../components/customer/AppointmentCard'
+import Navbar from '../../components/Navbar'
+import Footer from '../../components/Footer'
 
 const CalendarIcon = () => (
   <svg className="w-16 h-16 text-gray-300 mb-5" fill="none" stroke="currentColor" strokeWidth="1.2" viewBox="0 0 24 24">
@@ -33,8 +35,10 @@ const AppointmentsHistory = () => {
   )
 
   return (
-    <div className="min-h-screen bg-anaya-bg">
-      <div className="max-w-4xl mx-auto px-6 py-10">
+    <div className="min-h-screen bg-anaya-bg flex flex-col">
+      <Navbar />
+
+      <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-10">
         {bookings.length === 0 ? (
           /* Empty state */
           <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -65,14 +69,6 @@ const AppointmentsHistory = () => {
         ) : (
           /* Past appointments list */
           <>
-            <div className="flex justify-start mb-6">
-              <Link to="/" className="text-sm text-anaya-primary hover:underline flex items-center">
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Go Back to Landing Page
-              </Link>
-            </div>
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold text-anaya-text">
                 Past Appointments
@@ -81,7 +77,7 @@ const AppointmentsHistory = () => {
                 to="/dashboard"
                 className="text-sm text-anaya-accent hover:underline"
               >
-                Go Back
+                Go Back to Active
               </Link>
             </div>
 
@@ -98,7 +94,9 @@ const AppointmentsHistory = () => {
             </div>
           </>
         )}
-      </div>
+      </main>
+
+      <Footer />
     </div>
   )
 }
