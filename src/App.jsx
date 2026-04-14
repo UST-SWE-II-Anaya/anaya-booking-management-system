@@ -44,6 +44,7 @@ import ProfileEdit from './pages/customer/ProfileEdit'
 import HomePage from './pages/HomePage'
 import RegisterPage from './pages/RegisterPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import PublicCategoriesPage from './pages/CategoriesPage'
 import CategoryDetailPage from './pages/CategoryDetailPage'
 import PublicServicesPage from './pages/ServicesPage'
@@ -61,6 +62,7 @@ const App = () => {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       {/* Public routes */}
       <Route path="/" element={<HomePage />} />

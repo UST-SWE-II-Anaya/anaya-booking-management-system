@@ -54,6 +54,12 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-anaya-bg">
       <div className="max-w-4xl mx-auto px-6 py-10">
+        <Link
+          to="/"
+          className="text-sm text-gray-500 hover:underline mb-4 inline-block"
+        >
+          ← Go Back to Landing Page
+        </Link>
         {bookings.length === 0 ? (
           /* Empty state */
           <div className="flex flex-col items-center justify-center py-24 text-center">
