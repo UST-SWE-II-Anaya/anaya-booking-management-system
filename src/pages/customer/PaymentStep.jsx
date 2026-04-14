@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast'
 import { supabase } from '../../services/supabaseClient'
 import { getMyBookingById } from '../../services/customerBookingService'
 import { formatDuration } from '../../utils/bookingUtils'
+import useAuthStore from '../../store/authStore'
 
 const to12h = (time24) => {
   if (!time24) return ''
@@ -44,6 +45,7 @@ const GCashCard = ({ number }) => (
 const PaymentStep = () => {
   const { bookingId } = useParams()
   const navigate = useNavigate()
+  const { user: currentUser } = useAuthStore()
   const [booking, setBooking] = useState(null)
   const [refNumber, setRefNumber] = useState('')
   const [accountName, setAccountName] = useState('')
@@ -81,18 +83,30 @@ const PaymentStep = () => {
       toast.error('Receipt image is required.')
       return
     }
+
+    if (!currentUser?.id) {
+      toast.error('User session not found. Please log in again.')
+      return
+    }
+
     setSubmitting(true)
     try {
-      const path = `${bookingId}/${Date.now()}_${receipt.name}`
+      // 1. Upload Receipt
+      const path = `${currentUser.id}/${Date.now()}_${receipt.name}`
       const { error: uploadErr } = await supabase.storage
         .from('payment-receipts')
         .upload(path, receipt)
-      if (uploadErr) throw uploadErr
+      
+      if (uploadErr) {
+        console.error('Upload Error:', uploadErr)
+        throw new Error(`Upload failed: ${uploadErr.message}`)
+      }
 
       const { data: urlData } = supabase.storage
         .from('payment-receipts')
         .getPublicUrl(path)
 
+      // 2. Insert Payment Record
       const { error: insertErr } = await supabase.from('payments').insert({
         booking_id: bookingId,
         reference_number: refNumber,
@@ -101,13 +115,22 @@ const PaymentStep = () => {
         amount: booking.downpayment_amount,
         status: 'paid',
       })
-      if (insertErr) throw insertErr
+      
+      if (insertErr) {
+        console.error('Insert Error:', insertErr)
+        throw new Error(`Record creation failed: ${insertErr.message}`)
+      }
 
+      // 3. Update Booking Status
       const { error: updateErr } = await supabase
         .from('bookings')
         .update({ downpayment_status: 'paid' })
         .eq('id', bookingId)
-      if (updateErr) throw updateErr
+      
+      if (updateErr) {
+        console.error('Update Error:', updateErr)
+        throw new Error(`Booking update failed: ${updateErr.message}`)
+      }
 
       navigate(`/booking/success/${bookingId}`)
     } catch {

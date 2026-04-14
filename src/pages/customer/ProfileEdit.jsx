@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import useAuthStore from '../../store/authStore'
 import { getMyProfile, updateMyProfile } from '../../services/customerProfileService'

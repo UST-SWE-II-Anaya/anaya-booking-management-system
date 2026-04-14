@@ -173,7 +173,7 @@ const BookingDetailPage = () => {
             variant={booking.downpayment_status}
             label={`Downpayment: ${booking.downpayment_status}`}
           />
-          {booking.downpayment_status === 'pending' && payment && (
+          {['pending', 'paid'].includes(booking.downpayment_status) && payment && (
             <button
               onClick={() => setVerifyOpen(true)}
               className="text-sm text-[#CE845D] hover:underline"

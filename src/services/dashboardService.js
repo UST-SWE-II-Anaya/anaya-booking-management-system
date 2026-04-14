@@ -20,7 +20,7 @@ export const getDashboardStats = async () => {
     supabase
       .from('payments')
       .select('*', { count: 'exact', head: true })
-      .eq('status', 'pending'),
+      .in('status', ['pending', 'paid']),
     supabase
       .from('leave_requests')
       .select('*', { count: 'exact', head: true })

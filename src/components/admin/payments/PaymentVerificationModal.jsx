@@ -144,7 +144,7 @@ const PaymentVerificationModal = ({ open, onClose, booking, onUpdated }) => {
           </p>
         )}
 
-        {payment && booking.downpayment_status === 'pending' && (
+        {payment && ['pending', 'paid'].includes(booking.downpayment_status) && (
           <div className="flex gap-3 pt-2">
             <button
               onClick={handleDeny}

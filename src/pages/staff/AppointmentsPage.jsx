@@ -114,6 +114,15 @@ const AppointmentCard = ({ appt, onVerifyClick }) => {
       </div>
 
       {/* Action */}
+      {appt.downpayment_status === 'paid' && (
+        <button
+          onClick={() => onVerifyClick(appt.id)}
+          className="w-full py-2 bg-[#CE845D] hover:bg-[#b87652] text-white text-sm
+            font-medium rounded-lg transition-colors"
+        >
+          Review Payment
+        </button>
+      )}
       {appt.downpayment_status === 'pending' && (
         <button
           onClick={() => onVerifyClick(appt.id)}
