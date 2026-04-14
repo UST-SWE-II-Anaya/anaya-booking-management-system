@@ -7,7 +7,7 @@ import SearchInput from '../../../components/common/SearchInput'
 import Spinner from '../../../components/common/Spinner'
 import EmptyState from '../../../components/common/EmptyState'
 import PaymentVerificationModal from '../../../components/admin/payments/PaymentVerificationModal'
-import { CalendarDays } from 'lucide-react'
+import { CalendarDays, Eye, CheckCircle2 } from 'lucide-react'
 
 const STATUS_FILTERS = ['all', 'upcoming', 'finished', 'cancelled', 'no_show']
 
@@ -152,15 +152,21 @@ const BookingsPage = () => {
                         <div className="flex gap-2">
                           <button
                             onClick={() => navigate(`/admin/bookings/${b.id}`)}
-                            className="text-xs text-[#8A956D] hover:underline"
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 border border-[#8A956D] 
+                              rounded-lg text-[#8A956D] hover:bg-[#8A956D] hover:text-white 
+                              transition-all text-xs font-medium group"
                           >
+                            <Eye size={14} className="group-hover:text-white" />
                             View
                           </button>
-                          {b.downpayment_status === 'pending' && (
+                          {b.downpayment_status === 'pending' && b.booking_status !== 'cancelled' && (
                             <button
                               onClick={() => setVerifyModal(b)}
-                              className="text-xs text-[#CE845D] hover:underline"
+                              className="flex items-center gap-1.5 px-2.5 py-1.5 border border-[#CE845D] 
+                                rounded-lg text-[#CE845D] hover:bg-[#CE845D] hover:text-white 
+                                transition-all text-xs font-medium group"
                             >
+                              <CheckCircle2 size={14} className="group-hover:text-white" />
                               Verify
                             </button>
                           )}

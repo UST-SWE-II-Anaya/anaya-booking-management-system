@@ -15,6 +15,7 @@ import BookingDetailPage from './pages/admin/bookings/BookingDetailPage'
 import CustomersPage from './pages/admin/customers/CustomersPage'
 import CustomerDetailPage from './pages/admin/customers/CustomerDetailPage'
 import StaffPage from './pages/admin/staff/StaffPage'
+import StaffDetailPage from './pages/admin/staff/StaffDetailPage'
 import LeaveRequestsPage from './pages/admin/staff/LeaveRequestsPage'
 import AdminCategoriesPage from './pages/admin/services/CategoriesPage'
 import AdminServicesPage from './pages/admin/services/ServicesPage'
@@ -79,6 +80,7 @@ const App = () => {
           <Route path="/admin/customers" element={<CustomersPage />} />
           <Route path="/admin/customers/:id" element={<CustomerDetailPage />} />
           <Route path="/admin/staff" element={<StaffPage />} />
+          <Route path="/admin/staff/:id" element={<StaffDetailPage />} />
           <Route path="/admin/staff/leave-requests" element={<LeaveRequestsPage />} />
           <Route path="/admin/services" element={<AdminCategoriesPage />} />
           <Route path="/admin/services/:categoryId" element={<AdminServicesPage />} />

@@ -1,7 +1,7 @@
 // src/pages/admin/customers/CustomersPage.jsx
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Users } from 'lucide-react'
+import { Users, Eye, PauseCircle, UserX, UserCheck } from 'lucide-react'
 import {
   getCustomers,
   updateAccountStatus,
@@ -126,14 +126,17 @@ const CustomersPage = () => {
                       {new Date(c.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-5 py-3.5">
-                      <div className="flex gap-3 text-xs">
+                      <div className="flex flex-wrap gap-2">
                         <button
                           onClick={() => navigate(`/admin/customers/${c.id}`)}
-                          className="text-[#8A956D] hover:underline"
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 border border-[#8A956D] 
+                            rounded-lg text-[#8A956D] hover:bg-[#8A956D] hover:text-white 
+                            transition-all text-xs font-medium group"
                         >
+                          <Eye size={14} className="group-hover:text-white" />
                           View
                         </button>
-                        {c.account_status === 'active' && (
+                        {c.account_status === 'active' ? (
                           <button
                             onClick={() => setConfirm({
                               id: c.id,
@@ -141,9 +144,27 @@ const CustomersPage = () => {
                               newStatus: 'suspended',
                               message: `Suspend ${c.first_name} ${c.last_name}?`,
                             })}
-                            className="text-yellow-600 hover:underline"
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 border border-yellow-600 
+                              rounded-lg text-yellow-600 hover:bg-yellow-600 hover:text-white 
+                              transition-all text-xs font-medium group"
                           >
+                            <PauseCircle size={14} className="group-hover:text-white" />
                             Suspend
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => setConfirm({
+                              id: c.id,
+                              action: 'Reactivate',
+                              newStatus: 'active',
+                              message: `Reactivate ${c.first_name} ${c.last_name}?`,
+                            })}
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 border border-green-600 
+                              rounded-lg text-green-600 hover:bg-green-600 hover:text-white 
+                              transition-all text-xs font-medium group"
+                          >
+                            <UserCheck size={14} className="group-hover:text-white" />
+                            Reactivate
                           </button>
                         )}
                         {c.account_status !== 'banned' && (
@@ -155,22 +176,12 @@ const CustomersPage = () => {
                               message: `Permanently ban ${c.first_name} ${c.last_name}?`,
                               danger: true,
                             })}
-                            className="text-red-500 hover:underline"
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 border border-red-500 
+                              rounded-lg text-red-500 hover:bg-red-500 hover:text-white 
+                              transition-all text-xs font-medium group"
                           >
+                            <UserX size={14} className="group-hover:text-white" />
                             Ban
-                          </button>
-                        )}
-                        {c.account_status !== 'active' && (
-                          <button
-                            onClick={() => setConfirm({
-                              id: c.id,
-                              action: 'Reactivate',
-                              newStatus: 'active',
-                              message: `Reactivate ${c.first_name} ${c.last_name}?`,
-                            })}
-                            className="text-green-600 hover:underline"
-                          >
-                            Reactivate
                           </button>
                         )}
                       </div>
