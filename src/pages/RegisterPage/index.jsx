@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import AuthLayout from '../../components/AuthLayout'
 import InputField from '../../components/InputField'
 import Button from '../../components/Button'
-import GoogleButton from '../../components/GoogleButton'
+
 import { signUp } from '../../services/authService'
 
 export default function RegisterPage() {
@@ -170,7 +170,7 @@ export default function RegisterPage() {
 
       <form
         onSubmit={handleRegister}
-        className="w-full flex flex-col items-center max-h-[400px] overflow-y-auto pr-2 scrollbar-thin"
+        className="w-full flex flex-col items-center"
       >
         <InputField
           label="Email"
@@ -238,41 +238,14 @@ export default function RegisterPage() {
           error={errors.confirmPassword}
         />
 
-        {/* reCAPTCHA placeholder */}
-        <div className="w-full sm:w-2/3 border border-gray-200 bg-white rounded flex justify-between items-center p-2 mb-6 shadow-sm">
-          <div className="flex items-center space-x-2">
-            <div className="w-5 h-5 border-2 border-gray-300 rounded-sm" />
-            <span className="text-[0.65rem] text-gray-600">
-              I am human
-            </span>
-          </div>
-          <div className="flex flex-col items-center">
-            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-blue-500 font-bold text-[10px]">
-                C
-              </span>
-            </div>
-            <span className="text-[0.4rem] text-gray-400 mt-1">
-              reCAPTCHA
-            </span>
-            <span className="text-[0.4rem] text-gray-400">
-              Privacy - Terms
-            </span>
-          </div>
-        </div>
+
 
         <Button type="submit" disabled={loading}>
           {loading ? 'Creating Account…' : 'Create an Account'}
         </Button>
       </form>
 
-      <div className="w-full flex items-center justify-center space-x-2 my-6">
-        <div className="h-px bg-gray-300 w-16" />
-        <span className="text-xs text-gray-400">or</span>
-        <div className="h-px bg-gray-300 w-16" />
-      </div>
 
-      <GoogleButton onClick={() => {}} />
 
       <div className="mt-4 text-xs text-gray-500 text-center">
         Already have an account?{' '}

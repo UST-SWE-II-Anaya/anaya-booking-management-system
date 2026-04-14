@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 import { signIn, getProfile } from '../../services/authService'
 import useAuthStore from '../../store/authStore'
+import AuthLayout from '../../components/AuthLayout'
 
 const TABS = {
   CUSTOMER: 'customer',
@@ -87,29 +88,23 @@ const LoginPage = () => {
   const isCustomer = activeTab === TABS.CUSTOMER
 
   return (
-    <div className="min-h-screen bg-[#F9F8F5] flex items-center justify-center p-4">
-      <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-
+    <AuthLayout imageSrc="/flower-bouquet.png">
+      <div className="w-full flex-col px-2 max-w-sm mx-auto">
         {/* Logo / Brand */}
         <div className="mb-6 text-center">
-          <h1 className="font-serif text-2xl font-semibold text-[#2C2C2C]">
-            Anaya
-          </h1>
-          <p className="text-xs text-gray-400 mt-1 tracking-wide">
-            Aesthetic Studio
-          </p>
+          <img src="/logo.png" alt="ANAYA Aesthetic Studio" className="h-[4.5rem] object-contain invert mix-blend-darken mx-auto" />
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex rounded-lg bg-gray-100 p-1 mb-6">
+        <div className="flex rounded-md border border-gray-200 bg-white p-1 mb-8 max-w-sm mx-auto">
           <button
             type="button"
             onClick={() => handleTabSwitch(TABS.CUSTOMER)}
             className={[
-              'flex-1 py-2 text-xs font-medium rounded-md transition-all duration-200',
+              'flex-1 py-1.5 text-[0.65rem] font-medium rounded transition-all duration-200',
               isCustomer
-                ? 'bg-white text-[#2C2C2C] shadow-sm'
-                : 'text-gray-500 hover:text-gray-700',
+                ? 'bg-transparent text-[#2C2C2C] border border-gray-200 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700 bg-gray-50',
             ].join(' ')}
           >
             Customer
@@ -118,10 +113,10 @@ const LoginPage = () => {
             type="button"
             onClick={() => handleTabSwitch(TABS.STAFF)}
             className={[
-              'flex-1 py-2 text-xs font-medium rounded-md transition-all duration-200',
+              'flex-1 py-1.5 text-[0.65rem] font-medium rounded transition-all duration-200',
               !isCustomer
-                ? 'bg-white text-[#2C2C2C] shadow-sm'
-                : 'text-gray-500 hover:text-gray-700',
+                ? 'bg-transparent text-[#2C2C2C] border border-gray-200 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700 bg-gray-50',
             ].join(' ')}
           >
             Staff &amp; Admin
@@ -129,16 +124,16 @@ const LoginPage = () => {
         </div>
 
         {/* Portal Label */}
-        <p className="text-center text-sm text-gray-500 mb-6">
-          {isCustomer ? 'Sign in to your account' : 'Staff & Admin Portal'}
+        <p className="text-center text-xs text-gray-500 mb-8">
+          {isCustomer ? 'Sign in to your account' : 'Sign in to your account (Staff)'}
         </p>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label
               htmlFor="login-email"
-              className="block text-sm font-medium text-[#4A4A4A] mb-1"
+              className="block text-[0.65rem] font-medium text-gray-500 mb-1"
             >
               Email
             </label>
@@ -149,19 +144,15 @@ const LoginPage = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg
-                text-sm focus:outline-none focus:ring-2 focus:ring-[#8A956D]/40
-                focus:border-[#8A956D] transition-colors"
-              placeholder={
-                isCustomer ? 'you@example.com' : 'you@anaya.com'
-              }
+              className="w-full px-0 py-2 border-0 border-b border-gray-400 bg-transparent
+                text-sm focus:outline-none focus:ring-0 focus:border-gray-800 transition-colors"
             />
           </div>
 
           <div>
             <label
               htmlFor="login-password"
-              className="block text-sm font-medium text-[#4A4A4A] mb-1"
+              className="block text-[0.65rem] font-medium text-gray-500 mb-1"
             >
               Password
             </label>
@@ -173,20 +164,27 @@ const LoginPage = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
-                className="w-full px-3 py-2.5 pr-10 border border-gray-200 rounded-lg
-                  text-sm focus:outline-none focus:ring-2 focus:ring-[#8A956D]/40
-                  focus:border-[#8A956D] transition-colors"
+                className="w-full px-0 py-2 pr-8 border-0 border-b border-gray-400 bg-transparent
+                  text-sm focus:outline-none focus:ring-0 focus:border-gray-800 transition-colors"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400
-                  hover:text-gray-600"
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-800 hover:text-black"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
+          </div>
+
+          <div className="flex justify-end -mt-3">
+             <Link
+               to="/forgot-password"
+               className="text-[0.65rem] text-gray-500 hover:text-gray-800"
+             >
+               Forget password?
+             </Link>
           </div>
 
           {/* Error */}
@@ -197,40 +195,31 @@ const LoginPage = () => {
             </p>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2.5 bg-[#8A956D] hover:bg-[#7a8560] text-white
-              text-sm font-medium rounded-lg transition-colors
-              disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Signing in…' : 'Sign In'}
-          </button>
+          <div className="flex justify-center mt-8">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-1/2 py-2 bg-[#9ba58b] hover:bg-[#8A956D] text-white
+                text-sm font-medium rounded-full transition-colors shadow-sm
+                disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Signing in…' : 'Sign In'}
+            </button>
+          </div>
         </form>
 
-        {/* Customer-only footer links */}
-        {isCustomer && (
-          <div className="mt-5 text-center space-y-2">
-            <p className="text-xs text-gray-500">
-              Don&apos;t have an account?{' '}
-              <Link
-                to="/signup"
-                className="text-[#8A956D] hover:text-[#7a8560] font-medium
-                  underline underline-offset-2"
-              >
-                Create one
-              </Link>
-            </p>
+        {/* Footer links */}
+        <div className="mt-8 text-center text-[0.65rem] text-gray-500">
+            {isCustomer ? 'New to ANAYA? ' : 'Create a staff account? '}
             <Link
-              to="/forgot-password"
-              className="block text-xs text-gray-400 hover:text-gray-600"
+              to="/signup"
+              className="text-gray-500 hover:text-gray-800 underline decoration-gray-400 underline-offset-2 ml-1"
             >
-              Forgot password?
+              Create an Account
             </Link>
-          </div>
-        )}
+        </div>
       </div>
-    </div>
+    </AuthLayout>
   )
 }
 
