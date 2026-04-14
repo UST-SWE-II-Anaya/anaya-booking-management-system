@@ -47,6 +47,14 @@ const ProfileEdit = () => {
   return (
     <div className="min-h-screen bg-anaya-bg">
       <div className="max-w-lg mx-auto px-6 py-10">
+        <div className="flex justify-start mb-6">
+          <Link to="/" className="text-sm text-anaya-primary hover:underline flex items-center">
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Go Back to Landing Page
+          </Link>
+        </div>
         <h1 className="text-3xl font-bold text-anaya-text mb-6">
           Edit User Detail
         </h1>
