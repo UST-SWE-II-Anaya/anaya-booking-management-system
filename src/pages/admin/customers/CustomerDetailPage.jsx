@@ -98,7 +98,7 @@ const CustomerDetailPage = () => {
         </div>
 
         <div className="flex gap-3 mt-5 pt-4 border-t border-gray-100">
-          {customer.account_status === 'active' && (
+          {customer.account_status === 'active' ? (
             <button
               onClick={() => setConfirm({
                 newStatus: 'suspended',
@@ -106,9 +106,21 @@ const CustomerDetailPage = () => {
                 message: 'This customer will not be able to make new bookings.',
               })}
               className="px-4 py-2 text-sm border border-yellow-200 text-yellow-700
-                rounded-lg hover:bg-yellow-50 transition-colors"
+                rounded-lg hover:bg-yellow-50 transition-colors cursor-pointer"
             >
               Suspend
+            </button>
+          ) : (
+            <button
+              onClick={() => setConfirm({
+                newStatus: 'active',
+                label: 'Reactivate Account',
+                message: 'Restore this customer\'s access.',
+              })}
+              className="px-4 py-2 text-sm bg-[#8A956D] text-white rounded-lg
+                hover:bg-[#7a8560] transition-colors cursor-pointer"
+            >
+              Reactivate
             </button>
           )}
           {customer.account_status !== 'banned' && (
@@ -120,22 +132,9 @@ const CustomerDetailPage = () => {
                 danger: true,
               })}
               className="px-4 py-2 text-sm border border-red-200 text-red-600
-                rounded-lg hover:bg-red-50 transition-colors"
+                rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
             >
               Ban
-            </button>
-          )}
-          {customer.account_status !== 'active' && (
-            <button
-              onClick={() => setConfirm({
-                newStatus: 'active',
-                label: 'Reactivate Account',
-                message: 'Restore this customer\'s access.',
-              })}
-              className="px-4 py-2 text-sm bg-[#8A956D] text-white rounded-lg
-                hover:bg-[#7a8560] transition-colors"
-            >
-              Reactivate
             </button>
           )}
         </div>

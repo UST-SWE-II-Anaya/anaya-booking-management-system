@@ -251,19 +251,23 @@ const ServicesPage = () => {
                     <div className="flex gap-2">
                       <button
                         onClick={() => setFormTarget(svc)}
-                        className="p-1.5 text-gray-400 hover:text-[#8A956D] rounded
-                          hover:bg-gray-100"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 border border-[#8A956D] 
+                          rounded-lg text-[#8A956D] hover:bg-[#8A956D] hover:text-white 
+                          transition-all text-xs font-medium group"
                         aria-label="Edit"
                       >
-                        <Pencil size={13} />
+                        <Pencil size={14} className="group-hover:text-white" />
+                        Edit
                       </button>
                       <button
                         onClick={() => setDeleteId(svc.id)}
-                        className="p-1.5 text-gray-400 hover:text-red-500 rounded
-                          hover:bg-gray-100"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 border border-red-500 
+                          rounded-lg text-red-500 hover:bg-red-500 hover:text-white 
+                          transition-all text-xs font-medium group"
                         aria-label="Delete"
                       >
-                        <Trash2 size={13} />
+                        <Trash2 size={14} className="group-hover:text-white" />
+                        Delete
                       </button>
                     </div>
                   </td>
