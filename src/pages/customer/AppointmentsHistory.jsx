@@ -65,6 +65,14 @@ const AppointmentsHistory = () => {
         ) : (
           /* Past appointments list */
           <>
+            <div className="flex justify-start mb-6">
+              <Link to="/" className="text-sm text-anaya-primary hover:underline flex items-center">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Go Back to Landing Page
+              </Link>
+            </div>
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold text-anaya-text">
                 Past Appointments

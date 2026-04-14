@@ -67,3 +67,28 @@ export const updateProfile = async (userId, updates) => {
   if (error) throw error
   return data
 }
+
+/**
+ * Sends a password reset email to the user.
+ * @param {string} email
+ * @param {string} [redirectTo] - The URL to redirect to after clicking the link.
+ */
+export const sendPasswordResetEmail = async (email, redirectTo) => {
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: redirectTo || `${window.location.origin}/reset-password`,
+  })
+  if (error) throw error
+  return data
+}
+
+/**
+ * Updates the current user's password.
+ * @param {string} newPassword
+ */
+export const updateUserPassword = async (newPassword) => {
+  const { data, error } = await supabase.auth.updateUser({
+    password: newPassword,
+  })
+  if (error) throw error
+  return data
+}
