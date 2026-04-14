@@ -177,19 +177,19 @@ const CategoriesPage = () => {
                       onClick={() => setFormTarget(cat)}
                       className="flex items-center justify-center p-1.5 border border-[#8A956D] 
                         rounded-lg text-[#8A956D] hover:bg-[#8A956D] hover:text-white 
-                        transition-all group"
+                        transition-all"
                       aria-label="Edit"
                     >
-                      <Pencil size={14} className="group-hover:text-white" />
+                      <Pencil size={14} />
                     </button>
                     <button
                       onClick={() => setDeleteId(cat.id)}
                       className="flex items-center justify-center p-1.5 border border-red-500 
                         rounded-lg text-red-500 hover:bg-red-500 hover:text-white 
-                        transition-all group"
+                        transition-all"
                       aria-label="Delete"
                     >
-                      <Trash2 size={14} className="group-hover:text-white" />
+                      <Trash2 size={14} />
                     </button>
                   </div>
                 </div>

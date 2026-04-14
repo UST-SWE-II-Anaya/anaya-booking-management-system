@@ -173,12 +173,12 @@ const BookingDetailPage = () => {
             variant={booking.downpayment_status}
             label={`Downpayment: ${booking.downpayment_status}`}
           />
-          {['pending', 'paid'].includes(booking.downpayment_status) && payment && (
+          {['pending', 'paid', 'verified'].includes(booking.downpayment_status) && payment && (
             <button
               onClick={() => setVerifyOpen(true)}
               className="text-sm text-[#CE845D] hover:underline"
             >
-              Review GCash Receipt
+              {booking.downpayment_status === 'verified' ? 'View GCash Receipt' : 'Review GCash Receipt'}
             </button>
           )}
           {!booking.balance_settled && booking.booking_status === 'upcoming' && (
