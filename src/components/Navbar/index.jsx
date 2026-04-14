@@ -19,6 +19,7 @@ export default function Navbar() {
 
       {/* Navigation Links */}
       <div className="hidden md:flex items-center space-x-8 text-white text-sm font-medium">
+        <Link to="/" className="hover:opacity-80 transition-opacity">Home</Link>
         <Link to="/categories" className="hover:opacity-80 transition-opacity">Services</Link>
         <Link to="/about" className="hover:opacity-80 transition-opacity">About us</Link>
         <Link to="/location" className="hover:opacity-80 transition-opacity">Location</Link>
