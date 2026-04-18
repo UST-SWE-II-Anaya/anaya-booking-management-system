@@ -12,6 +12,17 @@ export const getCategories = async () => {
   return data
 }
 
+export const getPopularServices = async () => {
+  const { data, error } = await supabase
+    .from('services')
+    .select('id, name, image_url, category_id, service_categories(id, name)')
+    .eq('is_popular', true)
+    .eq('is_active', true)
+    .order('name')
+  if (error) throw error
+  return data
+}
+
 export const createCategory = async (payload) => {
   const { data, error } = await supabase
     .from('service_categories')
