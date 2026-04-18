@@ -5,6 +5,7 @@ import { supabase } from '../../services/supabaseClient'
 import { getMyBookingById } from '../../services/customerBookingService'
 import { formatDuration } from '../../utils/bookingUtils'
 import useAuthStore from '../../store/authStore'
+import useSiteSettings from '../../hooks/useSiteSettings'
 
 const to12h = (time24) => {
   if (!time24) return ''
@@ -52,6 +53,8 @@ const PaymentStep = () => {
   const [receipt, setReceipt] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [dragOver, setDragOver] = useState(false)
+  const { settings } = useSiteSettings()
+  const downpaymentPctLabel = `${settings?.downpayment_rate?.percentage ?? 10}% of Total`
 
   useEffect(() => {
     getMyBookingById(bookingId).then(setBooking)
@@ -317,7 +320,7 @@ const PaymentStep = () => {
                 <span>
                   Down Payment
                   <br />
-                  <span className="text-xs">(10% of Total):</span>
+                  <span className="text-xs">({downpaymentPctLabel}):</span>
                 </span>
                 <span>₱{Number(downPayment).toFixed(2)}</span>
               </div>
