@@ -14,12 +14,12 @@ import { createQueryBuilder } from '../test/mocks/supabaseMock'
 beforeEach(() => vi.clearAllMocks())
 
 describe('getMyAppointments', () => {
-  it('filters bookings by staff_id', async () => {
+  it('filters bookings by staff_id or null (includes unassigned)', async () => {
     const qb = createQueryBuilder({ data: [], error: null, count: 0 })
     supabase.from.mockReturnValue(qb)
     await getMyAppointments('staff-123', {})
     expect(supabase.from).toHaveBeenCalledWith('bookings')
-    expect(qb.eq).toHaveBeenCalledWith('staff_id', 'staff-123')
+    expect(qb.or).toHaveBeenCalledWith('staff_id.eq.staff-123,staff_id.is.null')
   })
 
   it('throws on error', async () => {
