@@ -7,6 +7,7 @@ const APPOINTMENT_SELECT = `
   total_duration_minutes, subtotal, downpayment_amount,
   remaining_balance, booking_status, downpayment_status,
   payment_deadline, balance_settled, created_at,
+  staff_id, professional_preference,
   customer:profiles!bookings_customer_id_fkey(
     id, first_name, last_name, email, phone_number, avatar_url
   ),
@@ -41,7 +42,7 @@ export const getMyAppointments = async (staffId, {
   let query = supabase
     .from('bookings')
     .select(APPOINTMENT_SELECT, { count: 'exact' })
-    .eq('staff_id', staffId)
+    .or(`staff_id.eq.${staffId},staff_id.is.null`)
     .range(page * pageSize, page * pageSize + pageSize - 1)
 
   if (status) query = query.eq('booking_status', status)
@@ -76,12 +77,12 @@ export const getMyDashboardStats = async (staffId) => {
     supabase
       .from('bookings')
       .select('*', { count: 'exact', head: true })
-      .eq('staff_id', staffId)
+      .or(`staff_id.eq.${staffId},staff_id.is.null`)
       .eq('booking_status', 'upcoming'),
     supabase
       .from('bookings')
       .select(APPOINTMENT_SELECT)
-      .eq('staff_id', staffId)
+      .or(`staff_id.eq.${staffId},staff_id.is.null`)
       .eq('appointment_date', todayStr)
       .eq('booking_status', 'upcoming')
       .order('start_time'),
@@ -115,7 +116,7 @@ export const getMyAppointmentById = async (id, staffId) => {
       )
     `)
     .eq('id', id)
-    .eq('staff_id', staffId)
+    .or(`staff_id.eq.${staffId},staff_id.is.null`)
     .single()
   if (error) throw error
   return data
@@ -128,7 +129,7 @@ export const getMyAppointmentDates = async (staffId, year, month) => {
   const { data, error } = await supabase
     .from('bookings')
     .select('appointment_date')
-    .eq('staff_id', staffId)
+    .or(`staff_id.eq.${staffId},staff_id.is.null`)
     .eq('booking_status', 'upcoming')
     .gte('appointment_date', startDate)
     .lte('appointment_date', endDate)
