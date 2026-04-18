@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import PublicLayout from '../../components/PublicLayout'
-import { getCategories } from '../../services/servicesCmsService'
+import { getPopularServices } from '../../services/servicesCmsService'
 import useSiteSettings from '../../hooks/useSiteSettings'
 
 const ValuePropCard = ({ title, description }) => (
@@ -45,7 +45,7 @@ const ServiceCard = ({ title, catId, imgUrl }) => (
 )
 
 export default function HomePage() {
-  const [categories, setCategories] = useState([])
+  const [popularServices, setPopularServices] = useState([])
   const { settings } = useSiteSettings()
 
   const contact = {
@@ -69,8 +69,8 @@ export default function HomePage() {
   }
 
   useEffect(() => {
-    getCategories()
-      .then((data) => setCategories(data.slice(0, 3)))
+    getPopularServices()
+      .then(setPopularServices)
       .catch(console.error)
   }, [])
 
@@ -131,12 +131,19 @@ export default function HomePage() {
           Our most popular services
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-10 max-w-7xl mx-auto">
-          {categories.length > 0 ? (
-            categories.map((cat) => (
-              <ServiceCard key={cat.id} title={cat.name} catId={cat.id} imgUrl={cat.image_url} />
+          {popularServices.length > 0 ? (
+            popularServices.map((svc) => (
+              <ServiceCard
+                key={svc.id}
+                title={svc.name}
+                catId={svc.category_id}
+                imgUrl={svc.image_url}
+              />
             ))
           ) : (
-            <p className="text-gray-500 text-center col-span-1 md:col-span-3">Loading services...</p>
+            <p className="text-gray-500 text-center col-span-1 md:col-span-3">
+              No popular services configured yet.
+            </p>
           )}
         </div>
       </section>
