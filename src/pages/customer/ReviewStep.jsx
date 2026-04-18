@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast'
 import useBookingStore from '../../store/bookingStore'
 import { createBooking } from '../../services/customerBookingService'
 import { formatDuration } from '../../utils/bookingUtils'
+import useSiteSettings from '../../hooks/useSiteSettings'
 
 const to12h = (time24) => {
   const [h, m] = time24.split(':').map(Number)
@@ -28,6 +29,7 @@ const ReviewStep = () => {
   // Tracks a successful submit so the date-guard below doesn't fire
   // and override the post-booking navigation when clearBooking() wipes the dates.
   const submittedRef = useRef(false)
+  const { settings } = useSiteSettings()
 
   if (!submittedRef.current && (!selectedDate || !selectedTime)) {
     navigate('/booking/datetime', { replace: true })
@@ -36,7 +38,9 @@ const ReviewStep = () => {
 
   const subtotal = cart.reduce((sum, s) => sum + Number(s.price), 0)
   const totalDuration = cart.reduce((sum, s) => sum + s.duration_minutes, 0)
-  const downPayment = subtotal * 0.1
+  const downpaymentPct = (settings?.downpayment_rate?.percentage ?? 10) / 100
+  const downPayment = subtotal * downpaymentPct
+  const downpaymentLabel = `${settings?.downpayment_rate?.percentage ?? 10}% of Total`
   const balance = subtotal - downPayment
 
   const [startH, startM] = selectedTime.split(':').map(Number)
@@ -113,8 +117,9 @@ const ReviewStep = () => {
                 Cancellation Policy
               </h2>
               <p className="text-sm text-gray-600 leading-relaxed">
-                You are free to cancel this booking request up to 12 hours of
-                the initial appointment reservation time, as long as you
+                You are free to cancel this booking request up to{' '}
+                <strong>{settings?.cancellation_window?.hours ?? 12} hours</strong>{' '}
+                of the initial appointment reservation time, as long as you
                 haven't completed the down payment step. Please finalize your
                 payment to secure your slot.
               </p>
@@ -144,8 +149,8 @@ const ReviewStep = () => {
                   </span>
                   We will tentatively reserve this time for you! Please
                   complete your payment within the next{' '}
-                  <strong>12 hours</strong> to keep this appointment from
-                  expiring once reserved.
+                  <strong>{settings?.cancellation_window?.hours ?? 12} hours</strong>{' '}
+                  to keep this appointment from expiring once reserved.
                 </li>
               </ul>
             </div>
@@ -219,7 +224,7 @@ const ReviewStep = () => {
                 <span>
                   Down Payment
                   <br />
-                  <span className="text-xs">(10% of Total):</span>
+                  <span className="text-xs">({downpaymentLabel}):</span>
                 </span>
                 <span>₱{downPayment.toFixed(2)}</span>
               </div>
