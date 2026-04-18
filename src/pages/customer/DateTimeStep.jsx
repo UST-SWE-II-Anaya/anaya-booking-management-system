@@ -6,6 +6,7 @@ import { getAvailableSlots } from '../../services/availabilityService'
 import { generateTimeSlots } from '../../utils/bookingUtils'
 import BookingSidebar from '../../components/customer/BookingSidebar'
 import BookingCalendar from '../../components/customer/BookingCalendar'
+import useSiteSettings from '../../hooks/useSiteSettings'
 
 const to12h = (time24) => {
   const [h, m] = time24.split(':').map(Number)
@@ -30,6 +31,7 @@ const DateTimeStep = () => {
   const [slots, setSlots] = useState([])
   const [selectedTime, setSelectedTime] = useState(null)
   const [loadingSlots, setLoadingSlots] = useState(false)
+  const { settings } = useSiteSettings()
 
   if (!staffPreference) {
     navigate('/booking/staff', { replace: true })
@@ -43,7 +45,12 @@ const DateTimeStep = () => {
     const staffId = staffPreference === 'specific' ? selectedStaffId : null
     try {
       const blocked = await getAvailableSlots(staffId, date, staffPreference)
-      setSlots(generateTimeSlots(blocked || []))
+      const slotOptions = {
+        start: settings?.operating_hours?.start ?? '09:00',
+        end: settings?.operating_hours?.end ?? '19:30',
+        stepMinutes: settings?.slot_duration?.minutes ?? 30,
+      }
+      setSlots(generateTimeSlots(blocked || [], slotOptions))
     } finally {
       setLoadingSlots(false)
     }
