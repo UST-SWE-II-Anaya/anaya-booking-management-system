@@ -93,3 +93,8 @@ export const getStaffList = async () => {
   if (error) throw error
   return data
 }
+
+export const getActiveStaffList = async () => {
+  const data = await getStaffList()
+  return (data ?? []).filter((s) => s.is_active !== false)
+}

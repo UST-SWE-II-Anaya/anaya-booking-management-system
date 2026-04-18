@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import clsx from 'clsx'
 import useBookingStore from '../../store/bookingStore'
-import { getStaffList } from '../../services/staffService'
+import { getActiveStaffList } from '../../services/staffService'
 import BookingSidebar from '../../components/customer/BookingSidebar'
 
 const GENERIC_OPTIONS = [
@@ -56,7 +56,7 @@ const StaffStep = () => {
       navigate('/booking/services', { replace: true })
       return
     }
-    getStaffList()
+    getActiveStaffList()
       .then(setStaff)
       .finally(() => setLoading(false))
   }, [])
