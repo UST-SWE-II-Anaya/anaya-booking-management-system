@@ -25,6 +25,7 @@ const SettingsPage = () => {
   const [hours, setHours] = useState({ start: '09:00', end: '19:30' })
   const [downpayment, setDownpayment] = useState(10)
   const [cancellation, setCancellation] = useState(12)
+  const [paymentDeadline, setPaymentDeadline] = useState(12)
   const [slotDuration, setSlotDuration] = useState(30)
   const [contact, setContact] = useState({ phone: '', email: '', address: '' })
 
@@ -34,6 +35,7 @@ const SettingsPage = () => {
         if (s.operating_hours) setHours(s.operating_hours)
         if (s.downpayment_rate) setDownpayment(s.downpayment_rate.percentage)
         if (s.cancellation_window) setCancellation(s.cancellation_window.hours)
+        if (s.payment_deadline_hours) setPaymentDeadline(s.payment_deadline_hours.hours)
         if (s.slot_duration) setSlotDuration(s.slot_duration.minutes)
         if (s.contact_info) setContact(s.contact_info)
       })
@@ -51,6 +53,7 @@ const SettingsPage = () => {
         upsertSetting('operating_hours', hours, user.id),
         upsertSetting('downpayment_rate', { percentage: Number(downpayment) }, user.id),
         upsertSetting('cancellation_window', { hours: Number(cancellation) }, user.id),
+        upsertSetting('payment_deadline_hours', { hours: Number(paymentDeadline) }, user.id),
         upsertSetting('slot_duration', { minutes: Number(slotDuration) }, user.id),
         upsertSetting('contact_info', contact, user.id),
       ])
@@ -113,7 +116,7 @@ const SettingsPage = () => {
       </Section>
 
       <Section title="Booking Rules">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <div>
             <label className="block text-xs text-gray-500 mb-1">
               Downpayment (%)
@@ -143,6 +146,21 @@ const SettingsPage = () => {
             />
             <p className="text-xs text-gray-400 mt-1">
               Customer can cancel up to {cancellation}h before
+            </p>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">
+              Payment Deadline (hrs)
+            </label>
+            <input
+              type="number"
+              min="1"
+              className={inputClass + ' w-full'}
+              value={paymentDeadline}
+              onChange={(e) => setPaymentDeadline(e.target.value)}
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Hours to submit downpayment
             </p>
           </div>
           <div>
