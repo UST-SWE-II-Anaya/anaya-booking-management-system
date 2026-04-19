@@ -18,9 +18,9 @@ vi.mock('../../services/authService', () => ({
 import { signIn, getProfile } from '../../services/authService'
 import LoginPage from './LoginPage'
 
-const renderLogin = () =>
+const renderLogin = ({ portal } = {}) =>
   render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[portal ? `/login?portal=${portal}` : '/login']}>
       <LoginPage />
     </MemoryRouter>
   )
@@ -31,9 +31,9 @@ describe('LoginPage', () => {
   it('redirects admin role to /admin', async () => {
     signIn.mockResolvedValue({ user: { id: 'u1' } })
     getProfile.mockResolvedValue({ role: 'admin' })
-    renderLogin()
+    renderLogin({ portal: 'staff' })
     await userEvent.type(screen.getByLabelText(/email/i), 'admin@anaya.com')
-    await userEvent.type(screen.getByLabelText(/password/i), 'pass')
+    await userEvent.type(screen.getByLabelText(/password/i, { selector: 'input' }), 'pass')
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }))
     await waitFor(() =>
       expect(mockNavigate).toHaveBeenCalledWith('/admin')
@@ -43,9 +43,9 @@ describe('LoginPage', () => {
   it('redirects staff role to /staff', async () => {
     signIn.mockResolvedValue({ user: { id: 'u2' } })
     getProfile.mockResolvedValue({ role: 'staff' })
-    renderLogin()
+    renderLogin({ portal: 'staff' })
     await userEvent.type(screen.getByLabelText(/email/i), 'staff@anaya.com')
-    await userEvent.type(screen.getByLabelText(/password/i), 'pass')
+    await userEvent.type(screen.getByLabelText(/password/i, { selector: 'input' }), 'pass')
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }))
     await waitFor(() =>
       expect(mockNavigate).toHaveBeenCalledWith('/staff')
@@ -56,7 +56,7 @@ describe('LoginPage', () => {
     signIn.mockRejectedValue(new Error('Invalid login credentials'))
     renderLogin()
     await userEvent.type(screen.getByLabelText(/email/i), 'bad@anaya.com')
-    await userEvent.type(screen.getByLabelText(/password/i), 'wrong')
+    await userEvent.type(screen.getByLabelText(/password/i, { selector: 'input' }), 'wrong')
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }))
     await waitFor(() =>
       expect(screen.getByText(/invalid login credentials/i)).toBeInTheDocument()
