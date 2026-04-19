@@ -37,6 +37,7 @@ const AppointmentCard = ({ booking, onViewDetail, onPay, onCancel }) => {
   const deadline = booking.payment_deadline ? new Date(booking.payment_deadline) : null
   const hoursLeft = deadline ? Math.max(0, Math.ceil((deadline - Date.now()) / 3_600_000)) : 0
   const showCountdown = isPending && deadline && deadline > Date.now()
+  const isExpired = isPending && deadline !== null && deadline <= Date.now()
 
   const displayDate = booking.appointment_date
     ? new Date(booking.appointment_date + 'T00:00:00').toLocaleDateString('en-US', {
@@ -96,7 +97,7 @@ const AppointmentCard = ({ booking, onViewDetail, onPay, onCancel }) => {
               className="flex flex-col gap-1.5 items-end"
               onClick={(e) => e.stopPropagation()}
             >
-              {isPending && (
+              {isPending && !isExpired && (
                 <button
                   onClick={() => onPay(booking)}
                   className="bg-anaya-accent hover:bg-anaya-accent-hover text-white text-xs px-4 py-1.5 rounded-full font-medium transition-colors whitespace-nowrap"
@@ -151,11 +152,15 @@ const AppointmentCard = ({ booking, onViewDetail, onPay, onCancel }) => {
             ₱{Number(booking.downpayment_amount).toFixed(2)}
           </span>
         </div>
-        {showCountdown && (
+        {isExpired ? (
+          <span className="text-xs text-red-500 ml-auto">
+            Payment deadline expired — booking cancellation pending
+          </span>
+        ) : showCountdown ? (
           <span className="text-xs text-orange-500 ml-auto">
             Time left to pay: {hoursLeft} hour{hoursLeft !== 1 ? 's' : ''}
           </span>
-        )}
+        ) : null}
       </div>
     </div>
   )
