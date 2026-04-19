@@ -3,11 +3,12 @@ import { supabase } from './supabaseClient'
 
 /**
  * Keys used in site_settings:
- *   operating_hours     → { start: "09:00", end: "19:30" }
- *   downpayment_rate    → { percentage: 10 }
- *   cancellation_window → { hours: 12 }
- *   slot_duration       → { minutes: 30 }
- *   contact_info        → { phone, email, address }
+ *   operating_hours        → { start: "09:00", end: "19:30" }
+ *   downpayment_rate       → { percentage: 10 }
+ *   cancellation_window    → { hours: 12 }
+ *   payment_deadline_hours → { hours: 12 }
+ *   slot_duration          → { minutes: 30 }
+ *   contact_info           → { phone, email, address }
  */
 
 export const getSetting = async (key) => {
