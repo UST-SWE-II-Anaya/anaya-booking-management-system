@@ -116,7 +116,7 @@ const SettingsPage = () => {
       </Section>
 
       <Section title="Booking Rules">
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-xs text-gray-500 mb-1">
               Downpayment (%)
@@ -155,6 +155,7 @@ const SettingsPage = () => {
             <input
               type="number"
               min="1"
+              max="168"
               className={inputClass + ' w-full'}
               value={paymentDeadline}
               onChange={(e) => setPaymentDeadline(e.target.value)}
