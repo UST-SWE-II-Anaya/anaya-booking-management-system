@@ -154,7 +154,7 @@ const AppointmentCard = ({ booking, onViewDetail, onPay, onCancel }) => {
         </div>
         {isExpired ? (
           <span className="text-xs text-red-500 ml-auto">
-            Payment deadline expired — booking cancellation pending
+            Payment deadline passed — booking will be cancelled automatically
           </span>
         ) : showCountdown ? (
           <span className="text-xs text-orange-500 ml-auto">
