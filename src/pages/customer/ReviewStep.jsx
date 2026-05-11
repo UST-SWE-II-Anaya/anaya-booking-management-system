@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import useBookingStore from '../../store/bookingStore'
@@ -24,12 +24,25 @@ const ReviewStep = () => {
     bookingNotes,
     setBookingNotes,
     clearBooking,
+    bookingSessionKey,
+    setBookingSessionKey,
+    previousSessionKey,
   } = useBookingStore()
   const [submitting, setSubmitting] = useState(false)
   // Tracks a successful submit so the date-guard below doesn't fire
   // and override the post-booking navigation when clearBooking() wipes the dates.
   const submittedRef = useRef(false)
   const { settings } = useSiteSettings()
+
+  // Generate a session-scoped idempotency key the first time the user lands
+  // on this page. Persisted in sessionStorage so a back-navigation from the
+  // payment page reuses the same key and the RPC returns the existing booking
+  // instead of creating a duplicate.
+  useEffect(() => {
+    if (!bookingSessionKey) {
+      setBookingSessionKey(crypto.randomUUID())
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!submittedRef.current && (!selectedDate || !selectedTime)) {
     navigate('/booking/datetime', { replace: true })
@@ -64,6 +77,8 @@ const ReviewStep = () => {
     downpayment_amount: downPayment,
     remaining_balance: balance,
     booking_notes: bookingNotes,
+    idempotency_key: bookingSessionKey,
+    replaces_idempotency_key: previousSessionKey,
     services: cart.map((s) => ({
       id: s.id,
       price: s.price,
@@ -75,13 +90,16 @@ const ReviewStep = () => {
     setSubmitting(true)
     try {
       const booking = await createBooking(buildPayload())
-      // Mark as submitted BEFORE clearing store so the guard above
-      // doesn't redirect to /booking/datetime when clearBooking() wipes the dates.
       submittedRef.current = true
-      clearBooking()
       if (goToPayment) {
+        // Do NOT call clearBooking() here — the user may navigate back from
+        // the payment page and the store state must remain intact so that
+        // (a) the review page renders correctly and (b) a repeated "Reserve"
+        // click returns the same booking via the idempotency key.
+        // clearBooking() is called by SuccessPage.handleBackHome() after payment.
         navigate(`/booking/payment/${booking.id}`)
       } else {
+        clearBooking()
         navigate('/dashboard')
       }
     } catch (err) {
