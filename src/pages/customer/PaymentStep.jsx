@@ -16,28 +16,36 @@ const to12h = (time24) => {
 }
 
 // GCash QR placeholder — replace src with actual QR image paths when available
-const GCashCard = ({ number }) => (
+const GCashCard = ({ number, url }) => (
   <div className="flex-1 flex flex-col items-center">
-    <div className="w-full rounded-xl overflow-hidden border-2 border-blue-200 bg-blue-600 flex flex-col items-center py-4 px-3">
+    <div className="w-full rounded-xl overflow-hidden border-2 border-blue-200 bg-blue-600
+      flex flex-col items-center py-4 px-3">
       <div className="flex items-center gap-1.5 mb-3">
         <div className="bg-white rounded-full w-6 h-6 flex items-center justify-center">
           <span className="text-blue-600 font-black text-xs">G</span>
         </div>
         <span className="text-white font-bold text-sm tracking-wide">GCash</span>
       </div>
-      <p className="text-blue-200 text-xs mb-2 font-medium tracking-wider">SCAN TO PAY HERE</p>
-      {/* Replace with: <img src={`/gcash-qr-${number}.png`} ... /> when QR images are available */}
-      <div className="w-28 h-28 bg-white rounded-lg flex items-center justify-center">
-        <div className="grid grid-cols-5 gap-0.5 p-2 w-full h-full">
-          {Array.from({ length: 25 }).map((_, i) => (
-            <div
-              key={i}
-              className="bg-gray-800 rounded-sm"
-              style={{ opacity: Math.random() > 0.4 ? 1 : 0 }}
+      {url ? (
+        <>
+          <p className="text-blue-200 text-xs mb-2 font-medium tracking-wider">
+            SCAN TO PAY HERE
+          </p>
+          <div className="w-28 h-28 bg-white rounded-lg overflow-hidden
+            flex items-center justify-center">
+            <img
+              src={url}
+              alt={`GCash QR ${number}`}
+              className="w-full h-full object-contain"
+              onError={(e) => { e.target.style.display = 'none' }}
             />
-          ))}
+          </div>
+        </>
+      ) : (
+        <div className="w-28 h-28 bg-white/20 rounded-lg flex items-center justify-center">
+          <p className="text-white/70 text-xs text-center px-2">Not Available</p>
         </div>
-      </div>
+      )}
     </div>
     <p className="text-sm font-semibold text-anaya-text mt-2">GCASH #{number}</p>
   </div>
@@ -189,8 +197,13 @@ const PaymentStep = () => {
 
             {/* GCash QR codes */}
             <div className="flex gap-6 mb-8 max-w-sm">
-              <GCashCard number={1} />
-              <GCashCard number={2} />
+              {settings?.gcash_qr_1?.url && <GCashCard number={1} url={settings.gcash_qr_1.url} />}
+              {settings?.gcash_qr_2?.url && <GCashCard number={2} url={settings.gcash_qr_2.url} />}
+              {(!settings?.gcash_qr_1?.url && !settings?.gcash_qr_2?.url) && (
+                <div className="w-full py-4 text-center text-sm text-gray-500 italic bg-gray-50 rounded-xl border border-gray-100">
+                  GCash payment is currently unavailable.
+                </div>
+              )}
             </div>
 
             <h2 className="font-semibold text-anaya-text mb-4">

@@ -9,6 +9,7 @@ import {
   Mail,
   Settings,
   ClipboardList,
+  QrCode,
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -20,6 +21,7 @@ const navItems = [
   { label: 'Leave Requests', to: '/admin/staff/leave-requests', icon: ClipboardList },
   { label: 'Services', to: '/admin/services', icon: Scissors },
   { label: 'Inquiries', to: '/admin/inquiries', icon: Mail },
+  { label: 'QR Payment', to: '/admin/qr-payment', icon: QrCode },
   { label: 'Settings', to: '/admin/settings', icon: Settings },
 ]
 

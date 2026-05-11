@@ -21,6 +21,7 @@ import AdminCategoriesPage from './pages/admin/services/CategoriesPage'
 import AdminServicesPage from './pages/admin/services/ServicesPage'
 import InquiriesPage from './pages/admin/inquiries/InquiriesPage'
 import SettingsPage from './pages/admin/settings/SettingsPage'
+import QRPaymentPage from './pages/admin/qr-payment/QRPaymentPage'
 
 // Staff pages
 import StaffDashboardPage from './pages/staff/DashboardPage'
@@ -88,6 +89,7 @@ const App = () => {
           <Route path="/admin/services/:categoryId" element={<AdminServicesPage />} />
           <Route path="/admin/inquiries" element={<InquiriesPage />} />
           <Route path="/admin/settings" element={<SettingsPage />} />
+          <Route path="/admin/qr-payment" element={<QRPaymentPage />} />
         </Route>
       </Route>
 
