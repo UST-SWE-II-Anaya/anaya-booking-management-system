@@ -13,9 +13,14 @@ const GENERIC_OPTIONS = [
     subtitle: 'for maximum availability',
     icon: (
       <svg viewBox="0 0 40 40" fill="none" className="w-7 h-7 text-blue-400">
-        <circle cx="14" cy="13" r="5" fill="currentColor" opacity="0.7" />
-        <circle cx="26" cy="13" r="5" fill="currentColor" opacity="0.9" />
-        <path d="M4 34c0-6 4.5-10 10-10h12c5.5 0 10 4 10 10" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.7" />
+        {/* Background figure — smaller, offset right */}
+        <circle cx="25" cy="12" r="5" fill="currentColor" opacity="0.45" />
+        <path d="M15 34c0-5.5 4-9 10-9h6c6 0 9 3.5 9 9"
+          stroke="currentColor" strokeWidth="2" fill="none" opacity="0.45" />
+        {/* Foreground figure — larger, offset left */}
+        <circle cx="16" cy="14" r="6" fill="currentColor" opacity="0.9" />
+        <path d="M4 34c0-6 4.5-10 12-10s12 4 12 10"
+          stroke="currentColor" strokeWidth="2" fill="none" opacity="0.9" />
       </svg>
     ),
   },
