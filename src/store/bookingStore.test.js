@@ -9,6 +9,8 @@ const reset = () =>
     selectedDate: null,
     selectedTime: null,
     bookingNotes: '',
+    bookingSessionKey: null,
+    previousSessionKey: null,
   })
 
 describe('bookingStore', () => {
@@ -51,6 +53,33 @@ describe('bookingStore', () => {
     expect(useBookingStore.getState().bookingNotes).toBe('No gel please')
   })
 
+  it('setBookingSessionKey stores the provided key', () => {
+    useBookingStore.getState().setBookingSessionKey('test-uuid-1234')
+    expect(useBookingStore.getState().bookingSessionKey).toBe('test-uuid-1234')
+  })
+
+  it('clearBooking resets bookingSessionKey and previousSessionKey to null', () => {
+    useBookingStore.setState({ bookingSessionKey: 'key', previousSessionKey: 'prev' })
+    useBookingStore.getState().clearBooking()
+    expect(useBookingStore.getState().bookingSessionKey).toBeNull()
+    expect(useBookingStore.getState().previousSessionKey).toBeNull()
+  })
+
+  it('setBookingNotes does not affect bookingSessionKey', () => {
+    useBookingStore.setState({ bookingSessionKey: 'key1' })
+    useBookingStore.getState().setBookingNotes('No gel please')
+    expect(useBookingStore.getState().bookingSessionKey).toBe('key1')
+    expect(useBookingStore.getState().previousSessionKey).toBeNull()
+  })
+
+  it('mutating cart stashes bookingSessionKey into previousSessionKey', () => {
+    useBookingStore.setState({ bookingSessionKey: 'session-1' })
+    useBookingStore.getState().addToCart({ id: 's1' })
+    const s = useBookingStore.getState()
+    expect(s.bookingSessionKey).toBeNull()
+    expect(s.previousSessionKey).toBe('session-1')
+  })
+
   it('clearBooking resets all state', () => {
     useBookingStore.setState({
       cart: [{ id: '1' }],
@@ -58,6 +87,7 @@ describe('bookingStore', () => {
       selectedTime: '10:00',
       staffPreference: 'any_female',
       bookingNotes: 'Note',
+      bookingSessionKey: 'some-uuid',
     })
     useBookingStore.getState().clearBooking()
     const s = useBookingStore.getState()
@@ -66,5 +96,7 @@ describe('bookingStore', () => {
     expect(s.selectedTime).toBeNull()
     expect(s.staffPreference).toBe('any')
     expect(s.bookingNotes).toBe('')
+    expect(s.bookingSessionKey).toBeNull()
+    expect(s.previousSessionKey).toBeNull()
   })
 })
