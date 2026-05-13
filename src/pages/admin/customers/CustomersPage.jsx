@@ -173,7 +173,8 @@ const CustomersPage = () => {
                               id: c.id,
                               action: 'Ban',
                               newStatus: 'banned',
-                              message: `Permanently ban ${c.first_name} ${c.last_name}?`,
+                              message: `Are you sure you want to ban ${c.first_name} ${c.last_name}?`,
+                              description: 'This will permanently ban the account. The user will lose access to the platform and all their data will be retained but inaccessible. This action cannot be undone.',
                               danger: true,
                             })}
                             className="flex items-center gap-1.5 px-2.5 py-1.5 border border-red-500 
@@ -227,6 +228,7 @@ const CustomersPage = () => {
         onConfirm={handleStatusChange}
         title={confirm?.action ?? ''}
         message={confirm?.message ?? ''}
+        description={confirm?.description}
         confirmLabel={confirm?.action}
         danger={confirm?.danger}
       />

@@ -7,11 +7,17 @@ const ConfirmDialog = ({
   onConfirm,
   title,
   message,
+  description,
   confirmLabel = 'Confirm',
   danger = false,
 }) => (
   <Modal open={open} onClose={onClose} title={title} size="sm">
-    <p className="text-sm text-gray-600 mb-6">{message}</p>
+    <p className={`text-sm mb-2 ${description ? 'font-semibold text-gray-800' : 'text-gray-600 mb-6'}`}>
+      {message}
+    </p>
+    {description && (
+      <p className="text-sm text-gray-500 mb-6">{description}</p>
+    )}
     <div className="flex gap-3 justify-end">
       <button
         onClick={onClose}
