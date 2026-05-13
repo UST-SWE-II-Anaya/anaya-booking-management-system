@@ -45,6 +45,7 @@ const BookingsPage = () => {
   const [exportModal, setExportModal] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [exporting, setExporting] = useState(false)
+  const [exportError, setExportError] = useState(null)
   const dropdownRef = useRef(null)
   const pageSize = 20
 
@@ -61,7 +62,7 @@ const BookingsPage = () => {
       .finally(() => setLoading(false))
   }, [status, search, page])
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { load() }, [load])
 
   useEffect(() => {
@@ -77,12 +78,15 @@ const BookingsPage = () => {
 
   const handleQuickExport = async () => {
     setExporting(true)
+    setExportError(null)
     try {
       const data = await exportBookings({
         status: status === 'all' ? undefined : status,
         search: search || undefined,
       })
       downloadCsv(buildCsv(data))
+    } catch (err) {
+      setExportError(err.message)
     } finally {
       setExporting(false)
     }
@@ -150,22 +154,6 @@ const BookingsPage = () => {
                   <button
                     onClick={() => {
                       setDropdownOpen(false)
-                      handleQuickExport()
-                    }}
-                    className="w-full text-left px-4 py-3 text-sm
-                      text-[#4A4A4A] hover:bg-gray-50 transition-colors
-                      border-b border-gray-50"
-                  >
-                    <p className="font-medium text-xs">
-                      Export current view
-                    </p>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      All pages, current filters
-                    </p>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setDropdownOpen(false)
                       setExportModal(true)
                     }}
                     className="w-full text-left px-4 py-3 text-sm
@@ -181,6 +169,12 @@ const BookingsPage = () => {
             </div>
           </div>
         </div>
+
+        {exportError && (
+          <div className="px-5 py-3 bg-red-50 border-b border-red-200">
+            <p className="text-sm text-red-600">{exportError}</p>
+          </div>
+        )}
 
         {loading ? (
           <div className="flex justify-center py-16"><Spinner /></div>
