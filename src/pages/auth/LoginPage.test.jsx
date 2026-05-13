@@ -30,7 +30,7 @@ beforeEach(() => vi.clearAllMocks())
 describe('LoginPage', () => {
   it('redirects admin role to /admin', async () => {
     signIn.mockResolvedValue({ user: { id: 'u1' } })
-    getProfile.mockResolvedValue({ role: 'admin' })
+    getProfile.mockResolvedValue({ role: 'admin', account_status: 'active' })
     renderLogin({ portal: 'staff' })
     await userEvent.type(screen.getByLabelText(/email/i), 'admin@anaya.com')
     await userEvent.type(screen.getByLabelText(/password/i, { selector: 'input' }), 'pass')
@@ -42,13 +42,25 @@ describe('LoginPage', () => {
 
   it('redirects staff role to /staff', async () => {
     signIn.mockResolvedValue({ user: { id: 'u2' } })
-    getProfile.mockResolvedValue({ role: 'staff' })
+    getProfile.mockResolvedValue({ role: 'staff', account_status: 'active' })
     renderLogin({ portal: 'staff' })
     await userEvent.type(screen.getByLabelText(/email/i), 'staff@anaya.com')
     await userEvent.type(screen.getByLabelText(/password/i, { selector: 'input' }), 'pass')
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }))
     await waitFor(() =>
       expect(mockNavigate).toHaveBeenCalledWith('/staff')
+    )
+  })
+
+  it('redirects to /account-inactive when account is suspended', async () => {
+    signIn.mockResolvedValue({ user: { id: 'u3' } })
+    getProfile.mockResolvedValue({ role: 'customer', account_status: 'suspended' })
+    renderLogin()
+    await userEvent.type(screen.getByLabelText(/email/i), 'suspended@anaya.com')
+    await userEvent.type(screen.getByLabelText(/password/i, { selector: 'input' }), 'pass')
+    await userEvent.click(screen.getByRole('button', { name: /sign in/i }))
+    await waitFor(() =>
+      expect(mockNavigate).toHaveBeenCalledWith('/account-inactive')
     )
   })
 
