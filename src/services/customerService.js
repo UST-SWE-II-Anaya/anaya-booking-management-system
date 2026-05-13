@@ -47,10 +47,14 @@ export const getCustomerBookings = async (customerId) => {
   return data
 }
 
-export const updateAccountStatus = async (id, accountStatus) => {
+export const updateAccountStatus = async (id, accountStatus, reason = null) => {
   const { data, error } = await supabase
     .from('profiles')
-    .update({ account_status: accountStatus, updated_at: new Date().toISOString() })
+    .update({
+      account_status: accountStatus,
+      deactivation_reason: accountStatus === 'active' ? null : reason,
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', id)
     .select()
     .single()
