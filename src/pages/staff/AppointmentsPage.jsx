@@ -5,6 +5,7 @@ import {
   getMyAppointments,
   getMyAppointmentById,
   getMyAppointmentDates,
+  claimAppointment,
 } from '../../services/staffAppointmentService'
 import useAuthStore from '../../store/authStore'
 import Badge from '../../components/common/Badge'
@@ -43,7 +44,7 @@ const formatDeadlineCountdown = (deadlineStr) => {
   return hours > 0 ? `${hours}h ${mins}m left` : `${mins}m left`
 }
 
-const AppointmentCard = ({ appt, onVerifyClick }) => {
+const AppointmentCard = ({ appt, onVerifyClick, onClaimClick }) => {
   const countdown = formatDeadlineCountdown(appt.payment_deadline)
 
   return (
@@ -66,6 +67,12 @@ const AppointmentCard = ({ appt, onVerifyClick }) => {
             variant={appt.downpayment_status}
             label={appt.downpayment_status}
           />
+          {!appt.staff_id && (
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full
+              bg-orange-100 text-orange-600 uppercase tracking-wide">
+              Unassigned
+            </span>
+          )}
         </div>
       </div>
 
@@ -114,7 +121,16 @@ const AppointmentCard = ({ appt, onVerifyClick }) => {
       </div>
 
       {/* Action */}
-      {appt.downpayment_status === 'paid' && (
+      {!appt.staff_id && appt.booking_status === 'upcoming' && (
+        <button
+          onClick={() => onClaimClick(appt.id)}
+          className="w-full py-2 bg-[#8A956D] hover:bg-[#7a8560] text-white text-sm
+            font-medium rounded-lg transition-colors"
+        >
+          Take this session
+        </button>
+      )}
+      {appt.staff_id && appt.downpayment_status === 'paid' && (
         <button
           onClick={() => onVerifyClick(appt.id)}
           className="w-full py-2 bg-[#CE845D] hover:bg-[#b87652] text-white text-sm
@@ -123,7 +139,7 @@ const AppointmentCard = ({ appt, onVerifyClick }) => {
           Review Payment
         </button>
       )}
-      {appt.downpayment_status === 'pending' && (
+      {appt.staff_id && appt.downpayment_status === 'pending' && (
         <button
           onClick={() => onVerifyClick(appt.id)}
           className="w-full py-2 bg-[#8A956D] hover:bg-[#7a8560] text-white text-sm
@@ -189,6 +205,15 @@ const StaffAppointmentsPage = () => {
       setError(err.message)
     } finally {
       setLoadingVerify(false)
+    }
+  }
+
+  const handleClaimClick = async (id) => {
+    try {
+      await claimAppointment(id, staffId)
+      load()
+    } catch (err) {
+      setError(err.message)
     }
   }
 
@@ -315,6 +340,7 @@ const StaffAppointmentsPage = () => {
                       key={appt.id}
                       appt={appt}
                       onVerifyClick={handleVerifyClick}
+                      onClaimClick={handleClaimClick}
                     />
                   ))
                 )}
@@ -347,6 +373,7 @@ const StaffAppointmentsPage = () => {
                   key={appt.id}
                   appt={appt}
                   onVerifyClick={handleVerifyClick}
+                  onClaimClick={handleClaimClick}
                 />
               ))}
             </div>
