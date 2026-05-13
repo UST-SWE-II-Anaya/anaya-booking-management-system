@@ -1,0 +1,51 @@
+<h2>Design: Architecture & Code Structure</h2>
+<p class="subtitle">Section 3 of 3 — Where things live and how they connect</p>
+
+<div class="section">
+  <h3>New files</h3>
+  <div style="font-size:12px;color:#4A4A4A;line-height:2">
+    <div style="background:#f9fafb;border-radius:8px;padding:14px;font-family:monospace">
+      <div><span style="color:#8A956D">src/services/bookingService.js</span> — add <code>exportBookings(filters)</code></div>
+      <div style="margin-top:4px"><span style="color:#8A956D">src/components/admin/bookings/ExportBookingsModal.jsx</span> — new modal component</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Changes to existing files</h3>
+  <div style="font-size:12px;color:#4A4A4A;background:#f9fafb;border-radius:8px;padding:14px;font-family:monospace;line-height:2">
+    <div><span style="color:#CE845D">src/pages/admin/bookings/BookingsPage.jsx</span> — add split button + dropdown, wire modal</div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Service function: <code>exportBookings</code></h3>
+  <p style="font-size:12px;color:#4A4A4A">Lives in <code>bookingService.js</code>. Accepts <code>{ status, dateFrom, dateTo }</code> — all optional. Fetches <strong>all matching rows</strong> (no pagination), returns an array. CSV generation happens client-side in the component using a plain string builder — no external library needed.</p>
+  <div style="background:#f9fafb;border-radius:8px;padding:14px;font-size:11px;color:#4A4A4A;font-family:monospace;line-height:1.8">
+    exportBookings({ status?, dateFrom?, dateTo? })<br>
+    → filters bookings by appointment_date range and/or status<br>
+    → selects same BOOKING_SELECT fields as getBookings<br>
+    → no .range() call — fetches all matching rows<br>
+    → returns raw data array (caller builds CSV)
+  </div>
+</div>
+
+<div class="section">
+  <h3>CSV generation (client-side)</h3>
+  <p style="font-size:12px;color:#4A4A4A">A small utility function inside the modal component converts the data array to a CSV string, then triggers a browser download via a temporary <code>&lt;a&gt;</code> element. No npm packages needed.</p>
+  <div style="background:#f9fafb;border-radius:8px;padding:14px;font-size:11px;color:#6b7280;line-height:1.8;font-family:monospace">
+    columns: Ref ID, Customer Name, Email, Phone, Date, Time,<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Services, Subtotal, Downpayment, Remaining Balance,<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Booking Status, Payment Status, Staff, Notes, Created At<br><br>
+    filename: bookings-export-YYYY-MM-DD.csv
+  </div>
+</div>
+
+<div class="section">
+  <h3>Data flow</h3>
+  <div style="font-size:12px;color:#4A4A4A;background:#f9fafb;border-radius:8px;padding:14px;line-height:2">
+    <div>1. Admin clicks <strong>"↓ Export CSV"</strong> → calls <code>exportBookings({ status, search: undefined })</code> directly, downloads file</div>
+    <div>2. Admin clicks <strong>"▾" → Custom export…"</strong> → opens <code>ExportBookingsModal</code></div>
+    <div>3. Admin sets date range + status → clicks Download → modal calls <code>exportBookings({ status, dateFrom, dateTo })</code>, builds CSV, triggers download, closes modal</div>
+  </div>
+</div>

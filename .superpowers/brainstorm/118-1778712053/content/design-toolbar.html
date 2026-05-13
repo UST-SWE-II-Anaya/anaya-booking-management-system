@@ -1,0 +1,56 @@
+<h2>Design: Export Button + Dropdown</h2>
+<p class="subtitle">Section 1 of 3 — Toolbar & dropdown behavior</p>
+
+<div class="section">
+  <h3>Toolbar layout</h3>
+  <div class="mockup">
+    <div class="mockup-header">BookingsPage toolbar</div>
+    <div class="mockup-body" style="padding:10px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <div style="display:flex;gap:4px">
+        <span style="padding:4px 10px;background:#8A956D;color:white;border-radius:6px;font-size:11px;font-weight:500">All</span>
+        <span style="padding:4px 10px;background:#f3f4f6;color:#6b7280;border-radius:6px;font-size:11px">Upcoming</span>
+        <span style="padding:4px 10px;background:#f3f4f6;color:#6b7280;border-radius:6px;font-size:11px">Finished</span>
+        <span style="padding:4px 10px;background:#f3f4f6;color:#6b7280;border-radius:6px;font-size:11px">Cancelled</span>
+        <span style="padding:4px 10px;background:#f3f4f6;color:#6b7280;border-radius:6px;font-size:11px">No Show</span>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <input style="border:1px solid #e5e7eb;border-radius:6px;padding:5px 10px;font-size:11px;width:180px;color:#9ca3af" placeholder="Search by reference ID…" readonly />
+        <div style="display:flex;border:1px solid #8A956D;border-radius:6px;overflow:hidden;position:relative">
+          <button style="font-size:11px;padding:5px 12px;background:#8A956D;color:white;border:none;border-right:1px solid rgba(255,255,255,0.25);font-weight:500">↓ Export CSV</button>
+          <button style="font-size:11px;padding:5px 8px;background:#8A956D;color:white;border:none">▾</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Dropdown options (on ▾ click)</h3>
+  <div class="mockup">
+    <div class="mockup-header">Dropdown menu</div>
+    <div class="mockup-body" style="padding:14px;display:flex;justify-content:flex-end">
+      <div style="width:200px;background:white;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.08);overflow:hidden;font-size:12px">
+        <div style="padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;color:#4A4A4A;border-bottom:1px solid #f3f4f6">
+          <span>↓</span>
+          <div>
+            <div style="font-weight:500">Export current view</div>
+            <div style="font-size:10px;color:#9ca3af">All pages, current filters</div>
+          </div>
+        </div>
+        <div style="padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;color:#4A4A4A">
+          <span>⊞</span>
+          <div>
+            <div style="font-weight:500">Custom export…</div>
+            <div style="font-size:10px;color:#9ca3af">Choose date range & status</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:12px;color:#6b7280;margin-top:8px">The main "↓ Export CSV" button is a shortcut for "Export current view" — same behavior, one less click for the common case.</p>
+</div>
+
+<div class="section">
+  <h3>What "Export current view" exports</h3>
+  <p style="font-size:12px;color:#4A4A4A">Fetches <strong>all records</strong> matching the current status filter + search query — not just the current page. If the admin is on "Finished" with no search, they get every finished booking.</p>
+</div>

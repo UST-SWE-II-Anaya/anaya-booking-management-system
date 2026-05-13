@@ -1,0 +1,77 @@
+<h2>Design: Custom Export Modal</h2>
+<p class="subtitle">Section 2 of 3 — Date range + status controls</p>
+
+<div class="section">
+  <h3>Modal layout</h3>
+  <div class="mockup">
+    <div class="mockup-header">Custom Export modal</div>
+    <div class="mockup-body" style="padding:24px;display:flex;justify-content:center">
+      <div style="width:420px;background:white;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.1);overflow:hidden;font-size:12px">
+        <div style="padding:16px 20px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:600;font-size:14px;color:#2C2C2C">Custom Export</div>
+            <div style="font-size:11px;color:#9ca3af;margin-top:2px">Downloads a CSV file</div>
+          </div>
+          <span style="color:#9ca3af;cursor:pointer;font-size:16px">✕</span>
+        </div>
+        <div style="padding:20px">
+          <div style="margin-bottom:16px">
+            <div style="font-size:11px;font-weight:500;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Date Range</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div>
+                <div style="font-size:10px;color:#9ca3af;margin-bottom:3px">From</div>
+                <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 10px;color:#4A4A4A">May 1, 2026</div>
+              </div>
+              <div>
+                <div style="font-size:10px;color:#9ca3af;margin-bottom:3px">To</div>
+                <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 10px;color:#4A4A4A">May 31, 2026</div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-bottom:20px">
+            <div style="font-size:11px;font-weight:500;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Booking Status</div>
+            <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 10px;color:#4A4A4A;display:flex;justify-content:space-between">
+              <span>All statuses</span><span style="color:#9ca3af">▾</span>
+            </div>
+          </div>
+          <div style="background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:20px;font-size:11px;color:#6b7280">
+            <div style="font-weight:500;color:#4A4A4A;margin-bottom:6px">Columns included in export</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              <span style="background:white;border:1px solid #e5e7eb;padding:2px 7px;border-radius:4px">Ref ID</span>
+              <span style="background:white;border:1px solid #e5e7eb;padding:2px 7px;border-radius:4px">Customer Name</span>
+              <span style="background:white;border:1px solid #e5e7eb;padding:2px 7px;border-radius:4px">Email</span>
+              <span style="background:white;border:1px solid #e5e7eb;padding:2px 7px;border-radius:4px">Phone</span>
+              <span style="background:white;border:1px solid #e5e7eb;padding:2px 7px;border-radius:4px">Date</span>
+              <span style="background:white;border:1px solid #e5e7eb;padding:2px 7px;border-radius:4px">Time</span>
+              <span style="background:white;border:1px solid #e5e7eb;padding:2px 7px;border-radius:4px">Services</span>
+              <span style="background:white;border:1px solid #e5e7eb;padding:2px 7px;border-radius:4px">Subtotal</span>
+              <span style="background:white;border:1px solid #e5e7eb;padding:2px 7px;border-radius:4px">Downpayment</span>
+              <span style="background:white;border:1px solid #e5e7eb;padding:2px 7px;border-radius:4px">Remaining Balance</span>
+              <span style="background:white;border:1px solid #e5e7eb;padding:2px 7px;border-radius:4px">Booking Status</span>
+              <span style="background:white;border:1px solid #e5e7eb;padding:2px 7px;border-radius:4px">Payment Status</span>
+              <span style="background:white;border:1px solid #e5e7eb;padding:2px 7px;border-radius:4px">Staff</span>
+              <span style="background:white;border:1px solid #e5e7eb;padding:2px 7px;border-radius:4px">Notes</span>
+              <span style="background:white;border:1px solid #e5e7eb;padding:2px 7px;border-radius:4px">Created At</span>
+            </div>
+            <div style="margin-top:6px;color:#9ca3af;font-size:10px">Fixed columns — all fields always included. No column picker needed for now.</div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px">
+            <button style="font-size:12px;padding:7px 16px;border:1px solid #e5e7eb;border-radius:6px;background:white;color:#6b7280">Cancel</button>
+            <button style="font-size:12px;padding:7px 16px;background:#8A956D;color:white;border:none;border-radius:6px;font-weight:500">↓ Download CSV</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Notes</h3>
+  <ul style="font-size:12px;color:#4A4A4A;line-height:1.8;padding-left:16px">
+    <li>Date range is optional — leaving both blank exports all dates for the selected status</li>
+    <li>Status defaults to "All statuses" but can be narrowed to any single status</li>
+    <li>All columns are always included — no column picker keeps the modal simple</li>
+    <li>Services column: comma-separated list of service names per booking row</li>
+    <li>Filename: <code style="background:#f3f4f6;padding:1px 5px;border-radius:3px">bookings-export-YYYY-MM-DD.csv</code></li>
+  </ul>
+</div>

@@ -1,0 +1,94 @@
+<h2>Export Feature — 3 Approaches</h2>
+<p class="subtitle">How should the export button work? Pick the approach that feels right.</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Single Export Button</h3>
+      <p>One "Export CSV" button in the toolbar. Always exports all records matching the current status filter and search — all pages, not just the visible one. Fast and frictionless.</p>
+      <div class="mockup" style="margin-top:12px">
+        <div class="mockup-header">Toolbar preview</div>
+        <div class="mockup-body" style="display:flex;align-items:center;gap:8px;padding:10px 14px;flex-wrap:wrap">
+          <div style="display:flex;gap:4px">
+            <span style="padding:4px 10px;background:#8A956D;color:white;border-radius:6px;font-size:11px">All</span>
+            <span style="padding:4px 10px;background:#f3f4f6;color:#6b7280;border-radius:6px;font-size:11px">Upcoming</span>
+            <span style="padding:4px 10px;background:#f3f4f6;color:#6b7280;border-radius:6px;font-size:11px">Finished</span>
+            <span style="padding:4px 10px;background:#f3f4f6;color:#6b7280;border-radius:6px;font-size:11px">Cancelled</span>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+            <input class="mock-input" placeholder="Search by reference ID…" style="width:180px;font-size:11px" />
+            <button class="mock-button" style="font-size:11px;padding:5px 12px;background:#8A956D;color:white;border:none;border-radius:6px">↓ Export CSV</button>
+          </div>
+        </div>
+      </div>
+      <div class="pros-cons" style="margin-top:10px">
+        <div class="pros"><h4>Pros</h4><ul><li>Zero extra clicks</li><li>Predictable behavior</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>No date range option</li><li>Less flexible for reports</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Export Button + Dropdown <span style="font-size:11px;background:#8A956D20;color:#8A956D;padding:2px 6px;border-radius:4px;margin-left:6px">Recommended</span></h3>
+      <p>A split button: clicking "Export CSV" immediately exports the current view. A small chevron opens a dropdown with a "Custom export…" option that launches a modal with date range + status controls.</p>
+      <div class="mockup" style="margin-top:12px">
+        <div class="mockup-header">Toolbar preview</div>
+        <div class="mockup-body" style="display:flex;align-items:center;gap:8px;padding:10px 14px;flex-wrap:wrap">
+          <div style="display:flex;gap:4px">
+            <span style="padding:4px 10px;background:#8A956D;color:white;border-radius:6px;font-size:11px">All</span>
+            <span style="padding:4px 10px;background:#f3f4f6;color:#6b7280;border-radius:6px;font-size:11px">Upcoming</span>
+            <span style="padding:4px 10px;background:#f3f4f6;color:#6b7280;border-radius:6px;font-size:11px">Finished</span>
+            <span style="padding:4px 10px;background:#f3f4f6;color:#6b7280;border-radius:6px;font-size:11px">Cancelled</span>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+            <input class="mock-input" placeholder="Search by reference ID…" style="width:180px;font-size:11px" />
+            <div style="display:flex;border:1px solid #8A956D;border-radius:6px;overflow:hidden">
+              <button style="font-size:11px;padding:5px 12px;background:#8A956D;color:white;border:none;border-right:1px solid rgba(255,255,255,0.3)">↓ Export CSV</button>
+              <button style="font-size:11px;padding:5px 8px;background:#8A956D;color:white;border:none">▾</button>
+            </div>
+          </div>
+        </div>
+        <div style="padding:4px 14px 10px;font-size:11px;color:#6b7280">▾ dropdown reveals: "Export current view" · "Custom export…"</div>
+      </div>
+      <div class="pros-cons" style="margin-top:10px">
+        <div class="pros"><h4>Pros</h4><ul><li>Fast path for common case</li><li>Date range available when needed</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Split button slightly less obvious</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Always-Modal Export</h3>
+      <p>One "Export" button always opens a modal. The modal pre-fills from the current filter but lets the admin change status, date range, and choose which columns to include before downloading.</p>
+      <div class="mockup" style="margin-top:12px">
+        <div class="mockup-header">Modal preview</div>
+        <div class="mockup-body" style="padding:14px;font-size:11px;color:#4A4A4A">
+          <div style="font-weight:600;margin-bottom:10px">Export Bookings</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <div><div style="color:#9ca3af;margin-bottom:3px">Status</div><div style="border:1px solid #e5e7eb;border-radius:4px;padding:4px 8px">All statuses ▾</div></div>
+            <div><div style="color:#9ca3af;margin-bottom:3px">Date range</div><div style="border:1px solid #e5e7eb;border-radius:4px;padding:4px 8px">May 1 – May 31 ▾</div></div>
+          </div>
+          <div style="color:#9ca3af;margin-bottom:4px">Include columns</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+            <span style="background:#8A956D20;color:#8A956D;padding:2px 8px;border-radius:4px">Customer</span>
+            <span style="background:#8A956D20;color:#8A956D;padding:2px 8px;border-radius:4px">Date/Time</span>
+            <span style="background:#8A956D20;color:#8A956D;padding:2px 8px;border-radius:4px">Services</span>
+            <span style="background:#8A956D20;color:#8A956D;padding:2px 8px;border-radius:4px">Payment</span>
+            <span style="background:#e5e7eb;color:#9ca3af;padding:2px 8px;border-radius:4px">Staff</span>
+            <span style="background:#e5e7eb;color:#9ca3af;padding:2px 8px;border-radius:4px">Notes</span>
+          </div>
+          <button style="background:#8A956D;color:white;border:none;padding:6px 16px;border-radius:6px;font-size:11px">Download CSV</button>
+        </div>
+      </div>
+      <div class="pros-cons" style="margin-top:10px">
+        <div class="pros"><h4>Pros</h4><ul><li>Most control over output</li><li>Column selection useful for accountants</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Extra click every time</li><li>More to build</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

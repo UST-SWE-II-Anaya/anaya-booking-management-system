@@ -62,7 +62,7 @@ const BookingsPage = () => {
       .finally(() => setLoading(false))
   }, [status, search, page])
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   useEffect(() => { load() }, [load])
 
   useEffect(() => {

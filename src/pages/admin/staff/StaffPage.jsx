@@ -162,7 +162,7 @@ const StaffPage = () => {
                         <Eye size={14} className="group-hover:text-white" />
                         View
                       </button>
-                      {s.account_status === 'active' ? (
+                      {s.account_status === 'active' && (
                         <button
                           onClick={() => setDeactivateModal({
                             id: s.id,
@@ -176,7 +176,8 @@ const StaffPage = () => {
                           <PauseCircle size={14} className="group-hover:text-white" />
                           Suspend
                         </button>
-                      ) : (
+                      )}
+                      {s.account_status === 'suspended' && (
                         <button
                           onClick={() => setConfirm({
                             id: s.id,
