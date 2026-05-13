@@ -40,7 +40,7 @@
 **Files:**
 - Supabase migration (via MCP tool or Supabase dashboard)
 
-- [ ] **Step 1: Apply migration**
+- [x] **Step 1: Apply migration**
 
 Use the `mcp__supabase-mcp-server__apply_migration` tool (or paste into the Supabase dashboard SQL editor):
 
@@ -48,7 +48,7 @@ Use the `mcp__supabase-mcp-server__apply_migration` tool (or paste into the Supa
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS deactivation_reason TEXT NULL;
 ```
 
-- [ ] **Step 2: Verify column exists**
+- [x] **Step 2: Verify column exists**
 
 Run in Supabase SQL editor or via `mcp__supabase-mcp-server__execute_sql`:
 
@@ -60,7 +60,7 @@ WHERE table_name = 'profiles' AND column_name = 'deactivation_reason';
 
 Expected: one row returned with `data_type = 'text'` and `is_nullable = 'YES'`.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add -A
@@ -75,7 +75,7 @@ git commit -m "feat: add deactivation_reason column to profiles"
 - Modify: `src/services/customerService.js`
 - Modify: `src/services/customerService.test.js`
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 Replace the contents of the `describe('updateAccountStatus')` block in `src/services/customerService.test.js`:
 
@@ -127,7 +127,7 @@ describe('updateAccountStatus', () => {
 })
 ```
 
-- [ ] **Step 2: Run tests — expect FAIL**
+- [x] **Step 2: Run tests — expect FAIL**
 
 ```bash
 npm test -- customerService.test.js
@@ -135,7 +135,7 @@ npm test -- customerService.test.js
 
 Expected: tests fail because `updateAccountStatus` does not yet accept or write `deactivation_reason`.
 
-- [ ] **Step 3: Update `updateAccountStatus` in customerService.js**
+- [x] **Step 3: Update `updateAccountStatus` in customerService.js**
 
 Replace the `updateAccountStatus` function (lines 50–59 of `src/services/customerService.js`):
 
@@ -156,7 +156,7 @@ export const updateAccountStatus = async (id, accountStatus, reason = null) => {
 }
 ```
 
-- [ ] **Step 4: Run tests — expect PASS**
+- [x] **Step 4: Run tests — expect PASS**
 
 ```bash
 npm test -- customerService.test.js
@@ -164,7 +164,7 @@ npm test -- customerService.test.js
 
 Expected: all tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/services/customerService.js src/services/customerService.test.js
@@ -179,7 +179,7 @@ git commit -m "feat: pass deactivation_reason through updateAccountStatus"
 - Modify: `src/services/staffService.js`
 - Modify: `src/services/staffService.test.js`
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 Open `src/services/staffService.test.js` and add/replace with:
 
@@ -233,7 +233,7 @@ describe('activateStaff', () => {
 })
 ```
 
-- [ ] **Step 2: Run tests — expect FAIL**
+- [x] **Step 2: Run tests — expect FAIL**
 
 ```bash
 npm test -- staffService.test.js
@@ -241,7 +241,7 @@ npm test -- staffService.test.js
 
 Expected: tests fail because `deactivateStaff` does not accept `reason` and `activateStaff` does not clear `deactivation_reason`.
 
-- [ ] **Step 3: Update `deactivateStaff` and `activateStaff` in staffService.js**
+- [x] **Step 3: Update `deactivateStaff` and `activateStaff` in staffService.js**
 
 Replace lines 69–88 of `src/services/staffService.js`:
 
@@ -277,7 +277,7 @@ export const activateStaff = async (id) => {
 }
 ```
 
-- [ ] **Step 4: Run tests — expect PASS**
+- [x] **Step 4: Run tests — expect PASS**
 
 ```bash
 npm test -- staffService.test.js
@@ -285,7 +285,7 @@ npm test -- staffService.test.js
 
 Expected: all tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/services/staffService.js src/services/staffService.test.js
@@ -300,7 +300,7 @@ git commit -m "feat: pass deactivation_reason through deactivateStaff and activa
 - Create: `src/components/admin/accounts/DeactivateAccountModal.jsx`
 - Create: `src/components/admin/accounts/DeactivateAccountModal.test.jsx`
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 Create `src/components/admin/accounts/DeactivateAccountModal.test.jsx`:
 
@@ -360,7 +360,7 @@ describe('DeactivateAccountModal', () => {
 })
 ```
 
-- [ ] **Step 2: Run tests — expect FAIL**
+- [x] **Step 2: Run tests — expect FAIL**
 
 ```bash
 npm test -- DeactivateAccountModal.test.jsx
@@ -368,7 +368,7 @@ npm test -- DeactivateAccountModal.test.jsx
 
 Expected: fails — component file does not exist.
 
-- [ ] **Step 3: Create the component**
+- [x] **Step 3: Create the component**
 
 Create `src/components/admin/accounts/DeactivateAccountModal.jsx`:
 
@@ -459,7 +459,7 @@ const DeactivateAccountModal = ({ open, onClose, onConfirm, userName, userRole, 
 export default DeactivateAccountModal
 ```
 
-- [ ] **Step 4: Run tests — expect PASS**
+- [x] **Step 4: Run tests — expect PASS**
 
 ```bash
 npm test -- DeactivateAccountModal.test.jsx
@@ -467,7 +467,7 @@ npm test -- DeactivateAccountModal.test.jsx
 
 Expected: all 6 tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/components/admin/accounts/
@@ -483,7 +483,7 @@ git commit -m "feat: add DeactivateAccountModal with required reason field"
 
 No unit tests for this page — it is a display component that reads from the Zustand store; the redirect logic that populates the store is tested via route guard and login tests in Tasks 6.
 
-- [ ] **Step 1: Create the page**
+- [x] **Step 1: Create the page**
 
 Create `src/pages/AccountInactivePage/index.jsx`:
 
@@ -581,7 +581,7 @@ const AccountInactivePage = () => {
 export default AccountInactivePage
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add src/pages/AccountInactivePage/
@@ -604,7 +604,7 @@ git commit -m "feat: add AccountInactivePage with reason display and sign-out"
 
 ### 6a — AdminRoute
 
-- [ ] **Step 1: Add failing test to AdminRoute.test.jsx**
+- [x] **Step 1: Add failing test to AdminRoute.test.jsx**
 
 Append this test inside the existing `describe('AdminRoute')` block in `src/components/layout/AdminRoute.test.jsx`:
 
@@ -638,7 +638,7 @@ it('renders children when role is admin', () => {
 })
 ```
 
-- [ ] **Step 2: Run tests — expect FAIL**
+- [x] **Step 2: Run tests — expect FAIL**
 
 ```bash
 npm test -- AdminRoute.test.jsx
@@ -646,7 +646,7 @@ npm test -- AdminRoute.test.jsx
 
 Expected: the new suspended test fails; the active test may also fail if it doesn't reach the outlet without `account_status: 'active'`.
 
-- [ ] **Step 3: Update AdminRoute.jsx**
+- [x] **Step 3: Update AdminRoute.jsx**
 
 Replace the full content of `src/components/layout/AdminRoute.jsx`:
 
@@ -680,7 +680,7 @@ const AdminRoute = () => {
 export default AdminRoute
 ```
 
-- [ ] **Step 4: Run tests — expect PASS**
+- [x] **Step 4: Run tests — expect PASS**
 
 ```bash
 npm test -- AdminRoute.test.jsx
@@ -690,7 +690,7 @@ Expected: all tests pass.
 
 ### 6b — StaffRoute
 
-- [ ] **Step 5: Add failing test to StaffRoute.test.jsx**
+- [x] **Step 5: Add failing test to StaffRoute.test.jsx**
 
 Open `src/components/layout/StaffRoute.test.jsx`. Append inside `describe('StaffRoute')`:
 
@@ -717,13 +717,13 @@ it('redirects to /account-inactive when staff is suspended', () => {
 
 Also update the existing active test to include `account_status: 'active'` on the profile.
 
-- [ ] **Step 6: Run tests — expect FAIL**
+- [x] **Step 6: Run tests — expect FAIL**
 
 ```bash
 npm test -- StaffRoute.test.jsx
 ```
 
-- [ ] **Step 7: Update StaffRoute.jsx**
+- [x] **Step 7: Update StaffRoute.jsx**
 
 Replace the full content of `src/components/layout/StaffRoute.jsx`:
 
@@ -757,7 +757,7 @@ const StaffRoute = () => {
 export default StaffRoute
 ```
 
-- [ ] **Step 8: Run tests — expect PASS**
+- [x] **Step 8: Run tests — expect PASS**
 
 ```bash
 npm test -- StaffRoute.test.jsx
@@ -765,7 +765,7 @@ npm test -- StaffRoute.test.jsx
 
 ### 6c — CustomerRoute
 
-- [ ] **Step 9: Add failing test to CustomerRoute.test.jsx**
+- [x] **Step 9: Add failing test to CustomerRoute.test.jsx**
 
 Open `src/components/layout/CustomerRoute.test.jsx`. Append inside `describe('CustomerRoute')`:
 
@@ -792,13 +792,13 @@ it('redirects to /account-inactive when customer is suspended', () => {
 
 Also update the existing active test to include `account_status: 'active'` on the profile.
 
-- [ ] **Step 10: Run tests — expect FAIL**
+- [x] **Step 10: Run tests — expect FAIL**
 
 ```bash
 npm test -- CustomerRoute.test.jsx
 ```
 
-- [ ] **Step 11: Update CustomerRoute.jsx**
+- [x] **Step 11: Update CustomerRoute.jsx**
 
 Replace the full content of `src/components/layout/CustomerRoute.jsx`:
 
@@ -832,7 +832,7 @@ const CustomerRoute = () => {
 export default CustomerRoute
 ```
 
-- [ ] **Step 12: Run tests — expect PASS**
+- [x] **Step 12: Run tests — expect PASS**
 
 ```bash
 npm test -- CustomerRoute.test.jsx
@@ -840,7 +840,7 @@ npm test -- CustomerRoute.test.jsx
 
 ### 6d — LoginPage status check
 
-- [ ] **Step 13: Update LoginPage.jsx**
+- [x] **Step 13: Update LoginPage.jsx**
 
 In `src/pages/auth/LoginPage.jsx`, inside `handleSubmit`, locate the block starting at line 62 (`setUser(user)`) and insert the status check immediately after `setProfile(profile)` is called but before role-based navigation. Replace lines 62–71 with:
 
@@ -861,7 +861,7 @@ else {
 }
 ```
 
-- [ ] **Step 14: Add `/account-inactive` route to App.jsx**
+- [x] **Step 14: Add `/account-inactive` route to App.jsx**
 
 In `src/App.jsx`, add the new route in the public routes section (after `/location`, before the admin routes block):
 
@@ -875,7 +875,7 @@ And in the `<Routes>` block, after `<Route path="/location" element={<LocationPa
 <Route path="/account-inactive" element={<AccountInactivePage />} />
 ```
 
-- [ ] **Step 15: Run full test suite**
+- [x] **Step 15: Run full test suite**
 
 ```bash
 npm test
@@ -883,7 +883,7 @@ npm test
 
 Expected: all tests pass.
 
-- [ ] **Step 16: Commit**
+- [x] **Step 16: Commit**
 
 ```bash
 git add src/components/layout/AdminRoute.jsx src/components/layout/AdminRoute.test.jsx
@@ -900,7 +900,7 @@ git commit -m "feat: redirect suspended/banned users to account-inactive page"
 **Files:**
 - Modify: `src/pages/admin/customers/CustomerDetailPage.jsx`
 
-- [ ] **Step 1: Update imports**
+- [x] **Step 1: Update imports**
 
 In `src/pages/admin/customers/CustomerDetailPage.jsx`, add the `DeactivateAccountModal` import after the existing `ConfirmDialog` import (keep `ConfirmDialog` — it is still used for the Reactivate action):
 
@@ -909,7 +909,7 @@ import ConfirmDialog from '../../../components/common/ConfirmDialog'
 import DeactivateAccountModal from '../../../components/admin/accounts/DeactivateAccountModal'
 ```
 
-- [ ] **Step 2: Replace state and handlers**
+- [x] **Step 2: Replace state and handlers**
 
 Replace the existing `const [confirm, setConfirm] = useState(null)` line and `handleStatusChange` function with:
 
@@ -929,9 +929,11 @@ const handleReactivate = async () => {
   }
 }
 
+const STATUS_MAP = { suspend: 'suspended', ban: 'banned' }
+
 const handleDeactivate = async (reason) => {
   try {
-    await updateAccountStatus(id, deactivateModal.action, reason)
+    await updateAccountStatus(id, STATUS_MAP[deactivateModal.action], reason)
     load()
   } catch (err) {
     setError(err.message)
@@ -941,7 +943,7 @@ const handleDeactivate = async (reason) => {
 }
 ```
 
-- [ ] **Step 3: Update the action buttons**
+- [x] **Step 3: Update the action buttons**
 
 Replace the button group inside the card (the `<div className="flex gap-3 mt-5 pt-4 border-t border-gray-100">` block) with:
 
@@ -976,7 +978,7 @@ Replace the button group inside the card (the `<div className="flex gap-3 mt-5 p
 </div>
 ```
 
-- [ ] **Step 4: Replace dialog at bottom of JSX**
+- [x] **Step 4: Replace dialog at bottom of JSX**
 
 Replace the `<ConfirmDialog ... />` at the bottom of the return with:
 
@@ -1000,7 +1002,7 @@ Replace the `<ConfirmDialog ... />` at the bottom of the return with:
 />
 ```
 
-- [ ] **Step 5: Run full test suite**
+- [x] **Step 5: Run full test suite**
 
 ```bash
 npm test
@@ -1008,7 +1010,7 @@ npm test
 
 Expected: all tests pass.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/pages/admin/customers/CustomerDetailPage.jsx
@@ -1022,7 +1024,7 @@ git commit -m "feat: require deactivation reason on customer suspend/ban"
 **Files:**
 - Modify: `src/pages/admin/staff/StaffDetailPage.jsx`
 
-- [ ] **Step 1: Update imports**
+- [x] **Step 1: Update imports**
 
 In `src/pages/admin/staff/StaffDetailPage.jsx`, add the `DeactivateAccountModal` import (keep `ConfirmDialog` for reactivation):
 
@@ -1030,7 +1032,7 @@ In `src/pages/admin/staff/StaffDetailPage.jsx`, add the `DeactivateAccountModal`
 import DeactivateAccountModal from '../../../components/admin/accounts/DeactivateAccountModal'
 ```
 
-- [ ] **Step 2: Replace state and handlers**
+- [x] **Step 2: Replace state and handlers**
 
 Replace the existing `const [confirm, setConfirm] = useState(null)` and `handleStatusChange` function with:
 
@@ -1061,7 +1063,7 @@ const handleDeactivate = async (reason) => {
 }
 ```
 
-- [ ] **Step 3: Update the action buttons**
+- [x] **Step 3: Update the action buttons**
 
 Replace the button group inside the card (the `<div className="flex gap-3 mt-5 pt-4 border-t border-gray-100">` block, lines 108–135) with:
 
@@ -1087,7 +1089,7 @@ Replace the button group inside the card (the `<div className="flex gap-3 mt-5 p
 </div>
 ```
 
-- [ ] **Step 4: Replace dialog at bottom of JSX**
+- [x] **Step 4: Replace dialog at bottom of JSX**
 
 Replace the `<ConfirmDialog ... />` block (lines 172–180) with:
 
@@ -1111,7 +1113,7 @@ Replace the `<ConfirmDialog ... />` block (lines 172–180) with:
 />
 ```
 
-- [ ] **Step 5: Run full test suite**
+- [x] **Step 5: Run full test suite**
 
 ```bash
 npm test
@@ -1119,7 +1121,7 @@ npm test
 
 Expected: all tests pass.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/pages/admin/staff/StaffDetailPage.jsx
@@ -1130,11 +1132,11 @@ git commit -m "feat: require deactivation reason on staff deactivate"
 
 ## Progress Checklist
 
-- [ ] **Task 1** — DB migration: `deactivation_reason` column added to `profiles`
-- [ ] **Task 2** — `customerService.updateAccountStatus` accepts and writes reason
-- [ ] **Task 3** — `staffService.deactivateStaff` accepts reason; `activateStaff` clears it
-- [ ] **Task 4** — `DeactivateAccountModal` component created and tested
-- [ ] **Task 5** — `AccountInactivePage` created with Navbar, reason display, sign-out on go home
-- [ ] **Task 6** — Route guards and LoginPage redirect non-active users; `/account-inactive` route added
-- [ ] **Task 7** — `CustomerDetailPage` wired to `DeactivateAccountModal`
-- [ ] **Task 8** — `StaffDetailPage` wired to `DeactivateAccountModal`
+- [x] **Task 1** — DB migration: `deactivation_reason` column added to `profiles`
+- [x] **Task 2** — `customerService.updateAccountStatus` accepts and writes reason
+- [x] **Task 3** — `staffService.deactivateStaff` accepts reason; `activateStaff` clears it
+- [x] **Task 4** — `DeactivateAccountModal` component created and tested
+- [x] **Task 5** — `AccountInactivePage` created with Navbar, reason display, sign-out on go home
+- [x] **Task 6** — Route guards and LoginPage redirect non-active users; `/account-inactive` route added
+- [x] **Task 7** — `CustomerDetailPage` wired to `DeactivateAccountModal`
+- [x] **Task 8** — `StaffDetailPage` wired to `DeactivateAccountModal`
