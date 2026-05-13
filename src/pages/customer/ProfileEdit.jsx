@@ -15,18 +15,21 @@ const ProfileEdit = () => {
     gender: '',
   })
   const [saving, setSaving] = useState(false)
+  const [fetchError, setFetchError] = useState(false)
 
   useEffect(() => {
     if (!user?.id) return
-    getMyProfile(user.id).then((p) => {
-      setForm({
-        first_name: p.first_name ?? '',
-        last_name: p.last_name ?? '',
-        phone_number: p.phone_number ?? '',
-        date_of_birth: p.date_of_birth ?? '',
-        gender: p.gender ?? '',
+    getMyProfile(user.id)
+      .then((p) => {
+        setForm({
+          first_name: p.first_name ?? '',
+          last_name: p.last_name ?? '',
+          phone_number: p.phone_number ?? '',
+          date_of_birth: p.date_of_birth ?? '',
+          gender: p.gender ?? '',
+        })
       })
-    })
+      .catch(() => setFetchError(true))
   }, [user?.id])
 
   const handleSave = async () => {
@@ -48,17 +51,20 @@ const ProfileEdit = () => {
     <div className="min-h-screen bg-anaya-bg">
       <div className="max-w-lg mx-auto px-6 py-10">
         <div className="flex justify-start mb-6">
-          <Link to="/" className="text-sm text-anaya-primary hover:underline flex items-center">
+          <Link to="/profile" className="text-sm text-anaya-primary hover:underline flex items-center">
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            Go Back to Landing Page
+            Go Back to Profile
           </Link>
         </div>
         <h1 className="text-3xl font-bold text-anaya-text mb-6">
           Edit User Detail
         </h1>
 
+        {fetchError && (
+          <p className="text-sm text-red-500 mb-4">Could not load profile data. Please refresh.</p>
+        )}
         <div className="bg-white border border-gray-200 rounded-2xl p-8">
           <div className="space-y-4">
             {/* First + Last Name */}

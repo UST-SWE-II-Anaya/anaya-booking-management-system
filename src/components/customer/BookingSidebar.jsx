@@ -1,20 +1,15 @@
 import useBookingStore from '../../store/bookingStore'
-import { formatDuration } from '../../utils/bookingUtils'
-
-const DOWN_PAYMENT_RATE = 0.1
+import { formatDuration, professionalLabel } from '../../utils/bookingUtils'
+import useSiteSettings from '../../hooks/useSiteSettings'
 
 const BookingSidebar = ({ onContinue, continueDisabled }) => {
   const { cart, staffPreference, selectedStaffId } = useBookingStore()
+  const { settings } = useSiteSettings()
+  const downPaymentRate = (settings?.downpayment_rate?.percentage ?? 10) / 100
+  const downPaymentLabel = `${settings?.downpayment_rate?.percentage ?? 10}% of Total`
   const subtotal = cart.reduce((sum, s) => sum + Number(s.price), 0)
   const totalDuration = cart.reduce((sum, s) => sum + s.duration_minutes, 0)
-  const downPayment = subtotal * DOWN_PAYMENT_RATE
-
-  const professionalLabel = () => {
-    if (!staffPreference || staffPreference === 'any') return 'any professional'
-    if (staffPreference === 'any_female') return 'any female professional'
-    if (staffPreference === 'any_male') return 'any male professional'
-    return 'specific professional'
-  }
+  const downPayment = subtotal * downPaymentRate
 
   return (
     <div className="w-72 shrink-0 bg-white border border-gray-200 rounded-xl p-5 h-fit sticky top-6 shadow-sm">
@@ -29,7 +24,7 @@ const BookingSidebar = ({ onContinue, continueDisabled }) => {
               <div className="flex-1 pr-2">
                 <p className="font-medium leading-snug">{s.name}</p>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  {formatDuration(s.duration_minutes)} with {professionalLabel()}
+                  {formatDuration(s.duration_minutes)} with {professionalLabel(staffPreference)}
                 </p>
               </div>
               <span className="font-medium shrink-0">
@@ -49,7 +44,7 @@ const BookingSidebar = ({ onContinue, continueDisabled }) => {
           <span>
             Down Payment
             <br />
-            <span className="text-xs">(10% of Total):</span>
+            <span className="text-xs">({downPaymentLabel}):</span>
           </span>
           <span>₱{downPayment.toFixed(2)}</span>
         </div>

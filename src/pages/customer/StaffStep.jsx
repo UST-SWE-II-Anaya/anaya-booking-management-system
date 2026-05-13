@@ -52,7 +52,7 @@ const GENERIC_OPTIONS = [
 
 const StaffStep = () => {
   const navigate = useNavigate()
-  const { cart, staffPreference, setStaffPreference, setSelectedStaff } = useBookingStore()
+  const { cart, staffPreference, selectedStaffId, setStaffPreference, setSelectedStaff } = useBookingStore()
   const [staff, setStaff] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -63,6 +63,7 @@ const StaffStep = () => {
     }
     getActiveStaffList()
       .then(setStaff)
+      .catch(() => setStaff([]))
       .finally(() => setLoading(false))
   }, [])
 
@@ -71,9 +72,9 @@ const StaffStep = () => {
     navigate('/booking/datetime')
   }
 
-  const handleSpecificSelect = (staffId) => {
+  const handleSpecificSelect = (staffId, staffName) => {
     setStaffPreference('specific')
-    setSelectedStaff(staffId)
+    setSelectedStaff(staffId, staffName)
     navigate('/booking/datetime')
   }
 
@@ -134,14 +135,16 @@ const StaffStep = () => {
             {!loading && staff.length > 0 && (
               <div className="space-y-3 mt-3">
                 {staff.map((s) => {
-                  const isSelected = staffPreference === 'specific'
+                  const isSelected = staffPreference === 'specific' && selectedStaffId === s.id
                   return (
                     <button
                       key={s.id}
-                      onClick={() => handleSpecificSelect(s.id)}
+                      onClick={() => handleSpecificSelect(s.id, `${s.first_name} ${s.last_name}`)}
                       className={clsx(
                         'w-full flex items-center gap-4 p-4 rounded-xl border text-left transition-colors',
-                        'bg-white border-gray-200 hover:border-anaya-accent'
+                        isSelected
+                          ? 'bg-anaya-accent/10 border-anaya-accent'
+                          : 'bg-white border-gray-200 hover:border-anaya-accent'
                       )}
                     >
                       {s.avatar_url ? (
@@ -158,9 +161,17 @@ const StaffStep = () => {
                       <span className="flex-1 font-medium text-anaya-text">
                         {s.first_name} {s.last_name}
                       </span>
-                      <span className="text-sm border border-anaya-accent text-anaya-accent px-3 py-1 rounded-full shrink-0">
-                        Select
-                      </span>
+                      {isSelected ? (
+                        <div className="w-8 h-8 rounded-full bg-anaya-accent flex items-center justify-center text-white shrink-0">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      ) : (
+                        <span className="text-sm border border-anaya-accent text-anaya-accent px-3 py-1 rounded-full shrink-0">
+                          Select
+                        </span>
+                      )}
                     </button>
                   )
                 })}
@@ -169,6 +180,10 @@ const StaffStep = () => {
 
             {loading && (
               <p className="text-sm text-gray-400 mt-4">Loading professionals...</p>
+            )}
+
+            {!loading && staff.length === 0 && (
+              <p className="text-sm text-gray-400 mt-2">No specific professionals available at this time.</p>
             )}
           </div>
 

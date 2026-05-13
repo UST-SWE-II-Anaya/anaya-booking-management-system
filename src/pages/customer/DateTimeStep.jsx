@@ -3,17 +3,10 @@ import { useNavigate, Link } from 'react-router-dom'
 import clsx from 'clsx'
 import useBookingStore from '../../store/bookingStore'
 import { getAvailableSlots } from '../../services/availabilityService'
-import { generateTimeSlots } from '../../utils/bookingUtils'
+import { generateTimeSlots, to12h } from '../../utils/bookingUtils'
 import BookingSidebar from '../../components/customer/BookingSidebar'
 import BookingCalendar from '../../components/customer/BookingCalendar'
 import useSiteSettings from '../../hooks/useSiteSettings'
-
-const to12h = (time24) => {
-  const [h, m] = time24.split(':').map(Number)
-  const ampm = h >= 12 ? 'PM' : 'AM'
-  const h12 = h % 12 || 12
-  return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
-}
 
 const formatDisplayDate = (isoDate) => {
   const d = new Date(isoDate + 'T00:00:00')
@@ -31,6 +24,7 @@ const DateTimeStep = () => {
   const [slots, setSlots] = useState([])
   const [selectedTime, setSelectedTime] = useState(null)
   const [loadingSlots, setLoadingSlots] = useState(false)
+  const [slotsError, setSlotsError] = useState(false)
   const { settings } = useSiteSettings()
 
   if (!staffPreference) {
@@ -42,6 +36,7 @@ const DateTimeStep = () => {
     setSelectedDate(date)
     setSelectedTime(null)
     setLoadingSlots(true)
+    setSlotsError(false)
     const staffId = staffPreference === 'specific' ? selectedStaffId : null
     try {
       const blocked = await getAvailableSlots(staffId, date, staffPreference)
@@ -51,6 +46,8 @@ const DateTimeStep = () => {
         stepMinutes: settings?.slot_duration?.minutes ?? 30,
       }
       setSlots(generateTimeSlots(blocked || [], slotOptions))
+    } catch {
+      setSlotsError(true)
     } finally {
       setLoadingSlots(false)
     }
@@ -88,6 +85,8 @@ const DateTimeStep = () => {
                 </h2>
                 {loadingSlots ? (
                   <p className="text-sm text-gray-400">Loading available times...</p>
+                ) : slotsError ? (
+                  <p className="text-sm text-red-500">Could not load available times. Please try selecting a date again.</p>
                 ) : (
                   <div className="grid grid-cols-6 gap-2">
                     {slots.map((slot) => {

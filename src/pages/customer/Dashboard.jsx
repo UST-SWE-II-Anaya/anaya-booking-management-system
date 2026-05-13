@@ -5,6 +5,7 @@ import useAuthStore from '../../store/authStore'
 import { getMyBookings, cancelMyBooking } from '../../services/customerBookingService'
 import AppointmentCard from '../../components/customer/AppointmentCard'
 import AppointmentDetailModal from '../../components/customer/AppointmentDetailModal'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 import Navbar from '../../components/Navbar'
 import Footer from '../../components/Footer'
 
@@ -24,11 +25,15 @@ const Dashboard = () => {
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedBooking, setSelectedBooking] = useState(null)
+  const [cancelTarget, setCancelTarget] = useState(null)
+  const [fetchError, setFetchError] = useState(false)
 
   const load = () => {
     if (!user?.id) return
+    setFetchError(false)
     getMyBookings(user.id)
       .then((data) => setBookings(data ?? []))
+      .catch(() => setFetchError(true))
       .finally(() => setLoading(false))
   }
 
@@ -36,11 +41,13 @@ const Dashboard = () => {
     load()
   }, [user?.id])
 
-  const handleCancel = async (booking) => {
-    if (!window.confirm('Are you sure you want to cancel this reservation?')) return
+  const handleCancel = (booking) => setCancelTarget(booking)
+  const handleConfirmCancel = async () => {
+    if (!cancelTarget) return
     try {
-      await cancelMyBooking(booking.id, user.id)
+      await cancelMyBooking(cancelTarget.id, user.id)
       toast.success('Reservation cancelled.')
+      setCancelTarget(null)
       load()
     } catch {
       toast.error('Could not cancel. Please try again.')
@@ -50,6 +57,12 @@ const Dashboard = () => {
   if (loading) return (
     <div className="min-h-screen bg-anaya-bg flex items-center justify-center">
       <p className="text-gray-500">Loading...</p>
+    </div>
+  )
+
+  if (fetchError) return (
+    <div className="min-h-screen bg-anaya-bg flex items-center justify-center">
+      <p className="text-gray-500">Something went wrong loading your appointments. Please refresh.</p>
     </div>
   )
 
@@ -130,6 +143,16 @@ const Dashboard = () => {
       <AppointmentDetailModal
         booking={selectedBooking}
         onClose={() => setSelectedBooking(null)}
+      />
+
+      <ConfirmDialog
+        open={!!cancelTarget}
+        onClose={() => setCancelTarget(null)}
+        onConfirm={handleConfirmCancel}
+        title="Cancel Reservation"
+        message="Are you sure you want to cancel this reservation? This cannot be undone."
+        confirmLabel="Yes, Cancel"
+        danger
       />
     </div>
   )

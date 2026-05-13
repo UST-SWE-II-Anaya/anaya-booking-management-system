@@ -20,17 +20,25 @@ const AppointmentsHistory = () => {
   const { user } = useAuthStore()
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState(false)
 
   useEffect(() => {
     if (!user?.id) return
     getMyPastBookings(user.id)
       .then((data) => setBookings(data ?? []))
+      .catch(() => setFetchError(true))
       .finally(() => setLoading(false))
   }, [user?.id])
 
   if (loading) return (
     <div className="min-h-screen bg-anaya-bg flex items-center justify-center">
       <p className="text-gray-500">Loading...</p>
+    </div>
+  )
+
+  if (fetchError) return (
+    <div className="min-h-screen bg-anaya-bg flex items-center justify-center">
+      <p className="text-gray-500">Something went wrong loading your appointments. Please refresh.</p>
     </div>
   )
 

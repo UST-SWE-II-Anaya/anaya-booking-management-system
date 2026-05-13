@@ -3,15 +3,8 @@ import { useNavigate, Link } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import useBookingStore from '../../store/bookingStore'
 import { createBooking } from '../../services/customerBookingService'
-import { formatDuration } from '../../utils/bookingUtils'
+import { formatDuration, to12h } from '../../utils/bookingUtils'
 import useSiteSettings from '../../hooks/useSiteSettings'
-
-const to12h = (time24) => {
-  const [h, m] = time24.split(':').map(Number)
-  const ampm = h >= 12 ? 'PM' : 'AM'
-  const h12 = h % 12 || 12
-  return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
-}
 
 const ReviewStep = () => {
   const navigate = useNavigate()
@@ -19,6 +12,7 @@ const ReviewStep = () => {
     cart,
     staffPreference,
     selectedStaffId,
+    selectedStaffName,
     selectedDate,
     selectedTime,
     bookingNotes,
@@ -219,7 +213,14 @@ const ReviewStep = () => {
                   <div className="flex-1 pr-2">
                     <p className="font-medium leading-snug">{s.name}</p>
                     <p className="text-xs text-gray-400">
-                      {formatDuration(s.duration_minutes)} with any professional
+                      {formatDuration(s.duration_minutes)} with{' '}
+                      {staffPreference === 'specific'
+                        ? (selectedStaffName ?? 'specific professional')
+                        : staffPreference === 'any_female'
+                        ? 'any female professional'
+                        : staffPreference === 'any_male'
+                        ? 'any male professional'
+                        : 'any professional'}
                     </p>
                   </div>
                   <span className="font-medium shrink-0">
