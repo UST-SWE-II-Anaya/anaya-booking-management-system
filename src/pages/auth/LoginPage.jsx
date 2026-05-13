@@ -62,6 +62,11 @@ const LoginPage = () => {
       setUser(user)
       setProfile(profile)
 
+      if (profile.account_status !== 'active') {
+        navigate('/account-inactive')
+        return
+      }
+
       if (profile.role === 'admin') navigate('/admin')
       else if (profile.role === 'staff') navigate('/staff')
       else {

@@ -47,7 +47,26 @@ describe('CustomerRoute', () => {
   })
 
   it('renders outlet when role is customer', () => {
-    renderRoute({ loading: false, profile: { role: 'customer' } })
+    renderRoute({ loading: false, profile: { role: 'customer', account_status: 'active' } })
     expect(screen.getByText('Dashboard')).toBeInTheDocument()
+  })
+
+  it('redirects to /account-inactive when customer is suspended', () => {
+    useAuthStore.mockReturnValue({
+      loading: false,
+      profile: { role: 'customer', account_status: 'suspended' },
+    })
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <Routes>
+          <Route element={<CustomerRoute />}>
+            <Route path="/dashboard" element={<div>Dashboard</div>} />
+          </Route>
+          <Route path="/login" element={<div>Login Page</div>} />
+          <Route path="/account-inactive" element={<div>Inactive Page</div>} />
+        </Routes>
+      </MemoryRouter>
+    )
+    expect(screen.getByText('Inactive Page')).toBeInTheDocument()
   })
 })

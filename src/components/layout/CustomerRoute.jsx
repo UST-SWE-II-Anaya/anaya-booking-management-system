@@ -17,6 +17,10 @@ const CustomerRoute = () => {
     return <Navigate to="/login" replace />
   }
 
+  if (profile.account_status !== 'active') {
+    return <Navigate to="/account-inactive" replace />
+  }
+
   return <Outlet />
 }
 

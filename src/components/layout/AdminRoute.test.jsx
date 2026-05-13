@@ -41,7 +41,26 @@ describe('AdminRoute', () => {
   })
 
   it('renders children when role is admin', () => {
-    renderWithRouter({ loading: false, profile: { role: 'admin' } })
+    renderWithRouter({ loading: false, profile: { role: 'admin', account_status: 'active' } })
     expect(screen.getByText('Admin Page')).toBeInTheDocument()
+  })
+
+  it('redirects to /account-inactive when admin is suspended', () => {
+    useAuthStore.mockReturnValue({
+      loading: false,
+      profile: { role: 'admin', account_status: 'suspended' },
+    })
+    render(
+      <MemoryRouter initialEntries={['/admin']}>
+        <Routes>
+          <Route element={<AdminRoute />}>
+            <Route path="/admin" element={<div>Admin Page</div>} />
+          </Route>
+          <Route path="/login" element={<div>Login Page</div>} />
+          <Route path="/account-inactive" element={<div>Inactive Page</div>} />
+        </Routes>
+      </MemoryRouter>
+    )
+    expect(screen.getByText('Inactive Page')).toBeInTheDocument()
   })
 })

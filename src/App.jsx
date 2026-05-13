@@ -52,6 +52,7 @@ import CategoryDetailPage from './pages/CategoryDetailPage'
 import PublicServicesPage from './pages/ServicesPage'
 import AboutPage from './pages/AboutPage'
 import LocationPage from './pages/LocationPage'
+import AccountInactivePage from './pages/AccountInactivePage'
 
 const App = () => {
   useAuthUser()
@@ -73,6 +74,7 @@ const App = () => {
       <Route path="/services" element={<PublicServicesPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/location" element={<LocationPage />} />
+      <Route path="/account-inactive" element={<AccountInactivePage />} />
 
       {/* Admin routes */}
       <Route element={<AdminRoute />}>

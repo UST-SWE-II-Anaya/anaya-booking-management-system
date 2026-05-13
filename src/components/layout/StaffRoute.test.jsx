@@ -40,7 +40,26 @@ describe('StaffRoute', () => {
   })
 
   it('renders children when role is staff', () => {
-    renderWithRouter({ loading: false, profile: { role: 'staff' } })
+    renderWithRouter({ loading: false, profile: { role: 'staff', account_status: 'active' } })
     expect(screen.getByText('Staff Page')).toBeInTheDocument()
+  })
+
+  it('redirects to /account-inactive when staff is suspended', () => {
+    useAuthStore.mockReturnValue({
+      loading: false,
+      profile: { role: 'staff', account_status: 'suspended' },
+    })
+    render(
+      <MemoryRouter initialEntries={['/staff']}>
+        <Routes>
+          <Route element={<StaffRoute />}>
+            <Route path="/staff" element={<div>Staff Page</div>} />
+          </Route>
+          <Route path="/login" element={<div>Login Page</div>} />
+          <Route path="/account-inactive" element={<div>Inactive Page</div>} />
+        </Routes>
+      </MemoryRouter>
+    )
+    expect(screen.getByText('Inactive Page')).toBeInTheDocument()
   })
 })
