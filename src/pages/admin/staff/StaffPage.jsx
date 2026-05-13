@@ -1,12 +1,15 @@
-// src/pages/admin/staff/StaffPage.jsx
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Users, Eye, Trash2, UserCheck } from 'lucide-react'
+import { Users, Eye, Trash2, UserCheck, UserPlus } from 'lucide-react'
+import clsx from 'clsx'
 import { getStaff, deactivateStaff, activateStaff } from '../../../services/staffService'
 import Badge from '../../../components/common/Badge'
 import Spinner from '../../../components/common/Spinner'
 import EmptyState from '../../../components/common/EmptyState'
 import ConfirmDialog from '../../../components/common/ConfirmDialog'
+import CreateAccountModal from '../../../components/admin/staff/CreateAccountModal'
+
+const FILTERS = ['all', 'staff', 'admin']
 
 const StaffPage = () => {
   const navigate = useNavigate()
@@ -14,6 +17,8 @@ const StaffPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [confirm, setConfirm] = useState(null)
+  const [filter, setFilter] = useState('all')
+  const [showCreate, setShowCreate] = useState(false)
 
   const load = () => {
     setLoading(true)
@@ -41,22 +46,51 @@ const StaffPage = () => {
     }
   }
 
+  const filtered = staff.filter((s) => filter === 'all' || s.role === filter)
+
   return (
     <div className="space-y-5">
-      <h1 className="text-xl font-semibold text-[#2C2C2C]">Staff</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold text-[#2C2C2C]">Team</h1>
+        <button
+          onClick={() => setShowCreate(true)}
+          className="flex items-center gap-2 px-3.5 py-2 bg-[#8A956D] hover:bg-[#7a8560]
+            text-white rounded-lg text-sm font-medium transition-colors"
+        >
+          <UserPlus size={15} />
+          Create Account
+        </button>
+      </div>
+
+      <div className="flex gap-2">
+        {FILTERS.map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={clsx(
+              'px-3.5 py-1.5 rounded-full text-xs font-medium capitalize transition-colors',
+              filter === f
+                ? 'bg-[#2C2C2C] text-white'
+                : 'bg-white border border-gray-200 text-gray-500 hover:border-gray-400'
+            )}
+          >
+            {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
+          </button>
+        ))}
+      </div>
 
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
         {loading ? (
           <div className="flex justify-center py-16"><Spinner /></div>
         ) : error ? (
           <p className="text-red-600 text-sm text-center py-8">{error}</p>
-        ) : staff.length === 0 ? (
-          <EmptyState icon={Users} title="No staff members found" />
+        ) : filtered.length === 0 ? (
+          <EmptyState icon={Users} title="No team members found" />
         ) : (
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 text-left">
-                {['Name', 'Email', 'Phone', 'Status', 'Joined', 'Actions'].map((h) => (
+                {['Name', 'Email', 'Phone', 'Role', 'Status', 'Joined', 'Actions'].map((h) => (
                   <th
                     key={h}
                     className="px-5 py-3 text-xs font-medium text-gray-400
@@ -68,7 +102,7 @@ const StaffPage = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {staff.map((s) => (
+              {filtered.map((s) => (
                 <tr key={s.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-5 py-3.5 font-medium text-[#4A4A4A]">
                     {s.first_name} {s.last_name}
@@ -78,7 +112,13 @@ const StaffPage = () => {
                     {s.phone_number || '—'}
                   </td>
                   <td className="px-5 py-3.5">
-                    {s.staff_details?.[0]?.is_active !== false ? (
+                    <Badge
+                      variant={s.role === 'admin' ? 'paid' : 'active'}
+                      label={s.role === 'admin' ? 'Admin' : 'Staff'}
+                    />
+                  </td>
+                  <td className="px-5 py-3.5">
+                    {s.role === 'admin' || s.staff_details?.[0]?.is_active === true ? (
                       <Badge variant="active" label="Active" />
                     ) : (
                       <Badge variant="suspended" label="Inactive" />
@@ -91,41 +131,43 @@ const StaffPage = () => {
                     <div className="flex gap-2 text-xs">
                       <button
                         onClick={() => navigate(`/admin/staff/${s.id}`)}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 border border-[#8A956D] 
-                          rounded-lg text-[#8A956D] hover:bg-[#8A956D] hover:text-white 
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 border border-[#8A956D]
+                          rounded-lg text-[#8A956D] hover:bg-[#8A956D] hover:text-white
                           transition-all text-xs font-medium group"
                       >
                         <Eye size={14} className="group-hover:text-white" />
                         View
                       </button>
-                      {s.staff_details?.[0]?.is_active !== false ? (
-                        <button
-                          onClick={() => setConfirm({
-                            id: s.id,
-                            action: 'Deactivate',
-                            message: `Deactivate ${s.first_name} ${s.last_name}?`,
-                          })}
-                          className="flex items-center gap-1.5 px-2.5 py-1.5 border border-red-500 
-                            rounded-lg text-red-500 hover:bg-red-500 hover:text-white 
-                            transition-all text-xs font-medium group"
-                        >
-                          <Trash2 size={14} className="group-hover:text-white" />
-                          Deactivate
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => setConfirm({
-                            id: s.id,
-                            action: 'Reactivate',
-                            message: `Reactivate ${s.first_name} ${s.last_name}?`,
-                          })}
-                          className="flex items-center gap-1.5 px-2.5 py-1.5 border border-green-600 
-                            rounded-lg text-green-600 hover:bg-green-600 hover:text-white 
-                            transition-all text-xs font-medium group"
-                        >
-                          <UserCheck size={14} className="group-hover:text-white" />
-                          Reactivate
-                        </button>
+                      {s.role === 'staff' && (
+                        s.staff_details?.[0]?.is_active === true ? (
+                          <button
+                            onClick={() => setConfirm({
+                              id: s.id,
+                              action: 'Deactivate',
+                              message: `Deactivate ${s.first_name} ${s.last_name}?`,
+                            })}
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 border border-red-500
+                              rounded-lg text-red-500 hover:bg-red-500 hover:text-white
+                              transition-all text-xs font-medium group"
+                          >
+                            <Trash2 size={14} className="group-hover:text-white" />
+                            Deactivate
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => setConfirm({
+                              id: s.id,
+                              action: 'Reactivate',
+                              message: `Reactivate ${s.first_name} ${s.last_name}?`,
+                            })}
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 border border-green-600
+                              rounded-lg text-green-600 hover:bg-green-600 hover:text-white
+                              transition-all text-xs font-medium group"
+                          >
+                            <UserCheck size={14} className="group-hover:text-white" />
+                            Reactivate
+                          </button>
+                        )
                       )}
                     </div>
                   </td>
@@ -144,6 +186,12 @@ const StaffPage = () => {
         message={confirm?.message ?? ''}
         confirmLabel={confirm?.action}
         danger={confirm?.action !== 'Reactivate'}
+      />
+
+      <CreateAccountModal
+        open={showCreate}
+        onClose={() => setShowCreate(false)}
+        onSuccess={load}
       />
     </div>
   )
