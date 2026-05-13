@@ -183,7 +183,7 @@ const LoginPage = () => {
                to="/forgot-password"
                className="text-[0.65rem] text-gray-500 hover:text-gray-800"
              >
-               Forget password?
+               Forgot Password?
              </Link>
           </div>
 

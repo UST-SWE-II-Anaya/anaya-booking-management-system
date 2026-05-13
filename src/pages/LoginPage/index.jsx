@@ -63,7 +63,7 @@ export default function LoginPage() {
 
         <div className="w-full flex justify-end -mt-4 mb-6">
           <Link to="/forgot-password" className="text-[0.65rem] text-gray-500 hover:text-gray-800 transition-colors">
-            Forget password?
+            Forgot Password?
           </Link>
         </div>
 
