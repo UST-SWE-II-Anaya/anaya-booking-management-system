@@ -17,6 +17,10 @@ const StaffRoute = () => {
     return <Navigate to="/login" replace />
   }
 
+  if (profile.account_status === 'banned') {
+    return <Navigate to="/account-banned" replace />
+  }
+
   if (profile.account_status !== 'active') {
     return <Navigate to="/account-inactive" replace />
   }

@@ -69,4 +69,23 @@ describe('CustomerRoute', () => {
     )
     expect(screen.getByText('Inactive Page')).toBeInTheDocument()
   })
+
+  it('redirects to /account-banned when customer is banned', () => {
+    useAuthStore.mockReturnValue({
+      loading: false,
+      profile: { role: 'customer', account_status: 'banned' },
+    })
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <Routes>
+          <Route element={<CustomerRoute />}>
+            <Route path="/dashboard" element={<div>Dashboard</div>} />
+          </Route>
+          <Route path="/account-inactive" element={<div>Inactive Page</div>} />
+          <Route path="/account-banned" element={<div>Banned Page</div>} />
+        </Routes>
+      </MemoryRouter>
+    )
+    expect(screen.getByText('Banned Page')).toBeInTheDocument()
+  })
 })

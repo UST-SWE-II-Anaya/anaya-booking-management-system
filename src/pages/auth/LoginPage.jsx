@@ -62,6 +62,11 @@ const LoginPage = () => {
       setUser(user)
       setProfile(profile)
 
+      if (profile.account_status === 'banned') {
+        navigate('/account-banned')
+        return
+      }
+
       if (profile.account_status !== 'active') {
         navigate('/account-inactive')
         return

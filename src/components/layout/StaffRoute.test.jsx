@@ -62,4 +62,23 @@ describe('StaffRoute', () => {
     )
     expect(screen.getByText('Inactive Page')).toBeInTheDocument()
   })
+
+  it('redirects to /account-banned when staff is banned', () => {
+    useAuthStore.mockReturnValue({
+      loading: false,
+      profile: { role: 'staff', account_status: 'banned' },
+    })
+    render(
+      <MemoryRouter initialEntries={['/staff']}>
+        <Routes>
+          <Route element={<StaffRoute />}>
+            <Route path="/staff" element={<div>Staff Page</div>} />
+          </Route>
+          <Route path="/account-inactive" element={<div>Inactive Page</div>} />
+          <Route path="/account-banned" element={<div>Banned Page</div>} />
+        </Routes>
+      </MemoryRouter>
+    )
+    expect(screen.getByText('Banned Page')).toBeInTheDocument()
+  })
 })

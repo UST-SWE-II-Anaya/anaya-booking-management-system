@@ -63,4 +63,23 @@ describe('AdminRoute', () => {
     )
     expect(screen.getByText('Inactive Page')).toBeInTheDocument()
   })
+
+  it('redirects to /account-banned when admin is banned', () => {
+    useAuthStore.mockReturnValue({
+      loading: false,
+      profile: { role: 'admin', account_status: 'banned' },
+    })
+    render(
+      <MemoryRouter initialEntries={['/admin']}>
+        <Routes>
+          <Route element={<AdminRoute />}>
+            <Route path="/admin" element={<div>Admin Page</div>} />
+          </Route>
+          <Route path="/account-inactive" element={<div>Inactive Page</div>} />
+          <Route path="/account-banned" element={<div>Banned Page</div>} />
+        </Routes>
+      </MemoryRouter>
+    )
+    expect(screen.getByText('Banned Page')).toBeInTheDocument()
+  })
 })
