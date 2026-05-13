@@ -53,6 +53,7 @@ import PublicServicesPage from './pages/ServicesPage'
 import AboutPage from './pages/AboutPage'
 import LocationPage from './pages/LocationPage'
 import AccountInactivePage from './pages/AccountInactivePage'
+import AccountBannedPage from './pages/AccountBannedPage'
 
 const App = () => {
   useAuthUser()
@@ -75,6 +76,7 @@ const App = () => {
       <Route path="/about" element={<AboutPage />} />
       <Route path="/location" element={<LocationPage />} />
       <Route path="/account-inactive" element={<AccountInactivePage />} />
+      <Route path="/account-banned" element={<AccountBannedPage />} />
 
       {/* Admin routes */}
       <Route element={<AdminRoute />}>
