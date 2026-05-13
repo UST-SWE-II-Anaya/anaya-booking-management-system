@@ -5,10 +5,10 @@ export const getStaff = async () => {
   const { data, error } = await supabase
     .from('profiles')
     .select(`
-      id, reference_id, first_name, last_name, email, phone_number, avatar_url, created_at,
+      id, reference_id, first_name, last_name, email, phone_number, avatar_url, created_at, role,
       staff_details(is_active)
     `)
-    .eq('role', 'staff')
+    .in('role', ['staff', 'admin'])
     .order('created_at', { ascending: false })
   if (error) throw error
   return data

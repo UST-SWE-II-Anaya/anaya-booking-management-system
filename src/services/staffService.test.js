@@ -2,22 +2,26 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.mock('./supabaseClient', () => ({
-  supabase: { from: vi.fn(), rpc: vi.fn() },
+  supabase: {
+    from: vi.fn(),
+    rpc: vi.fn(),
+    functions: { invoke: vi.fn() },
+  },
 }))
 
 import { supabase } from './supabaseClient'
-import { getStaff, deactivateStaff, getStaffList } from './staffService'
+import { getStaff, deactivateStaff, getStaffList, inviteUser } from './staffService'
 import { createQueryBuilder } from '../test/mocks/supabaseMock'
 
 beforeEach(() => vi.clearAllMocks())
 
 describe('getStaff', () => {
-  it('queries profiles with role=staff', async () => {
+  it('queries profiles with role in [staff, admin]', async () => {
     const qb = createQueryBuilder({ data: [], error: null })
     supabase.from.mockReturnValue(qb)
     await getStaff()
     expect(supabase.from).toHaveBeenCalledWith('profiles')
-    expect(qb.eq).toHaveBeenCalledWith('role', 'staff')
+    expect(qb.in).toHaveBeenCalledWith('role', ['staff', 'admin'])
   })
 })
 
