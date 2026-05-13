@@ -11,6 +11,22 @@ const useAuthUser = () => {
     let mounted = true
     let isInitialized = false
 
+    // Check for auth errors in the URL hash (e.g. from expired email links)
+    if (window.location.hash && window.location.hash.includes('error=')) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1))
+      const errorDescription = hashParams.get('error_description')
+      if (errorDescription) {
+        // Use a slight delay to ensure the toaster is mounted
+        setTimeout(() => {
+          import('react-hot-toast').then(({ toast }) => {
+            toast.error(errorDescription.replace(/\+/g, ' '))
+          })
+        }, 500)
+      }
+      // Clear the hash to prevent re-triggering on refresh
+      window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    }
+
     const initSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession()
