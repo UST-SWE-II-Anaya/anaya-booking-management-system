@@ -99,3 +99,25 @@ export const cancelBooking = async (id, cancelledBy) => {
   if (error) throw error
   return data
 }
+
+export const exportBookings = async ({
+  status,
+  search,
+  dateFrom,
+  dateTo,
+} = {}) => {
+  let query = supabase
+    .from('bookings')
+    .select(BOOKING_SELECT)
+    .order('appointment_date', { ascending: false })
+    .order('start_time', { ascending: true })
+
+  if (status) query = query.eq('booking_status', status)
+  if (search) query = query.ilike('reference_id', `%${search}%`)
+  if (dateFrom) query = query.gte('appointment_date', dateFrom)
+  if (dateTo) query = query.lte('appointment_date', dateTo)
+
+  const { data, error } = await query
+  if (error) throw error
+  return data
+}

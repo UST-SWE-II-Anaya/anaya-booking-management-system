@@ -8,6 +8,8 @@ export const createQueryBuilder = (resolvedValue = { data: null, error: null }) 
     neq: vi.fn().mockReturnThis(),
     in: vi.fn().mockReturnThis(),
     ilike: vi.fn().mockReturnThis(),
+    gte: vi.fn().mockReturnThis(),
+    lte: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
     limit: vi.fn().mockReturnThis(),
     or: vi.fn().mockReturnThis(),
