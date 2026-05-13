@@ -10,7 +10,7 @@ vi.mock('./supabaseClient', () => ({
 }))
 
 import { supabase } from './supabaseClient'
-import { getStaff, deactivateStaff, getStaffList, inviteUser } from './staffService'
+import { getStaff, deactivateStaff, activateStaff, getStaffList, inviteUser } from './staffService'
 import { createQueryBuilder } from '../test/mocks/supabaseMock'
 
 beforeEach(() => vi.clearAllMocks())
@@ -26,11 +26,37 @@ describe('getStaff', () => {
 })
 
 describe('deactivateStaff', () => {
-  it('sets is_active to false in staff_details', async () => {
-    const qb = createQueryBuilder({ data: { id: 's1', is_active: false }, error: null })
+  it('sets account_status to suspended and stores reason', async () => {
+    const qb = createQueryBuilder({
+      data: { id: 's1', account_status: 'suspended', deactivation_reason: 'Contract ended' },
+      error: null,
+    })
     supabase.from.mockReturnValue(qb)
-    const result = await deactivateStaff('s1')
-    expect(result.is_active).toBe(false)
+    const result = await deactivateStaff('s1', 'Contract ended')
+    expect(result.account_status).toBe('suspended')
+    expect(qb.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        account_status: 'suspended',
+        deactivation_reason: 'Contract ended',
+      })
+    )
+  })
+})
+
+describe('activateStaff', () => {
+  it('sets account_status to active and clears deactivation_reason', async () => {
+    const qb = createQueryBuilder({
+      data: { id: 's1', account_status: 'active', deactivation_reason: null },
+      error: null,
+    })
+    supabase.from.mockReturnValue(qb)
+    await activateStaff('s1')
+    expect(qb.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        account_status: 'active',
+        deactivation_reason: null,
+      })
+    )
   })
 })
 

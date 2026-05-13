@@ -66,10 +66,14 @@ export const reviewLeaveRequest = async (id, status, reviewedBy) => {
   return data
 }
 
-export const deactivateStaff = async (id) => {
+export const deactivateStaff = async (id, reason) => {
   const { data, error } = await supabase
     .from('profiles')
-    .update({ account_status: 'suspended', updated_at: new Date().toISOString() })
+    .update({
+      account_status: 'suspended',
+      deactivation_reason: reason,
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', id)
     .select()
     .single()
@@ -80,7 +84,11 @@ export const deactivateStaff = async (id) => {
 export const activateStaff = async (id) => {
   const { data, error } = await supabase
     .from('profiles')
-    .update({ account_status: 'active', updated_at: new Date().toISOString() })
+    .update({
+      account_status: 'active',
+      deactivation_reason: null,
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', id)
     .select()
     .single()
