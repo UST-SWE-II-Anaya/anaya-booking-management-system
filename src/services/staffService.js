@@ -125,3 +125,17 @@ export const inviteUser = async ({ firstName, lastName, email, phone, role }) =>
   }
   return data
 }
+
+export const banStaff = async (id, reason = 'Banned by admin') => {
+  const { data, error } = await supabase.functions.invoke('ban-user', {
+    body: { userId: id, reason, role: 'staff' },
+  })
+  if (error) {
+    if (error.context instanceof Response) {
+      const body = await error.context.json().catch(() => ({}))
+      throw new Error(body.error ?? error.message)
+    }
+    throw error
+  }
+  return data
+}

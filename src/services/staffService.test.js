@@ -10,7 +10,7 @@ vi.mock('./supabaseClient', () => ({
 }))
 
 import { supabase } from './supabaseClient'
-import { getStaff, deactivateStaff, activateStaff, getStaffList, inviteUser } from './staffService'
+import { getStaff, deactivateStaff, activateStaff, getStaffList, inviteUser, banStaff } from './staffService'
 import { createQueryBuilder } from '../test/mocks/supabaseMock'
 
 beforeEach(() => vi.clearAllMocks())
@@ -114,5 +114,32 @@ describe('inviteUser', () => {
     await expect(
       inviteUser({ firstName: 'A', lastName: 'B', email: 'a@b.com', phone: '', role: 'staff' })
     ).rejects.toThrow('An account with this email already exists')
+  })
+})
+
+describe('banStaff', () => {
+  it('invokes ban-user edge function with staff role', async () => {
+    const mockInvoke = vi.fn().mockResolvedValue({ data: { success: true }, error: null })
+    vi.mocked(supabase.functions).invoke = mockInvoke
+    await banStaff('staff-456', 'Policy violation')
+    expect(mockInvoke).toHaveBeenCalledWith('ban-user', {
+      body: { userId: 'staff-456', reason: 'Policy violation', role: 'staff' },
+    })
+  })
+
+  it('throws when edge function returns error', async () => {
+    const mockResponse = new Response(
+      JSON.stringify({ error: 'Forbidden' }),
+      { status: 403 }
+    )
+    const mockInvoke = vi.fn().mockResolvedValue({
+      data: null,
+      error: Object.assign(
+        new Error('Edge Function returned a non-2xx status code'),
+        { context: mockResponse }
+      ),
+    })
+    vi.mocked(supabase.functions).invoke = mockInvoke
+    await expect(banStaff('staff-456', 'Policy violation')).rejects.toThrow()
   })
 })
