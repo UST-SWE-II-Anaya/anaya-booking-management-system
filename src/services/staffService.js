@@ -5,7 +5,7 @@ export const getStaff = async () => {
   const { data, error } = await supabase
     .from('profiles')
     .select(`
-      id, reference_id, first_name, last_name, email, phone_number, avatar_url, created_at, role,
+      id, reference_id, first_name, last_name, email, phone_number, avatar_url, created_at, role, account_status,
       staff_details(is_active)
     `)
     .in('role', ['staff', 'admin'])
@@ -18,7 +18,7 @@ export const getStaffById = async (id) => {
   const { data, error } = await supabase
     .from('profiles')
     .select(`
-      id, reference_id, first_name, last_name, email, phone_number, avatar_url, created_at, role, date_of_birth, gender,
+      id, reference_id, first_name, last_name, email, phone_number, avatar_url, created_at, role, date_of_birth, gender, account_status,
       staff_details(is_active)
     `)
     .eq('id', id)
@@ -68,8 +68,8 @@ export const reviewLeaveRequest = async (id, status, reviewedBy) => {
 
 export const deactivateStaff = async (id) => {
   const { data, error } = await supabase
-    .from('staff_details')
-    .update({ is_active: false, updated_at: new Date().toISOString() })
+    .from('profiles')
+    .update({ account_status: 'suspended', updated_at: new Date().toISOString() })
     .eq('id', id)
     .select()
     .single()
@@ -79,8 +79,8 @@ export const deactivateStaff = async (id) => {
 
 export const activateStaff = async (id) => {
   const { data, error } = await supabase
-    .from('staff_details')
-    .update({ is_active: true, updated_at: new Date().toISOString() })
+    .from('profiles')
+    .update({ account_status: 'active', updated_at: new Date().toISOString() })
     .eq('id', id)
     .select()
     .single()
@@ -95,8 +95,7 @@ export const getStaffList = async () => {
 }
 
 export const getActiveStaffList = async () => {
-  const data = await getStaffList()
-  return (data ?? []).filter((s) => s.is_active !== false)
+  return await getStaffList()
 }
 
 export const inviteUser = async ({ firstName, lastName, email, phone, role }) => {

@@ -120,11 +120,10 @@ const StaffPage = () => {
                     />
                   </td>
                   <td className="px-5 py-3.5">
-                    {s.role === 'admin' || s.staff_details?.[0]?.is_active === true ? (
-                      <Badge variant="active" label="Active" />
-                    ) : (
-                      <Badge variant="suspended" label="Inactive" />
-                    )}
+                    <Badge
+                      variant={s.account_status === 'active' ? 'active' : 'suspended'}
+                      label={s.account_status === 'active' ? 'Active' : 'Inactive'}
+                    />
                   </td>
                   <td className="px-5 py-3.5 text-gray-400 text-xs text-nowrap">
                     {new Date(s.created_at).toLocaleDateString()}
@@ -140,36 +139,34 @@ const StaffPage = () => {
                         <Eye size={14} className="group-hover:text-white" />
                         View
                       </button>
-                      {s.role === 'staff' && (
-                        s.staff_details?.[0]?.is_active === true ? (
-                          <button
-                            onClick={() => setConfirm({
-                              id: s.id,
-                              action: 'Deactivate',
-                              message: `Deactivate ${s.first_name} ${s.last_name}?`,
-                            })}
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 border border-red-500
-                              rounded-lg text-red-500 hover:bg-red-500 hover:text-white
-                              transition-all text-xs font-medium group"
-                          >
-                            <Trash2 size={14} className="group-hover:text-white" />
-                            Deactivate
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => setConfirm({
-                              id: s.id,
-                              action: 'Reactivate',
-                              message: `Reactivate ${s.first_name} ${s.last_name}?`,
-                            })}
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 border border-green-600
-                              rounded-lg text-green-600 hover:bg-green-600 hover:text-white
-                              transition-all text-xs font-medium group"
-                          >
-                            <UserCheck size={14} className="group-hover:text-white" />
-                            Reactivate
-                          </button>
-                        )
+                      {s.account_status === 'active' ? (
+                        <button
+                          onClick={() => setConfirm({
+                            id: s.id,
+                            action: 'Deactivate',
+                            message: `Deactivate ${s.first_name} ${s.last_name}?`,
+                          })}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 border border-red-500
+                            rounded-lg text-red-500 hover:bg-red-500 hover:text-white
+                            transition-all text-xs font-medium group"
+                        >
+                          <Trash2 size={14} className="group-hover:text-white" />
+                          Deactivate
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setConfirm({
+                            id: s.id,
+                            action: 'Reactivate',
+                            message: `Reactivate ${s.first_name} ${s.last_name}?`,
+                          })}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 border border-green-600
+                            rounded-lg text-green-600 hover:bg-green-600 hover:text-white
+                            transition-all text-xs font-medium group"
+                        >
+                          <UserCheck size={14} className="group-hover:text-white" />
+                          Reactivate
+                        </button>
                       )}
                     </div>
                   </td>

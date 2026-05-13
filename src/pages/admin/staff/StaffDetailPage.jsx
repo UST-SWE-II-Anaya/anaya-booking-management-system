@@ -51,7 +51,7 @@ const StaffDetailPage = () => {
   if (error) return <p className="text-red-600 p-4 text-sm">{error}</p>
   if (!staff) return null
 
-  const isActive = staff.staff_details?.is_active
+  const isActive = staff.account_status === 'active'
 
   const formatDate = (dateStr) =>
     new Date(dateStr).toLocaleDateString('en-US', {
