@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Lock, Facebook, Mail } from 'lucide-react'
+import { Lock, Mail } from 'lucide-react'
 import Navbar from '../../components/Navbar'
 import useAuthStore from '../../store/authStore'
 import { signOut } from '../../services/authService'
@@ -61,7 +61,6 @@ const AccountInactivePage = () => {
               rel="noopener noreferrer"
               aria-label="Anaya on Facebook"
             >
-              <Facebook size={16} />
               Facebook
             </a>
             <a

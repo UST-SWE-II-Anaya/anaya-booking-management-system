@@ -90,24 +90,33 @@ const DateTimeStep = () => {
                   <p className="text-sm text-gray-400">Loading available times...</p>
                 ) : (
                   <div className="grid grid-cols-6 gap-2">
-                    {slots.map((slot) => (
-                      <button
-                        key={slot.time}
-                        disabled={slot.blocked}
-                        onClick={() => setSelectedTime(slot.time)}
-                        className={clsx(
-                          'py-2 px-1 rounded-lg text-sm border transition-colors text-center',
-                          slot.blocked &&
-                            'opacity-40 cursor-not-allowed bg-gray-50 border-gray-200 text-gray-400',
-                          !slot.blocked && selectedTime === slot.time &&
-                            'bg-anaya-accent text-white border-anaya-accent font-medium',
-                          !slot.blocked && selectedTime !== slot.time &&
-                            'bg-white border-gray-200 hover:border-anaya-accent text-anaya-text'
-                        )}
-                      >
-                        {to12h(slot.time)}
-                      </button>
-                    ))}
+                    {slots.map((slot) => {
+                      const now = new Date()
+                      const isToday = selectedDate === now.toLocaleDateString('en-CA')
+                      const isPast = isToday && (() => {
+                        const [h, m] = slot.time.split(':').map(Number)
+                        return h * 60 + m <= now.getHours() * 60 + now.getMinutes()
+                      })()
+                      const isUnavailable = slot.blocked || isPast
+                      return (
+                        <button
+                          key={slot.time}
+                          disabled={isUnavailable}
+                          onClick={() => setSelectedTime(slot.time)}
+                          className={clsx(
+                            'py-2 px-1 rounded-lg text-sm border transition-colors text-center',
+                            isUnavailable &&
+                              'opacity-40 cursor-not-allowed bg-gray-50 border-gray-200 text-gray-400',
+                            !isUnavailable && selectedTime === slot.time &&
+                              'bg-anaya-accent text-white border-anaya-accent font-medium',
+                            !isUnavailable && selectedTime !== slot.time &&
+                              'bg-white border-gray-200 hover:border-anaya-accent text-anaya-text'
+                          )}
+                        >
+                          {to12h(slot.time)}
+                        </button>
+                      )
+                    })}
                   </div>
                 )}
               </div>
