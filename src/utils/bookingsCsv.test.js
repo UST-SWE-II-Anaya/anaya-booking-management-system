@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { buildCsv } from './bookingsCsv'
 
+const EXPECTED_HEADER =
+  'Ref ID,Customer Name,Email,Phone,Appointment Date,Start Time,' +
+  'Services,Subtotal,Downpayment Amount,Remaining Balance,Booking ' +
+  'Status,Payment Status,Staff,Notes,Created At'
+
 const makeBooking = (overrides = {}) => ({
   reference_id: 'AN-TEST',
   appointment_date: '2026-05-14',
@@ -30,9 +35,7 @@ describe('buildCsv', () => {
   it('includes header row as first line', () => {
     const csv = buildCsv([makeBooking()])
     const firstLine = csv.split('\n')[0]
-    expect(firstLine).toBe(
-      'Ref ID,Customer Name,Email,Phone,Appointment Date,Start Time,Services,Subtotal,Downpayment Amount,Remaining Balance,Booking Status,Payment Status,Staff,Notes,Created At'
-    )
+    expect(firstLine).toBe(EXPECTED_HEADER)
   })
 
   it('maps booking fields to correct columns', () => {
