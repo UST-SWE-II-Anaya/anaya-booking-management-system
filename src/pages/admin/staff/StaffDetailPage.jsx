@@ -11,6 +11,7 @@ import {
 import Badge from '../../../components/common/Badge'
 import Spinner from '../../../components/common/Spinner'
 import ConfirmDialog from '../../../components/common/ConfirmDialog'
+import DeactivateAccountModal from '../../../components/admin/accounts/DeactivateAccountModal'
 
 const StaffDetailPage = () => {
   const { id } = useParams()
@@ -19,7 +20,8 @@ const StaffDetailPage = () => {
   const [leaves, setLeaves] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [confirm, setConfirm] = useState(null)
+  const [confirm, setConfirm] = useState(false)
+  const [deactivateModal, setDeactivateModal] = useState(false)
 
   const load = () => {
     setLoading(true)
@@ -31,19 +33,25 @@ const StaffDetailPage = () => {
 
   useEffect(() => { load() }, [id])
 
-  const handleStatusChange = async () => {
-    if (!confirm) return
+  const handleReactivate = async () => {
     try {
-      if (confirm.newStatus === 'active') {
-        await activateStaff(id)
-      } else {
-        await deactivateStaff(id)
-      }
+      await activateStaff(id)
       load()
     } catch (err) {
       setError(err.message)
     } finally {
-      setConfirm(null)
+      setConfirm(false)
+    }
+  }
+
+  const handleDeactivate = async (reason) => {
+    try {
+      await deactivateStaff(id, reason)
+      load()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setDeactivateModal(false)
     }
   }
 
@@ -108,12 +116,7 @@ const StaffDetailPage = () => {
         <div className="flex gap-3 mt-5 pt-4 border-t border-gray-100">
           {isActive ? (
             <button
-              onClick={() => setConfirm({
-                newStatus: 'inactive',
-                label: 'Deactivate Staff',
-                message: 'This staff member will no longer be active or able to login.',
-                danger: true,
-              })}
+              onClick={() => setDeactivateModal(true)}
               className="px-4 py-2 text-sm border border-red-200 text-red-600
                 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
             >
@@ -121,11 +124,7 @@ const StaffDetailPage = () => {
             </button>
           ) : (
             <button
-              onClick={() => setConfirm({
-                newStatus: 'active',
-                label: 'Reactivate Staff',
-                message: 'Restore this staff member\'s access to the system.',
-              })}
+              onClick={() => setConfirm(true)}
               className="px-4 py-2 text-sm bg-[#8A956D] text-white rounded-lg
                 hover:bg-[#7a8560] transition-colors cursor-pointer"
             >
@@ -170,13 +169,21 @@ const StaffDetailPage = () => {
       </div>
 
       <ConfirmDialog
-        open={!!confirm}
-        onClose={() => setConfirm(null)}
-        onConfirm={handleStatusChange}
-        title={confirm?.label ?? ''}
-        message={confirm?.message ?? ''}
-        confirmLabel={confirm?.label}
-        danger={confirm?.danger}
+        open={confirm}
+        onClose={() => setConfirm(false)}
+        onConfirm={handleReactivate}
+        title="Reactivate Staff"
+        message="Restore this staff member's access to the system."
+        confirmLabel="Reactivate"
+      />
+
+      <DeactivateAccountModal
+        open={deactivateModal}
+        onClose={() => setDeactivateModal(false)}
+        onConfirm={handleDeactivate}
+        userName={staff ? `${staff.first_name} ${staff.last_name}` : ''}
+        userRole={staff?.role ?? 'staff'}
+        action="deactivate"
       />
     </div>
   )
