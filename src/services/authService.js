@@ -74,8 +74,11 @@ export const updateProfile = async (userId, updates) => {
  * @param {string} [redirectTo] - The URL to redirect to after clicking the link.
  */
 export const sendPasswordResetEmail = async (email, redirectTo) => {
+  const baseUrl = window.location.origin
+  const resetUrl = redirectTo || `${baseUrl}/reset-password`
+
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: redirectTo || `${window.location.origin}/reset-password`,
+    redirectTo: resetUrl,
   })
   if (error) throw error
   return data
