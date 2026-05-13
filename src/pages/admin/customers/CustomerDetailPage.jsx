@@ -6,6 +6,7 @@ import {
   getCustomerById,
   getCustomerBookings,
   updateAccountStatus,
+  banCustomer,
 } from '../../../services/customerService'
 import Badge from '../../../components/common/Badge'
 import Spinner from '../../../components/common/Spinner'
@@ -48,7 +49,11 @@ const CustomerDetailPage = () => {
 
   const handleDeactivate = async (reason) => {
     try {
-      await updateAccountStatus(id, STATUS_MAP[deactivateModal.action], reason)
+      if (deactivateModal.action === 'ban') {
+        await banCustomer(id, reason)
+      } else {
+        await updateAccountStatus(id, STATUS_MAP[deactivateModal.action], reason)
+      }
       load()
     } catch (err) {
       setError(err.message)

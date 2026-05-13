@@ -5,6 +5,7 @@ import { Users, Eye, PauseCircle, UserX, UserCheck } from 'lucide-react'
 import {
   getCustomers,
   updateAccountStatus,
+  banCustomer,
 } from '../../../services/customerService'
 import Badge from '../../../components/common/Badge'
 import SearchInput from '../../../components/common/SearchInput'
@@ -44,7 +45,11 @@ const CustomersPage = () => {
   const handleStatusChange = async () => {
     if (!confirm) return
     try {
-      await updateAccountStatus(confirm.id, confirm.newStatus)
+      if (confirm.newStatus === 'banned') {
+        await banCustomer(confirm.id)
+      } else {
+        await updateAccountStatus(confirm.id, confirm.newStatus)
+      }
       load()
     } catch (err) {
       setError(err.message)
