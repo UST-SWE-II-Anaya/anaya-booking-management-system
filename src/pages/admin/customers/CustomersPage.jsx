@@ -12,6 +12,7 @@ import SearchInput from '../../../components/common/SearchInput'
 import Spinner from '../../../components/common/Spinner'
 import EmptyState from '../../../components/common/EmptyState'
 import ConfirmDialog from '../../../components/common/ConfirmDialog'
+import DeactivateAccountModal from '../../../components/admin/accounts/DeactivateAccountModal'
 
 const STATUS_FILTERS = ['all', 'active', 'suspended', 'banned']
 
@@ -25,6 +26,7 @@ const CustomersPage = () => {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
   const [confirm, setConfirm] = useState(null)
+  const [suspendModal, setSuspendModal] = useState(null)
   const pageSize = 20
 
   const load = useCallback(() => {
@@ -45,16 +47,24 @@ const CustomersPage = () => {
   const handleStatusChange = async () => {
     if (!confirm) return
     try {
-      if (confirm.newStatus === 'banned') {
-        await banCustomer(confirm.id)
-      } else {
-        await updateAccountStatus(confirm.id, confirm.newStatus)
-      }
+      await banCustomer(confirm.id)
       load()
     } catch (err) {
       setError(err.message)
     } finally {
       setConfirm(null)
+    }
+  }
+
+  const handleSuspend = async (reason) => {
+    if (!suspendModal) return
+    try {
+      await updateAccountStatus(suspendModal.id, 'suspended', reason)
+      load()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSuspendModal(null)
     }
   }
 
@@ -143,14 +153,12 @@ const CustomersPage = () => {
                         </button>
                         {c.account_status === 'active' ? (
                           <button
-                            onClick={() => setConfirm({
+                            onClick={() => setSuspendModal({
                               id: c.id,
-                              action: 'Suspend',
-                              newStatus: 'suspended',
-                              message: `Suspend ${c.first_name} ${c.last_name}?`,
+                              name: `${c.first_name} ${c.last_name}`,
                             })}
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 border border-yellow-600 
-                              rounded-lg text-yellow-600 hover:bg-yellow-600 hover:text-white 
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 border border-yellow-600
+                              rounded-lg text-yellow-600 hover:bg-yellow-600 hover:text-white
                               transition-all text-xs font-medium group"
                           >
                             <PauseCircle size={14} className="group-hover:text-white" />
@@ -177,7 +185,6 @@ const CustomersPage = () => {
                             onClick={() => setConfirm({
                               id: c.id,
                               action: 'Ban',
-                              newStatus: 'banned',
                               message: `Are you sure you want to ban ${c.first_name} ${c.last_name}?`,
                               description: 'This will permanently ban the account. The user will lose access to the platform and all their data will be retained but inaccessible. This action cannot be undone.',
                               danger: true,
@@ -236,6 +243,15 @@ const CustomersPage = () => {
         description={confirm?.description}
         confirmLabel={confirm?.action}
         danger={confirm?.danger}
+      />
+
+      <DeactivateAccountModal
+        open={!!suspendModal}
+        onClose={() => setSuspendModal(null)}
+        onConfirm={handleSuspend}
+        userName={suspendModal?.name ?? ''}
+        userRole="customer"
+        action="suspend"
       />
     </div>
   )

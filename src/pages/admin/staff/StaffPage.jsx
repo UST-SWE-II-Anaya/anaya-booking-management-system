@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Users, Eye, Trash2, UserCheck, UserPlus } from 'lucide-react'
+import { Users, Eye, PauseCircle, UserCheck, UserPlus, UserX } from 'lucide-react'
 import clsx from 'clsx'
-import { getStaff, deactivateStaff, activateStaff } from '../../../services/staffService'
+import { getStaff, deactivateStaff, activateStaff, banStaff } from '../../../services/staffService'
 import Badge from '../../../components/common/Badge'
 import Spinner from '../../../components/common/Spinner'
 import EmptyState from '../../../components/common/EmptyState'
 import ConfirmDialog from '../../../components/common/ConfirmDialog'
+import DeactivateAccountModal from '../../../components/admin/accounts/DeactivateAccountModal'
 import CreateAccountModal from '../../../components/admin/staff/CreateAccountModal'
 
 const FILTERS = ['all', 'staff', 'admin']
@@ -17,6 +18,8 @@ const StaffPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [confirm, setConfirm] = useState(null)
+  const [deactivateModal, setDeactivateModal] = useState(null)
+  const [banConfirm, setBanConfirm] = useState(null)
   const [filter, setFilter] = useState('all')
   const [showCreate, setShowCreate] = useState(false)
 
@@ -30,19 +33,39 @@ const StaffPage = () => {
 
   useEffect(() => { load() }, [])
 
-  const handleStatusChange = async () => {
+  const handleReactivate = async () => {
     if (!confirm) return
     try {
-      if (confirm.action === 'Reactivate') {
-        await activateStaff(confirm.id)
-      } else {
-        await deactivateStaff(confirm.id)
-      }
+      await activateStaff(confirm.id)
       load()
     } catch (err) {
       setError(err.message)
     } finally {
       setConfirm(null)
+    }
+  }
+
+  const handleBan = async () => {
+    if (!banConfirm) return
+    try {
+      await banStaff(banConfirm.id)
+      load()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBanConfirm(null)
+    }
+  }
+
+  const handleDeactivate = async (reason) => {
+    if (!deactivateModal) return
+    try {
+      await deactivateStaff(deactivateModal.id, reason)
+      load()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setDeactivateModal(null)
     }
   }
 
@@ -141,23 +164,22 @@ const StaffPage = () => {
                       </button>
                       {s.account_status === 'active' ? (
                         <button
-                          onClick={() => setConfirm({
+                          onClick={() => setDeactivateModal({
                             id: s.id,
-                            action: 'Deactivate',
-                            message: `Deactivate ${s.first_name} ${s.last_name}?`,
+                            name: `${s.first_name} ${s.last_name}`,
+                            role: s.role,
                           })}
-                          className="flex items-center gap-1.5 px-2.5 py-1.5 border border-red-500
-                            rounded-lg text-red-500 hover:bg-red-500 hover:text-white
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 border border-yellow-600
+                            rounded-lg text-yellow-600 hover:bg-yellow-600 hover:text-white
                             transition-all text-xs font-medium group"
                         >
-                          <Trash2 size={14} className="group-hover:text-white" />
-                          Deactivate
+                          <PauseCircle size={14} className="group-hover:text-white" />
+                          Suspend
                         </button>
                       ) : (
                         <button
                           onClick={() => setConfirm({
                             id: s.id,
-                            action: 'Reactivate',
                             message: `Reactivate ${s.first_name} ${s.last_name}?`,
                           })}
                           className="flex items-center gap-1.5 px-2.5 py-1.5 border border-green-600
@@ -166,6 +188,20 @@ const StaffPage = () => {
                         >
                           <UserCheck size={14} className="group-hover:text-white" />
                           Reactivate
+                        </button>
+                      )}
+                      {s.role === 'staff' && s.account_status !== 'banned' && (
+                        <button
+                          onClick={() => setBanConfirm({
+                            id: s.id,
+                            name: `${s.first_name} ${s.last_name}`,
+                          })}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 border border-red-500
+                            rounded-lg text-red-500 hover:bg-red-500 hover:text-white
+                            transition-all text-xs font-medium group"
+                        >
+                          <UserX size={14} className="group-hover:text-white" />
+                          Ban
                         </button>
                       )}
                     </div>
@@ -180,11 +216,31 @@ const StaffPage = () => {
       <ConfirmDialog
         open={!!confirm}
         onClose={() => setConfirm(null)}
-        onConfirm={handleStatusChange}
-        title={`${confirm?.action} Staff`}
+        onConfirm={handleReactivate}
+        title="Reactivate Staff"
         message={confirm?.message ?? ''}
-        confirmLabel={confirm?.action}
-        danger={confirm?.action !== 'Reactivate'}
+        confirmLabel="Reactivate"
+        danger={false}
+      />
+
+      <DeactivateAccountModal
+        open={!!deactivateModal}
+        onClose={() => setDeactivateModal(null)}
+        onConfirm={handleDeactivate}
+        userName={deactivateModal?.name ?? ''}
+        userRole={deactivateModal?.role ?? 'staff'}
+        action="suspend"
+      />
+
+      <ConfirmDialog
+        open={!!banConfirm}
+        onClose={() => setBanConfirm(null)}
+        onConfirm={handleBan}
+        title="Ban Staff"
+        message={`Are you sure you want to ban ${banConfirm?.name}?`}
+        description="This action is permanent and cannot be undone. The staff member will lose access to the platform immediately."
+        confirmLabel="Ban"
+        danger
       />
 
       <CreateAccountModal
