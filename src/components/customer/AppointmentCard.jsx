@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { formatDuration } from '../../utils/bookingUtils'
+import { formatDuration, to12h } from '../../utils/bookingUtils'
 
 const DOWNPAYMENT_LABEL = {
   pending: 'Pending',
@@ -20,14 +20,6 @@ const DOWNPAYMENT_COLOR = {
   paid: 'text-blue-600',
   verified: 'text-green-600',
   denied: 'text-red-600',
-}
-
-const to12h = (time24) => {
-  if (!time24) return ''
-  const [h, m] = time24.split(':').map(Number)
-  const ampm = h >= 12 ? 'PM' : 'AM'
-  const h12 = h % 12 || 12
-  return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
 }
 
 const AppointmentCard = ({ booking, onViewDetail, onPay, onCancel }) => {
@@ -85,12 +77,14 @@ const AppointmentCard = ({ booking, onViewDetail, onPay, onCancel }) => {
           </div>
         </div>
         <div className="flex flex-col items-end gap-2">
-          <div>
-            <span className="text-xs text-gray-400 block text-right">Balance</span>
-            <p className="font-semibold text-anaya-text text-right">
-              ₱{Number(booking.remaining_balance).toLocaleString()}
-            </p>
-          </div>
+          {booking.booking_status === 'upcoming' && (
+            <div>
+              <span className="text-xs text-gray-400 block text-right">Balance</span>
+              <p className="font-semibold text-anaya-text text-right">
+                ₱{Number(booking.remaining_balance).toLocaleString()}
+              </p>
+            </div>
+          )}
           {/* Action buttons aligned top-right */}
           {isUpcoming && (
             <div
@@ -105,7 +99,7 @@ const AppointmentCard = ({ booking, onViewDetail, onPay, onCancel }) => {
                   Pay Down Payment
                 </button>
               )}
-              {!isExpired && (
+              {!isExpired && booking.downpayment_status !== 'verified' && (
                 <button
                   onClick={() => onCancel(booking)}
                   className="bg-anaya-accent hover:bg-anaya-accent-hover text-white text-xs px-4 py-1.5 rounded-full font-medium transition-colors whitespace-nowrap"

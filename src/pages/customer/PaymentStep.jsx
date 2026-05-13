@@ -3,17 +3,9 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { supabase } from '../../services/supabaseClient'
 import { getMyBookingById } from '../../services/customerBookingService'
-import { formatDuration } from '../../utils/bookingUtils'
+import { formatDuration, to12h } from '../../utils/bookingUtils'
 import useAuthStore from '../../store/authStore'
 import useSiteSettings from '../../hooks/useSiteSettings'
-
-const to12h = (time24) => {
-  if (!time24) return ''
-  const [h, m] = time24.split(':').map(Number)
-  const ampm = h >= 12 ? 'PM' : 'AM'
-  const h12 = h % 12 || 12
-  return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
-}
 
 // GCash QR placeholder — replace src with actual QR image paths when available
 const GCashCard = ({ number, url }) => (
@@ -70,8 +62,8 @@ const PaymentStep = () => {
 
   const handleFile = (file) => {
     if (!file) return
-    if (!['image/jpeg', 'image/jpg'].includes(file.type)) {
-      toast.error('Only JPG/JPEG files are allowed.')
+    if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
+      toast.error('Only JPG, JPEG, or PNG files are allowed.')
       return
     }
     if (file.size > 5 * 1024 * 1024) {
@@ -101,50 +93,48 @@ const PaymentStep = () => {
     }
 
     setSubmitting(true)
+    let insertedPaymentId = null
     try {
       // 1. Upload Receipt
       const path = `${currentUser.id}/${Date.now()}_${receipt.name}`
       const { error: uploadErr } = await supabase.storage
         .from('payment-receipts')
         .upload(path, receipt)
-      
-      if (uploadErr) {
-        console.error('Upload Error:', uploadErr)
-        throw new Error(`Upload failed: ${uploadErr.message}`)
-      }
+      if (uploadErr) throw new Error(`Upload failed: ${uploadErr.message}`)
 
-      const { data: urlData } = supabase.storage
-        .from('payment-receipts')
-        .getPublicUrl(path)
+      const { data: urlData } = supabase.storage.from('payment-receipts').getPublicUrl(path)
 
       // 2. Insert Payment Record
-      const { error: insertErr } = await supabase.from('payments').insert({
-        booking_id: bookingId,
-        reference_number: refNumber,
-        account_name: accountName,
-        receipt_url: urlData.publicUrl,
-        amount: booking.downpayment_amount,
-        status: 'paid',
-      })
-      
-      if (insertErr) {
-        console.error('Insert Error:', insertErr)
-        throw new Error(`Record creation failed: ${insertErr.message}`)
-      }
+      const { data: paymentData, error: insertErr } = await supabase
+        .from('payments')
+        .insert({
+          booking_id: bookingId,
+          reference_number: refNumber,
+          account_name: accountName,
+          receipt_url: urlData.publicUrl,
+          amount: booking.downpayment_amount,
+          status: 'paid',
+        })
+        .select('id')
+        .single()
+      if (insertErr) throw new Error(`Record creation failed: ${insertErr.message}`)
+      insertedPaymentId = paymentData.id
 
       // 3. Update Booking Status
       const { error: updateErr } = await supabase
         .from('bookings')
         .update({ downpayment_status: 'paid' })
         .eq('id', bookingId)
-      
-      if (updateErr) {
-        console.error('Update Error:', updateErr)
-        throw new Error(`Booking update failed: ${updateErr.message}`)
-      }
+      if (updateErr) throw new Error(`Booking update failed: ${updateErr.message}`)
 
       navigate(`/booking/success/${bookingId}`)
-    } catch {
+    } catch (err) {
+      // If we successfully inserted a payment record but failed to update the booking,
+      // attempt to roll back the payment insert to prevent orphaned records.
+      if (insertedPaymentId) {
+        await supabase.from('payments').delete().eq('id', insertedPaymentId)
+      }
+      console.error('Payment error:', err)
       toast.error('Payment submission failed. Please try again.')
     } finally {
       setSubmitting(false)
@@ -265,12 +255,12 @@ const PaymentStep = () => {
                     <p className="text-sm text-anaya-text font-medium">
                       {receipt ? receipt.name : 'Upload a file or drag and drop'}
                     </p>
-                    <p className="text-xs text-gray-400">JPG, JPEG up to 5MB</p>
+                    <p className="text-xs text-gray-400">JPG, JPEG, PNG up to 5MB</p>
                   </div>
                   <input
                     id="receipt-input"
                     type="file"
-                    accept=".jpg,.jpeg"
+                    accept=".jpg,.jpeg,.png"
                     className="hidden"
                     onChange={(e) => handleFile(e.target.files[0])}
                   />

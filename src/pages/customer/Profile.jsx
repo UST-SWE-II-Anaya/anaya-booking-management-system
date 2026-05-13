@@ -22,10 +22,13 @@ const Profile = () => {
   const { user } = useAuthStore()
   const [profile, setProfile] = useState(null)
   const [uploading, setUploading] = useState(false)
+  const [fetchError, setFetchError] = useState(false)
 
   useEffect(() => {
     if (!user?.id) return
-    getMyProfile(user.id).then(setProfile)
+    getMyProfile(user.id)
+      .then(setProfile)
+      .catch(() => setFetchError(true))
   }, [user?.id])
 
   const handleAvatarChange = async (e) => {
@@ -43,6 +46,12 @@ const Profile = () => {
       setUploading(false)
     }
   }
+
+  if (fetchError) return (
+    <div className="min-h-screen bg-anaya-bg flex items-center justify-center">
+      <p className="text-gray-500 text-center mt-10">Could not load profile. Please refresh.</p>
+    </div>
+  )
 
   if (!profile) return (
     <div className="min-h-screen bg-anaya-bg flex items-center justify-center">

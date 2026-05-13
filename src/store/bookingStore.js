@@ -7,6 +7,7 @@ const useBookingStore = create(
       cart: [],
       staffPreference: 'any',
       selectedStaffId: null,
+      selectedStaffName: null,
       selectedDate: null,
       selectedTime: null,
       bookingNotes: '',
@@ -28,12 +29,14 @@ const useBookingStore = create(
         set((s) => ({
           staffPreference: pref,
           selectedStaffId: null,
+          selectedStaffName: null,
           previousSessionKey: s.bookingSessionKey || s.previousSessionKey,
           bookingSessionKey: null,
         })),
-      setSelectedStaff: (id) =>
+      setSelectedStaff: (id, name) =>
         set((s) => ({
           selectedStaffId: id,
+          selectedStaffName: name,
           previousSessionKey: s.bookingSessionKey || s.previousSessionKey,
           bookingSessionKey: null,
         })),
@@ -51,6 +54,7 @@ const useBookingStore = create(
           cart: [],
           staffPreference: 'any',
           selectedStaffId: null,
+          selectedStaffName: null,
           selectedDate: null,
           selectedTime: null,
           bookingNotes: '',

@@ -2,15 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import useBookingStore from '../../store/bookingStore'
 import { getMyBookingById } from '../../services/customerBookingService'
-import { formatDuration } from '../../utils/bookingUtils'
-
-const to12h = (time24) => {
-  if (!time24) return ''
-  const [h, m] = time24.split(':').map(Number)
-  const ampm = h >= 12 ? 'PM' : 'AM'
-  const h12 = h % 12 || 12
-  return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
-}
+import { formatDuration, to12h } from '../../utils/bookingUtils'
 
 const SuccessPage = () => {
   const { bookingId } = useParams()

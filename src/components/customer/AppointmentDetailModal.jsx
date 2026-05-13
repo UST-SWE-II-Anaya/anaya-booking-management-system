@@ -1,20 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { formatDuration } from '../../utils/bookingUtils'
-
-const to12h = (time24) => {
-  if (!time24) return ''
-  const [h, m] = time24.split(':').map(Number)
-  const ampm = h >= 12 ? 'PM' : 'AM'
-  const h12 = h % 12 || 12
-  return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
-}
-
-const professionalLabel = (pref) => {
-  if (pref === 'any') return 'Any Available'
-  if (pref === 'any_female') return 'Any Female Available'
-  if (pref === 'any_male') return 'Any Male Available'
-  return 'Specific Professional'
-}
+import { formatDuration, to12h, professionalLabel } from '../../utils/bookingUtils'
 
 const AppointmentDetailModal = ({ booking, onClose }) => {
   const navigate = useNavigate()
@@ -121,7 +106,7 @@ const AppointmentDetailModal = ({ booking, onClose }) => {
             <span>₱{Number(booking.subtotal).toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-gray-500">
-            <span>Down Payment (10%)</span>
+            <span>Down Payment</span>
             <span>₱{Number(booking.downpayment_amount).toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-gray-500">
