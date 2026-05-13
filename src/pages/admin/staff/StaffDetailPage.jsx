@@ -7,6 +7,7 @@ import {
   getStaffLeaveRequests,
   deactivateStaff,
   activateStaff,
+  banStaff,
 } from '../../../services/staffService'
 import Badge from '../../../components/common/Badge'
 import Spinner from '../../../components/common/Spinner'
@@ -22,6 +23,7 @@ const StaffDetailPage = () => {
   const [error, setError] = useState(null)
   const [confirm, setConfirm] = useState(false)
   const [deactivateModal, setDeactivateModal] = useState(false)
+  const [banModal, setBanModal] = useState(false)
 
   const load = () => {
     setLoading(true)
@@ -55,6 +57,17 @@ const StaffDetailPage = () => {
     }
   }
 
+  const handleBan = async (reason) => {
+    try {
+      await banStaff(id, reason)
+      load()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBanModal(false)
+    }
+  }
+
   if (loading) return <div className="flex justify-center py-20"><Spinner /></div>
   if (error) return <p className="text-red-600 p-4 text-sm">{error}</p>
   if (!staff) return null
@@ -75,7 +88,14 @@ const StaffDetailPage = () => {
         <h1 className="text-xl font-semibold text-[#2C2C2C]">
           {staff.first_name} {staff.last_name}
         </h1>
-        <Badge variant={isActive ? 'active' : 'suspended'} label={isActive ? 'Active' : 'Inactive'} />
+        <Badge
+          variant={staff.account_status}
+          label={
+            staff.account_status === 'active' ? 'Active'
+            : staff.account_status === 'banned' ? 'Banned'
+            : 'Inactive'
+          }
+        />
       </div>
 
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
@@ -115,14 +135,23 @@ const StaffDetailPage = () => {
 
         <div className="flex gap-3 mt-5 pt-4 border-t border-gray-100">
           {isActive ? (
-            <button
-              onClick={() => setDeactivateModal(true)}
-              className="px-4 py-2 text-sm border border-red-200 text-red-600
-                rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
-            >
-              Deactivate
-            </button>
-          ) : (
+            <>
+              <button
+                onClick={() => setDeactivateModal(true)}
+                className="px-4 py-2 text-sm border border-red-200 text-red-600
+                  rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+              >
+                Deactivate
+              </button>
+              <button
+                onClick={() => setBanModal(true)}
+                className="px-4 py-2 text-sm bg-red-500 text-white rounded-lg
+                  hover:bg-red-600 transition-colors cursor-pointer"
+              >
+                Ban
+              </button>
+            </>
+          ) : staff.account_status !== 'banned' ? (
             <button
               onClick={() => setConfirm(true)}
               className="px-4 py-2 text-sm bg-[#8A956D] text-white rounded-lg
@@ -130,7 +159,7 @@ const StaffDetailPage = () => {
             >
               Reactivate
             </button>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -184,6 +213,15 @@ const StaffDetailPage = () => {
         userName={staff ? `${staff.first_name} ${staff.last_name}` : ''}
         userRole={staff?.role ?? 'staff'}
         action="deactivate"
+      />
+
+      <DeactivateAccountModal
+        open={banModal}
+        onClose={() => setBanModal(false)}
+        onConfirm={handleBan}
+        userName={staff ? `${staff.first_name} ${staff.last_name}` : ''}
+        userRole={staff?.role ?? 'staff'}
+        action="ban"
       />
     </div>
   )

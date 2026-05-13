@@ -8,6 +8,12 @@ const actionConfig = {
   deactivate: { title: 'Deactivate Account', confirmLabel: 'Confirm Deactivation', danger: false },
 }
 
+const warningText = {
+  suspend: '⚠ This will prevent the user from logging in. The reason you enter will be visible to them.',
+  ban: '⚠ This action is permanent and cannot be undone. The user will be banned immediately and all their sessions will be revoked.',
+  deactivate: '⚠ This will prevent the user from logging in. The reason you enter will be visible to them.',
+}
+
 const DeactivateAccountModal = ({ open, onClose, onConfirm, userName, userRole, action = 'suspend' }) => {
   const [reason, setReason] = useState('')
   const config = actionConfig[action]
@@ -31,9 +37,13 @@ const DeactivateAccountModal = ({ open, onClose, onConfirm, userName, userRole, 
           {userName} · <span className="capitalize">{userRole}</span>
         </p>
 
-        <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 mb-4">
-          <p className="text-xs text-amber-700">
-            ⚠ This will prevent the user from logging in. The reason you enter will be visible to them.
+        <div className={`rounded-lg p-3 mb-4 border ${
+          action === 'ban'
+            ? 'bg-red-50 border-red-100'
+            : 'bg-amber-50 border-amber-100'
+        }`}>
+          <p className={`text-xs ${action === 'ban' ? 'text-red-700' : 'text-amber-700'}`}>
+            {warningText[action]}
           </p>
         </div>
 
