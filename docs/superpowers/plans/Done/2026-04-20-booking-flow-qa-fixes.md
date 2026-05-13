@@ -61,6 +61,7 @@ DECLARE
   v_preference        professional_preference;
   v_deadline_hours    integer;
   v_idempotency_key   text;
+  v_replaces_key      text;
   v_result            jsonb;
 BEGIN
   v_staff_id          := (payload->>'staff_id')::uuid;
@@ -72,8 +73,19 @@ BEGIN
     'any'::professional_preference
   );
   v_idempotency_key   := NULLIF(payload->>'idempotency_key', '');
+  v_replaces_key      := NULLIF(payload->>'replaces_idempotency_key', '');
 
-  -- If an idempotency key is provided and a matching booking already exists
+  -- 1. If a replacement key is provided, cancel the old abandoned booking
+  -- to release the time slot for the new attempt.
+  IF v_replaces_key IS NOT NULL THEN
+    UPDATE bookings 
+    SET booking_status = 'cancelled', booking_notes = 'Replaced by user edit'
+    WHERE idempotency_key = v_replaces_key 
+      AND customer_id = auth.uid()
+      AND downpayment_status = 'pending';
+  END IF;
+
+  -- 2. If an idempotency key is provided and a matching booking already exists
   -- for the current user, return it instead of inserting a duplicate.
   IF v_idempotency_key IS NOT NULL THEN
     SELECT jsonb_build_object(
@@ -88,6 +100,11 @@ BEGIN
       AND b.customer_id = auth.uid();
 
     IF v_result IS NOT NULL THEN
+      -- Apply any note changes before returning the existing booking.
+      UPDATE bookings
+      SET booking_notes = NULLIF(payload->>'booking_notes', '')
+      WHERE idempotency_key = v_idempotency_key
+        AND customer_id = auth.uid();
       RETURN v_result;
     END IF;
   END IF;
@@ -210,6 +227,7 @@ const reset = () =>
     selectedTime: null,
     bookingNotes: '',
     bookingSessionKey: null,
+    previousSessionKey: null,
   })
 
 // Add these two tests inside describe('bookingStore'):
@@ -219,10 +237,26 @@ it('setBookingSessionKey stores the provided key', () => {
   expect(useBookingStore.getState().bookingSessionKey).toBe('test-uuid-1234')
 })
 
-it('clearBooking resets bookingSessionKey to null', () => {
-  useBookingStore.setState({ bookingSessionKey: 'existing-uuid' })
+it('clearBooking resets bookingSessionKey and previousSessionKey to null', () => {
+  useBookingStore.setState({ bookingSessionKey: 'key', previousSessionKey: 'prev' })
   useBookingStore.getState().clearBooking()
   expect(useBookingStore.getState().bookingSessionKey).toBeNull()
+  expect(useBookingStore.getState().previousSessionKey).toBeNull()
+})
+
+it('setBookingNotes does not affect bookingSessionKey', () => {
+  useBookingStore.setState({ bookingSessionKey: 'key1' })
+  useBookingStore.getState().setBookingNotes('No gel please')
+  expect(useBookingStore.getState().bookingSessionKey).toBe('key1')
+  expect(useBookingStore.getState().previousSessionKey).toBeNull()
+})
+
+it('mutating cart stashes bookingSessionKey into previousSessionKey', () => {
+  useBookingStore.setState({ bookingSessionKey: 'session-1' })
+  useBookingStore.getState().addToCart({ id: 's1' })
+  const s = useBookingStore.getState()
+  expect(s.bookingSessionKey).toBeNull()
+  expect(s.previousSessionKey).toBe('session-1')
 })
 ```
 
@@ -246,6 +280,7 @@ it('clearBooking resets all state', () => {
   expect(s.staffPreference).toBe('any')
   expect(s.bookingNotes).toBe('')
   expect(s.bookingSessionKey).toBeNull()
+  expect(s.previousSessionKey).toBeNull()
 })
 ```
 
@@ -275,15 +310,39 @@ const useBookingStore = create(
       selectedTime: null,
       bookingNotes: '',
       bookingSessionKey: null,
+      previousSessionKey: null,
       addToCart: (service) =>
-        set((s) => ({ cart: [...s.cart, service] })),
+        set((s) => ({
+          cart: [...s.cart, service],
+          previousSessionKey: s.bookingSessionKey || s.previousSessionKey,
+          bookingSessionKey: null,
+        })),
       removeFromCart: (id) =>
-        set((s) => ({ cart: s.cart.filter((item) => item.id !== id) })),
+        set((s) => ({
+          cart: s.cart.filter((item) => item.id !== id),
+          previousSessionKey: s.bookingSessionKey || s.previousSessionKey,
+          bookingSessionKey: null,
+        })),
       setStaffPreference: (pref) =>
-        set({ staffPreference: pref, selectedStaffId: null }),
-      setSelectedStaff: (id) => set({ selectedStaffId: id }),
+        set((s) => ({
+          staffPreference: pref,
+          selectedStaffId: null,
+          previousSessionKey: s.bookingSessionKey || s.previousSessionKey,
+          bookingSessionKey: null,
+        })),
+      setSelectedStaff: (id) =>
+        set((s) => ({
+          selectedStaffId: id,
+          previousSessionKey: s.bookingSessionKey || s.previousSessionKey,
+          bookingSessionKey: null,
+        })),
       setDateTime: (date, time) =>
-        set({ selectedDate: date, selectedTime: time }),
+        set((s) => ({
+          selectedDate: date,
+          selectedTime: time,
+          previousSessionKey: s.bookingSessionKey || s.previousSessionKey,
+          bookingSessionKey: null,
+        })),
       setBookingNotes: (notes) => set({ bookingNotes: notes }),
       setBookingSessionKey: (key) => set({ bookingSessionKey: key }),
       clearBooking: () =>
@@ -295,6 +354,7 @@ const useBookingStore = create(
           selectedTime: null,
           bookingNotes: '',
           bookingSessionKey: null,
+          previousSessionKey: null,
         }),
     }),
     {
@@ -313,7 +373,7 @@ export default useBookingStore
 npx vitest run src/store/bookingStore.test.js
 ```
 
-Expected: all 9 tests PASS
+Expected: all 10 tests PASS
 
 - [ ] **Step 5: Commit**
 
@@ -368,6 +428,7 @@ const ReviewStep = () => {
     clearBooking,
     bookingSessionKey,
     setBookingSessionKey,
+    previousSessionKey,
   } = useBookingStore()
   const [submitting, setSubmitting] = useState(false)
   // Tracks a successful submit so the date-guard below doesn't fire
@@ -419,6 +480,7 @@ const ReviewStep = () => {
     remaining_balance: balance,
     booking_notes: bookingNotes,
     idempotency_key: bookingSessionKey,
+    replaces_idempotency_key: previousSessionKey,
     services: cart.map((s) => ({
       id: s.id,
       price: s.price,

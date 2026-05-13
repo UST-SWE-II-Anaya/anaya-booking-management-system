@@ -4,7 +4,7 @@
 
 **Goal:** Add a "Create Account" button to the Team page that lets admins invite staff or admin accounts via an email invite link, using a Supabase Edge Function to securely call the Auth Admin API.
 
-**Architecture:** A new `invite-user` Supabase Edge Function holds the service role key and calls `supabase.auth.admin.inviteUserByEmail()`. The frontend calls it via `supabase.functions.invoke()`. The existing `handle_new_user` DB trigger creates the `profiles` row automatically from the invite metadata; the Edge Function inserts a `staff_details` row for staff-role accounts. The Team page (currently "Staff" page) is updated to show both staff and admin profiles, with filter pills and a role column.
+**Architecture:** A new `invite-user` Supabase Edge Function holds the service role key and calls `supabase.auth.admin.inviteUserByEmail()`. The frontend calls it via `supabase.functions.invoke()`. The existing `handle_new_user` DB trigger creates the `profiles` row automatically from the invite metadata; a new DB trigger on `profiles` creates the `staff_details` row transactionally for staff accounts. The Team page (currently "Staff" page) is updated to show both staff and admin profiles, with filter pills and a role column.
 
 **Tech Stack:** React, Zustand, Supabase JS client v2, Supabase Edge Functions (Deno/TypeScript), Tailwind CSS v4, clsx, Vitest + React Testing Library
 
@@ -13,7 +13,8 @@
 ## File Map
 
 **Create:**
-- `supabase/functions/invite-user/index.ts` — Edge Function: verifies caller is admin, creates auth user via Admin API, inserts `staff_details` for staff accounts
+- `supabase/migrations/<timestamp>_add_staff_details_trigger.sql` — DB trigger: creates `staff_details` row transactionally when a staff profile is inserted
+- `supabase/functions/invite-user/index.ts` — Edge Function: verifies caller is admin via RLS-scoped query, creates auth user via Admin API
 - `src/components/admin/staff/CreateAccountModal.jsx` — Modal with role slide toggle (Staff/Admin) and invite form
 - `src/components/admin/staff/CreateAccountModal.test.jsx` — Component unit tests
 
@@ -146,14 +147,21 @@ describe('inviteUser', () => {
     expect(result).toEqual({ success: true })
   })
 
-  it('throws when the edge function returns an error object', async () => {
+  it('extracts the error message from a FunctionsHttpError context response', async () => {
+    const mockResponse = new Response(
+      JSON.stringify({ error: 'An account with this email already exists' }),
+      { status: 400 }
+    )
     supabase.functions.invoke.mockResolvedValue({
       data: null,
-      error: new Error('Email already in use'),
+      error: Object.assign(
+        new Error('Edge Function returned a non-2xx status code'),
+        { context: mockResponse }
+      ),
     })
     await expect(
       inviteUser({ firstName: 'A', lastName: 'B', email: 'a@b.com', phone: '', role: 'staff' })
-    ).rejects.toThrow('Email already in use')
+    ).rejects.toThrow('An account with this email already exists')
   })
 })
 ```
@@ -181,7 +189,13 @@ export const inviteUser = async ({ firstName, lastName, email, phone, role }) =>
       role,
     },
   })
-  if (error) throw error
+  if (error) {
+    if (error.context instanceof Response) {
+      const body = await error.context.json().catch(() => ({}))
+      throw new Error(body.error ?? error.message)
+    }
+    throw error
+  }
   return data
 }
 ```
@@ -209,6 +223,35 @@ git commit -m "feat: add inviteUser service function for staff/admin account cre
 - Create: `supabase/functions/invite-user/index.ts`
 
 This runs on Supabase's Deno runtime. There is no local unit test for this task — it is verified end-to-end in Task 5 via the admin UI. Deploy it after writing it.
+
+- [ ] **Step 0: Apply the staff_details DB trigger migration**
+
+Create `supabase/migrations/<timestamp>_add_staff_details_trigger.sql` (replace `<timestamp>` with the current UTC timestamp in `YYYYMMDDHHmmss` format, e.g. `20260512000000`):
+
+```sql
+CREATE OR REPLACE FUNCTION handle_staff_details()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.role = 'staff' THEN
+    INSERT INTO staff_details (id, is_active) VALUES (NEW.id, true)
+    ON CONFLICT (id) DO NOTHING;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_staff_profile_created
+  AFTER INSERT ON profiles
+  FOR EACH ROW EXECUTE FUNCTION handle_staff_details();
+```
+
+Apply to the remote project:
+
+```
+supabase db push --project-ref <your-project-ref>
+```
+
+This trigger fires atomically with every `profiles` insert, so `staff_details` is always created in the same DB transaction — no race condition, no orphaned rows.
 
 - [ ] **Step 1: Create the directory and write the function**
 
@@ -256,7 +299,7 @@ Deno.serve(async (req: Request) => {
       )
     }
 
-    const { data: callerProfile, error: profileError } = await supabaseAdmin
+    const { data: callerProfile, error: profileError } = await supabaseUser
       .from('profiles')
       .select('role')
       .eq('id', user.id)
@@ -306,18 +349,6 @@ Deno.serve(async (req: Request) => {
         JSON.stringify({ error: inviteError.message }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
-    }
-
-    // The handle_new_user DB trigger creates the profiles row.
-    // For staff, also create the staff_details row (needed for activate/deactivate).
-    if (role === 'staff' && inviteData.user) {
-      const { error: detailsError } = await supabaseAdmin
-        .from('staff_details')
-        .insert({ id: inviteData.user.id, is_active: true })
-
-      if (detailsError) {
-        console.error('Failed to create staff_details:', detailsError.message)
-      }
     }
 
     return new Response(
@@ -729,7 +760,7 @@ const StaffPage = () => {
                     />
                   </td>
                   <td className="px-5 py-3.5">
-                    {s.staff_details?.[0]?.is_active !== false ? (
+                    {s.role === 'admin' || s.staff_details?.[0]?.is_active === true ? (
                       <Badge variant="active" label="Active" />
                     ) : (
                       <Badge variant="suspended" label="Inactive" />
@@ -750,7 +781,7 @@ const StaffPage = () => {
                         View
                       </button>
                       {s.role === 'staff' && (
-                        s.staff_details?.[0]?.is_active !== false ? (
+                        s.staff_details?.[0]?.is_active === true ? (
                           <button
                             onClick={() => setConfirm({
                               id: s.id,
@@ -868,7 +899,7 @@ git commit -m "feat: rename Staff sidebar nav item to Team"
 
 - [ ] Task 1: Update `getStaff()` to query both staff and admin profiles
 - [ ] Task 2: Add `inviteUser()` service function
-- [ ] Task 3: Create and deploy `invite-user` Edge Function
+- [ ] Task 3: Apply staff_details DB trigger migration; create and deploy `invite-user` Edge Function
 - [ ] Task 4: Create `CreateAccountModal` with role slide toggle and invite form
 - [ ] Task 5: Update Team page with Create Account button, filter pills, and role column
 - [ ] Task 6: Rename "Staff" sidebar nav label to "Team"

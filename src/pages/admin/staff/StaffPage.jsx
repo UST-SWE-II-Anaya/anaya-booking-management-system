@@ -62,24 +62,26 @@ const StaffPage = () => {
         </button>
       </div>
 
-      <div className="flex gap-2">
-        {FILTERS.map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={clsx(
-              'px-3.5 py-1.5 rounded-full text-xs font-medium capitalize transition-colors',
-              filter === f
-                ? 'bg-[#2C2C2C] text-white'
-                : 'bg-white border border-gray-200 text-gray-500 hover:border-gray-400'
-            )}
-          >
-            {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
-          </button>
-        ))}
-      </div>
-
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-3">
+          <div className="flex gap-1">
+            {FILTERS.map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={clsx(
+                  'px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors',
+                  filter === f
+                    ? 'bg-[#8A956D] text-white'
+                    : 'text-gray-500 hover:bg-gray-100'
+                )}
+              >
+                {f === 'all' ? 'All' : f}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {loading ? (
           <div className="flex justify-center py-16"><Spinner /></div>
         ) : error ? (
