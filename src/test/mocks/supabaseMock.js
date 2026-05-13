@@ -1,7 +1,9 @@
 // src/test/mocks/supabaseMock.js
 import { vi } from 'vitest'
 
-export const createQueryBuilder = (resolvedValue = { data: null, error: null }) => {
+export const createQueryBuilder = (
+  resolvedValue = { data: null, error: null }
+) => {
   const builder = {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),

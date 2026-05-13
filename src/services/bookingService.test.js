@@ -26,7 +26,10 @@ describe('getBookings', () => {
 
 describe('updateBookingStatus', () => {
   it('updates booking_status', async () => {
-    const qb = createQueryBuilder({ data: { id: '1', booking_status: 'finished' }, error: null })
+    const qb = createQueryBuilder({
+      data: { id: '1', booking_status: 'finished' },
+      error: null
+    })
     supabase.from.mockReturnValue(qb)
     const result = await updateBookingStatus('1', 'finished')
     expect(result.booking_status).toBe('finished')
@@ -95,7 +98,10 @@ describe('exportBookings', () => {
   })
 
   it('throws on error', async () => {
-    const qb = createQueryBuilder({ data: null, error: new Error('RLS denied') })
+    const qb = createQueryBuilder({
+      data: null,
+      error: new Error('RLS denied')
+    })
     supabase.from.mockReturnValue(qb)
     await expect(exportBookings({})).rejects.toThrow('RLS denied')
   })
