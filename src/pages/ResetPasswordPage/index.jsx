@@ -1,22 +1,46 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import AuthLayout from '../../components/AuthLayout'
 import InputField from '../../components/InputField'
 import Button from '../../components/Button'
 import { updateUserPassword } from '../../services/authService'
+import { supabase } from '../../services/supabaseClient'
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [sessionReady, setSessionReady] = useState(false)
+  const [sessionError, setSessionError] = useState('')
+
+  useEffect(() => {
+    const code = searchParams.get('code')
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error: exchangeError }) => {
+        if (exchangeError) {
+          setSessionError('This reset link is invalid or has expired. Please request a new one.')
+        } else {
+          setSessionReady(true)
+        }
+      })
+    } else {
+      supabase.auth.getSession().then(({ data }) => {
+        if (data.session) {
+          setSessionReady(true)
+        } else {
+          setSessionError('No valid reset session. Please request a new password reset link.')
+        }
+      })
+    }
+  }, [searchParams])
 
   const handleUpdate = async (e) => {
     if (e) e.preventDefault()
-    
-    // Basic validation
+
     if (!password || password.length < 8) {
       setError('Password must be at least 8 characters.')
       return
@@ -28,12 +52,10 @@ export default function ResetPasswordPage() {
 
     setError('')
     setLoading(true)
-    
+
     try {
       await updateUserPassword(password)
       toast.success('Password updated successfully! Redirecting...')
-      
-      // Small delay to ensure state settles
       setTimeout(() => {
         navigate('/login')
       }, 1500)
@@ -42,8 +64,6 @@ export default function ResetPasswordPage() {
       if (msg.includes('different from the old')) {
         setError('New password must be different from your current one.')
       } else if (msg.includes('Lock broken')) {
-        // This usually means the update worked but a conflict occurred
-        // We can try to navigate anyway or tell them to try logging in
         toast.success('Update completed, please sign in.')
         navigate('/login')
       } else {
@@ -51,6 +71,32 @@ export default function ResetPasswordPage() {
       }
       setLoading(false)
     }
+  }
+
+  if (sessionError) {
+    return (
+      <AuthLayout imageSrc="/flower-single.png">
+        <div className="flex flex-col items-center justify-center text-center py-8">
+          <p className="text-sm text-red-500 mb-6">{sessionError}</p>
+          <Link
+            to="/forgot-password"
+            className="text-xs text-[#8A956D] hover:text-[#7a8560] underline underline-offset-2"
+          >
+            Request a new reset link
+          </Link>
+        </div>
+      </AuthLayout>
+    )
+  }
+
+  if (!sessionReady) {
+    return (
+      <AuthLayout imageSrc="/flower-single.png">
+        <div className="flex flex-col items-center justify-center text-center py-8">
+          <p className="text-sm text-gray-500">Verifying reset link...</p>
+        </div>
+      </AuthLayout>
+    )
   }
 
   return (
