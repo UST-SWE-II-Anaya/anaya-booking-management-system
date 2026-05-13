@@ -136,3 +136,15 @@ export const getMyAppointmentDates = async (staffId, year, month) => {
   if (error) throw error
   return new Set((data ?? []).map((b) => b.appointment_date))
 }
+
+export const claimAppointment = async (bookingId, staffId) => {
+  const { data, error } = await supabase
+    .from('bookings')
+    .update({ staff_id: staffId })
+    .eq('id', bookingId)
+    .is('staff_id', null)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
