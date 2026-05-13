@@ -10,6 +10,7 @@ import {
 import Badge from '../../../components/common/Badge'
 import Spinner from '../../../components/common/Spinner'
 import ConfirmDialog from '../../../components/common/ConfirmDialog'
+import DeactivateAccountModal from '../../../components/admin/accounts/DeactivateAccountModal'
 
 const CustomerDetailPage = () => {
   const { id } = useParams()
@@ -19,6 +20,7 @@ const CustomerDetailPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [confirm, setConfirm] = useState(null)
+  const [deactivateModal, setDeactivateModal] = useState({ open: false, action: 'suspend' })
 
   const load = () => {
     setLoading(true)
@@ -30,15 +32,28 @@ const CustomerDetailPage = () => {
 
   useEffect(() => { load() }, [id])
 
-  const handleStatusChange = async () => {
+  const handleReactivate = async () => {
     if (!confirm) return
     try {
-      await updateAccountStatus(id, confirm.newStatus)
+      await updateAccountStatus(id, 'active')
       load()
     } catch (err) {
       setError(err.message)
     } finally {
       setConfirm(null)
+    }
+  }
+
+  const STATUS_MAP = { suspend: 'suspended', ban: 'banned' }
+
+  const handleDeactivate = async (reason) => {
+    try {
+      await updateAccountStatus(id, STATUS_MAP[deactivateModal.action], reason)
+      load()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setDeactivateModal({ open: false, action: 'suspend' })
     }
   }
 
@@ -100,11 +115,7 @@ const CustomerDetailPage = () => {
         <div className="flex gap-3 mt-5 pt-4 border-t border-gray-100">
           {customer.account_status === 'active' ? (
             <button
-              onClick={() => setConfirm({
-                newStatus: 'suspended',
-                label: 'Suspend Account',
-                message: 'This customer will not be able to make new bookings.',
-              })}
+              onClick={() => setDeactivateModal({ open: true, action: 'suspend' })}
               className="px-4 py-2 text-sm border border-yellow-200 text-yellow-700
                 rounded-lg hover:bg-yellow-50 transition-colors cursor-pointer"
             >
@@ -112,11 +123,7 @@ const CustomerDetailPage = () => {
             </button>
           ) : (
             <button
-              onClick={() => setConfirm({
-                newStatus: 'active',
-                label: 'Reactivate Account',
-                message: 'Restore this customer\'s access.',
-              })}
+              onClick={() => setConfirm(true)}
               className="px-4 py-2 text-sm bg-[#8A956D] text-white rounded-lg
                 hover:bg-[#7a8560] transition-colors cursor-pointer"
             >
@@ -125,12 +132,7 @@ const CustomerDetailPage = () => {
           )}
           {customer.account_status !== 'banned' && (
             <button
-              onClick={() => setConfirm({
-                newStatus: 'banned',
-                label: 'Ban Account',
-                message: 'This action permanently bans the customer.',
-                danger: true,
-              })}
+              onClick={() => setDeactivateModal({ open: true, action: 'ban' })}
               className="px-4 py-2 text-sm border border-red-200 text-red-600
                 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
             >
@@ -182,11 +184,19 @@ const CustomerDetailPage = () => {
       <ConfirmDialog
         open={!!confirm}
         onClose={() => setConfirm(null)}
-        onConfirm={handleStatusChange}
-        title={confirm?.label ?? ''}
-        message={confirm?.message ?? ''}
-        confirmLabel={confirm?.label}
-        danger={confirm?.danger}
+        onConfirm={handleReactivate}
+        title="Reactivate Account"
+        message="Restore this customer's access."
+        confirmLabel="Reactivate"
+      />
+
+      <DeactivateAccountModal
+        open={deactivateModal.open}
+        onClose={() => setDeactivateModal({ open: false, action: 'suspend' })}
+        onConfirm={handleDeactivate}
+        userName={customer ? `${customer.first_name} ${customer.last_name}` : ''}
+        userRole="customer"
+        action={deactivateModal.action}
       />
     </div>
   )
