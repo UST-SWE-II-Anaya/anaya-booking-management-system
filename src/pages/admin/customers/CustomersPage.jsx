@@ -151,7 +151,7 @@ const CustomersPage = () => {
                           <Eye size={14} className="group-hover:text-white" />
                           View
                         </button>
-                        {c.account_status === 'active' ? (
+                        {c.account_status === 'active' && (
                           <button
                             onClick={() => setSuspendModal({
                               id: c.id,
@@ -164,7 +164,8 @@ const CustomersPage = () => {
                             <PauseCircle size={14} className="group-hover:text-white" />
                             Suspend
                           </button>
-                        ) : (
+                        )}
+                        {c.account_status === 'suspended' && (
                           <button
                             onClick={() => setConfirm({
                               id: c.id,
@@ -172,8 +173,8 @@ const CustomersPage = () => {
                               newStatus: 'active',
                               message: `Reactivate ${c.first_name} ${c.last_name}?`,
                             })}
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 border border-green-600 
-                              rounded-lg text-green-600 hover:bg-green-600 hover:text-white 
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 border border-green-600
+                              rounded-lg text-green-600 hover:bg-green-600 hover:text-white
                               transition-all text-xs font-medium group"
                           >
                             <UserCheck size={14} className="group-hover:text-white" />
