@@ -98,3 +98,23 @@ export const getActiveStaffList = async () => {
   const data = await getStaffList()
   return (data ?? []).filter((s) => s.is_active !== false)
 }
+
+export const inviteUser = async ({ firstName, lastName, email, phone, role }) => {
+  const { data, error } = await supabase.functions.invoke('invite-user', {
+    body: {
+      first_name: firstName,
+      last_name: lastName,
+      email,
+      phone_number: phone ?? '',
+      role,
+    },
+  })
+  if (error) {
+    if (error.context instanceof Response) {
+      const body = await error.context.json().catch(() => ({}))
+      throw new Error(body.error ?? error.message)
+    }
+    throw error
+  }
+  return data
+}

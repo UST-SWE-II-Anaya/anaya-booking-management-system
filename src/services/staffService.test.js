@@ -50,3 +50,43 @@ describe('getStaffList', () => {
     await expect(getStaffList()).rejects.toThrow('RPC error')
   })
 })
+
+describe('inviteUser', () => {
+  it('invokes the invite-user edge function with mapped payload', async () => {
+    supabase.functions.invoke.mockResolvedValue({ data: { success: true }, error: null })
+    const result = await inviteUser({
+      firstName: 'Maria',
+      lastName: 'Cruz',
+      email: 'maria@example.com',
+      phone: '09171234567',
+      role: 'staff',
+    })
+    expect(supabase.functions.invoke).toHaveBeenCalledWith('invite-user', {
+      body: {
+        first_name: 'Maria',
+        last_name: 'Cruz',
+        email: 'maria@example.com',
+        phone_number: '09171234567',
+        role: 'staff',
+      },
+    })
+    expect(result).toEqual({ success: true })
+  })
+
+  it('extracts the error message from a FunctionsHttpError context response', async () => {
+    const mockResponse = new Response(
+      JSON.stringify({ error: 'An account with this email already exists' }),
+      { status: 400 }
+    )
+    supabase.functions.invoke.mockResolvedValue({
+      data: null,
+      error: Object.assign(
+        new Error('Edge Function returned a non-2xx status code'),
+        { context: mockResponse }
+      ),
+    })
+    await expect(
+      inviteUser({ firstName: 'A', lastName: 'B', email: 'a@b.com', phone: '', role: 'staff' })
+    ).rejects.toThrow('An account with this email already exists')
+  })
+})
