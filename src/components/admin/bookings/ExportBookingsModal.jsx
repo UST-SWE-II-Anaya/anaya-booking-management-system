@@ -13,6 +13,12 @@ const STATUS_OPTIONS = [
   { value: 'no_show', label: 'No Show' },
 ]
 
+/**
+ * @param {{
+ *   open: boolean,
+ *   onClose: () => void
+ * }} props
+ */
 const ExportBookingsModal = ({ open, onClose }) => {
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -114,7 +120,8 @@ const ExportBookingsModal = ({ open, onClose }) => {
             disabled={loading}
             className="flex items-center gap-2 px-4 py-2 bg-[#8A956D]
               text-white rounded-lg text-sm font-medium
-              hover:bg-[#7a8560] transition-colors disabled:opacity-50"
+              hover:bg-[#7a8560] transition-colors disabled:opacity-50
+              disabled:cursor-not-allowed"
           >
             <Download size={14} />
             {loading ? 'Exporting…' : 'Download CSV'}
