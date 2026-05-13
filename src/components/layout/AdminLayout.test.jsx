@@ -28,7 +28,7 @@ describe('AdminLayout', () => {
     expect(screen.getByText('Dashboard')).toBeInTheDocument()
     expect(screen.getByText('Bookings')).toBeInTheDocument()
     expect(screen.getByText('Customers')).toBeInTheDocument()
-    expect(screen.getByText('Staff')).toBeInTheDocument()
+    expect(screen.getByText('Team')).toBeInTheDocument()
     expect(screen.getByText('Services')).toBeInTheDocument()
     expect(screen.getByText('Inquiries')).toBeInTheDocument()
     expect(screen.getByText('Settings')).toBeInTheDocument()

@@ -17,7 +17,7 @@ const navItems = [
   { label: 'Dashboard', to: '/admin', icon: LayoutDashboard, end: true },
   { label: 'Bookings', to: '/admin/bookings', icon: CalendarDays },
   { label: 'Customers', to: '/admin/customers', icon: Users },
-  { label: 'Staff', to: '/admin/staff', icon: Briefcase, end: true },
+  { label: 'Team', to: '/admin/staff', icon: Briefcase, end: true },
   { label: 'Leave Requests', to: '/admin/staff/leave-requests', icon: ClipboardList },
   { label: 'Services', to: '/admin/services', icon: Scissors },
   { label: 'Inquiries', to: '/admin/inquiries', icon: Mail },
