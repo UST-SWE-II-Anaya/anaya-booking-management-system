@@ -57,6 +57,7 @@ When an admin creates a staff or admin account via the "Create Account" modal, t
 - Subtext: "You've been invited as a [role] member. Create a password to activate your account."
 - New Password field (min 8 characters)
 - Confirm Password field
+- **Gender select** (staff only, required): "Male" / "Female" / "Prefer not to say" — shown between the password fields and the submit button; hidden entirely for admin invitees
 - "Activate Account" submit button (brand green `#8A956D`)
 - "Back to Login" link at bottom
 - Inline validation errors below the relevant field
@@ -74,16 +75,18 @@ Name and role come from `user.user_metadata` set during the invite:
 - `user_metadata.role` → displayed as "Staff" or "Admin"
 
 ### On submit
-1. Validate: password ≥ 8 chars, passwords match
+1. Validate: password ≥ 8 chars, passwords match, gender selected (staff only)
 2. Call `updateUserPassword(password)`
-3. Success: `toast.success('Account activated!')` → `navigate('/login')`
-4. Error: inline error below the form
+3. If role is `staff`: call `updateProfile(user.id, { gender })` from `authService.js`
+4. Success: `toast.success('Account activated!')` → `navigate('/login')`
+5. Error: inline error below the form
 
 ### Reused components
 - `AuthLayout` (wraps the whole page, same as ResetPasswordPage)
 - `InputField`
 - `Button`
 - `Spinner`
+- `updateProfile` from `authService.js` (for saving gender on staff accounts)
 
 ---
 
