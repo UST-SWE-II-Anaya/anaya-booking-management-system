@@ -19,7 +19,6 @@ const StaffPage = () => {
   const [error, setError] = useState(null)
   const [confirm, setConfirm] = useState(null)
   const [deactivateModal, setDeactivateModal] = useState(null)
-  const [banConfirm, setBanConfirm] = useState(null)
   const [filter, setFilter] = useState('all')
   const [showCreate, setShowCreate] = useState(false)
 
@@ -45,22 +44,17 @@ const StaffPage = () => {
     }
   }
 
-  const handleBan = async () => {
-    if (!banConfirm) return
-    try {
-      await banStaff(banConfirm.id)
-      load()
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setBanConfirm(null)
-    }
-  }
+
 
   const handleDeactivate = async (reason) => {
     if (!deactivateModal) return
     try {
-      await deactivateStaff(deactivateModal.id, reason)
+      const { id, action } = deactivateModal
+      if (action === 'ban') {
+        await banStaff(id, reason)
+      } else {
+        await deactivateStaff(id, reason)
+      }
       load()
     } catch (err) {
       setError(err.message)
@@ -144,8 +138,12 @@ const StaffPage = () => {
                   </td>
                   <td className="px-5 py-3.5">
                     <Badge
-                      variant={s.account_status === 'active' ? 'active' : 'suspended'}
-                      label={s.account_status === 'active' ? 'Active' : 'Inactive'}
+                      variant={s.account_status}
+                      label={
+                        s.account_status === 'active' ? 'Active'
+                        : s.account_status === 'banned' ? 'Banned'
+                        : 'Inactive'
+                      }
                     />
                   </td>
                   <td className="px-5 py-3.5 text-gray-400 text-xs text-nowrap">
@@ -193,9 +191,11 @@ const StaffPage = () => {
                       )}
                       {s.role === 'staff' && s.account_status !== 'banned' && (
                         <button
-                          onClick={() => setBanConfirm({
+                          onClick={() => setDeactivateModal({
                             id: s.id,
                             name: `${s.first_name} ${s.last_name}`,
+                            role: s.role,
+                            action: 'ban',
                           })}
                           className="flex items-center gap-1.5 px-2.5 py-1.5 border border-red-500
                             rounded-lg text-red-500 hover:bg-red-500 hover:text-white
@@ -230,19 +230,10 @@ const StaffPage = () => {
         onConfirm={handleDeactivate}
         userName={deactivateModal?.name ?? ''}
         userRole={deactivateModal?.role ?? 'staff'}
-        action="suspend"
+        action={deactivateModal?.action ?? 'suspend'}
       />
 
-      <ConfirmDialog
-        open={!!banConfirm}
-        onClose={() => setBanConfirm(null)}
-        onConfirm={handleBan}
-        title="Ban Staff"
-        message={`Are you sure you want to ban ${banConfirm?.name}?`}
-        description="This action is permanent and cannot be undone. The staff member will lose access to the platform immediately."
-        confirmLabel="Ban"
-        danger
-      />
+
 
       <CreateAccountModal
         open={showCreate}

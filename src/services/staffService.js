@@ -114,6 +114,7 @@ export const inviteUser = async ({ firstName, lastName, email, phone, role }) =>
       email,
       phone_number: phone ?? '',
       role,
+      redirect_to: `${window.location.origin}/accept-invite`,
     },
   })
   if (error) {

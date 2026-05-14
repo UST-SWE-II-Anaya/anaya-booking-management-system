@@ -94,6 +94,7 @@ describe('inviteUser', () => {
         email: 'maria@example.com',
         phone_number: '09171234567',
         role: 'staff',
+        redirect_to: expect.stringContaining('/accept-invite'),
       },
     })
     expect(result).toEqual({ success: true })

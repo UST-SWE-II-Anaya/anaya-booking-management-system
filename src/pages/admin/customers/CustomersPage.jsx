@@ -26,7 +26,7 @@ const CustomersPage = () => {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
   const [confirm, setConfirm] = useState(null)
-  const [suspendModal, setSuspendModal] = useState(null)
+  const [deactivateModal, setDeactivateModal] = useState(null)
   const pageSize = 20
 
   const load = useCallback(() => {
@@ -47,7 +47,7 @@ const CustomersPage = () => {
   const handleStatusChange = async () => {
     if (!confirm) return
     try {
-      await banCustomer(confirm.id)
+      await updateAccountStatus(confirm.id, 'active')
       load()
     } catch (err) {
       setError(err.message)
@@ -56,15 +56,20 @@ const CustomersPage = () => {
     }
   }
 
-  const handleSuspend = async (reason) => {
-    if (!suspendModal) return
+  const handleDeactivate = async (reason) => {
+    if (!deactivateModal) return
     try {
-      await updateAccountStatus(suspendModal.id, 'suspended', reason)
+      const { id, action } = deactivateModal
+      if (action === 'ban') {
+        await banCustomer(id, reason)
+      } else {
+        await updateAccountStatus(id, 'suspended', reason)
+      }
       load()
     } catch (err) {
       setError(err.message)
     } finally {
-      setSuspendModal(null)
+      setDeactivateModal(null)
     }
   }
 
@@ -135,7 +140,14 @@ const CustomersPage = () => {
                       {c.phone_number || '—'}
                     </td>
                     <td className="px-5 py-3.5">
-                      <Badge variant={c.account_status} label={c.account_status} />
+                      <Badge
+                        variant={c.account_status}
+                        label={
+                          c.account_status === 'active' ? 'Active'
+                          : c.account_status === 'banned' ? 'Banned'
+                          : 'Inactive'
+                        }
+                      />
                     </td>
                     <td className="px-5 py-3.5 text-gray-400 text-xs">
                       {new Date(c.created_at).toLocaleDateString()}
@@ -153,9 +165,10 @@ const CustomersPage = () => {
                         </button>
                         {c.account_status === 'active' && (
                           <button
-                            onClick={() => setSuspendModal({
+                            onClick={() => setDeactivateModal({
                               id: c.id,
                               name: `${c.first_name} ${c.last_name}`,
+                              action: 'suspend',
                             })}
                             className="flex items-center gap-1.5 px-2.5 py-1.5 border border-yellow-600
                               rounded-lg text-yellow-600 hover:bg-yellow-600 hover:text-white
@@ -183,15 +196,13 @@ const CustomersPage = () => {
                         )}
                         {c.account_status !== 'banned' && (
                           <button
-                            onClick={() => setConfirm({
+                            onClick={() => setDeactivateModal({
                               id: c.id,
-                              action: 'Ban',
-                              message: `Are you sure you want to ban ${c.first_name} ${c.last_name}?`,
-                              description: 'This will permanently ban the account. The user will lose access to the platform and all their data will be retained but inaccessible. This action cannot be undone.',
-                              danger: true,
+                              name: `${c.first_name} ${c.last_name}`,
+                              action: 'ban',
                             })}
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 border border-red-500 
-                              rounded-lg text-red-500 hover:bg-red-500 hover:text-white 
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 border border-red-500
+                              rounded-lg text-red-500 hover:bg-red-500 hover:text-white
                               transition-all text-xs font-medium group"
                           >
                             <UserX size={14} className="group-hover:text-white" />
@@ -247,12 +258,12 @@ const CustomersPage = () => {
       />
 
       <DeactivateAccountModal
-        open={!!suspendModal}
-        onClose={() => setSuspendModal(null)}
-        onConfirm={handleSuspend}
-        userName={suspendModal?.name ?? ''}
+        open={!!deactivateModal}
+        onClose={() => setDeactivateModal(null)}
+        onConfirm={handleDeactivate}
+        userName={deactivateModal?.name ?? ''}
         userRole="customer"
-        action="suspend"
+        action={deactivateModal?.action ?? 'suspend'}
       />
     </div>
   )

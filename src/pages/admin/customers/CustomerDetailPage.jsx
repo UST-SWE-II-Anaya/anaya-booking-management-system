@@ -77,7 +77,14 @@ const CustomerDetailPage = () => {
         <h1 className="text-xl font-semibold text-[#2C2C2C]">
           {customer.first_name} {customer.last_name}
         </h1>
-        <Badge variant={customer.account_status} label={customer.account_status} />
+        <Badge
+          variant={customer.account_status}
+          label={
+            customer.account_status === 'active' ? 'Active'
+            : customer.account_status === 'banned' ? 'Banned'
+            : 'Inactive'
+          }
+        />
       </div>
 
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">

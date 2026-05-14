@@ -54,7 +54,7 @@ Deno.serve(async (req: Request) => {
 
     // Parse and validate body
     const body = await req.json()
-    const { first_name, last_name, email, phone_number, role } = body
+    const { first_name, last_name, email, phone_number, role, redirect_to } = body
 
     if (!first_name || !last_name || !email || !role) {
       return new Response(
@@ -70,10 +70,29 @@ Deno.serve(async (req: Request) => {
       )
     }
 
+    // Validate redirect_to is a proper URL if provided
+    if (redirect_to) {
+      try {
+        const url = new URL(redirect_to)
+        if (!['http:', 'https:'].includes(url.protocol)) {
+          return new Response(
+            JSON.stringify({ error: 'redirect_to must be an http or https URL' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+      } catch {
+        return new Response(
+          JSON.stringify({ error: 'redirect_to must be a valid URL' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    }
+
     // Create the auth user and send the invite email
     const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
       email,
       {
+        redirectTo: redirect_to,
         data: {
           first_name,
           last_name,
