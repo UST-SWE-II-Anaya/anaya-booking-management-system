@@ -28,16 +28,21 @@ export default function AcceptInvitePage() {
       setSessionError('No invite code found. Please use the link from your email.')
       return
     }
-    supabase.auth.exchangeCodeForSession(code).then(({ data, error: exchangeError }) => {
-      if (exchangeError) {
-        setSessionError(
-          'This invite link is invalid or has expired. Please ask your admin to resend the invitation.'
-        )
-      } else {
-        setUser(data.session.user)
-        setSessionReady(true)
-      }
-    })
+    supabase.auth
+      .exchangeCodeForSession(code)
+      .then(({ data, error: exchangeError }) => {
+        if (exchangeError) {
+          setSessionError(
+            'This invite link is invalid or has expired. Please ask your admin to resend the invitation.'
+          )
+        } else {
+          setUser(data.session.user)
+          setSessionReady(true)
+        }
+      })
+      .catch(() => {
+        setSessionError('An unexpected error occurred. Please try again.')
+      })
   }, [searchParams])
 
   const role = user?.user_metadata?.role ?? ''
