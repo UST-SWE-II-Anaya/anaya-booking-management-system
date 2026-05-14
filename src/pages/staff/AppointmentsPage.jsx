@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { List, CalendarDays } from 'lucide-react'
 import clsx from 'clsx'
 import {
@@ -43,8 +44,8 @@ const formatDeadlineCountdown = (deadlineStr) => {
   const mins = Math.floor((diff / 1000 / 60) % 60)
   return hours > 0 ? `${hours}h ${mins}m left` : `${mins}m left`
 }
-
 const AppointmentCard = ({ appt, onVerifyClick, onClaimClick }) => {
+  const navigate = useNavigate()
   const countdown = formatDeadlineCountdown(appt.payment_deadline)
 
   return (
@@ -121,33 +122,43 @@ const AppointmentCard = ({ appt, onVerifyClick, onClaimClick }) => {
       </div>
 
       {/* Action */}
-      {!appt.staff_id && appt.booking_status === 'upcoming' && (
+      <div className="flex gap-2 pt-1">
         <button
-          onClick={() => onClaimClick(appt.id)}
-          className="w-full py-2 bg-[#8A956D] hover:bg-[#7a8560] text-white text-sm
-            font-medium rounded-lg transition-colors"
+          onClick={() => navigate(`/staff/appointments/${appt.id}`)}
+          className="flex-1 py-2 border border-gray-200 text-gray-600 text-sm
+            font-medium rounded-lg hover:bg-gray-50 transition-colors"
         >
-          Take this session
+          View Details
         </button>
-      )}
-      {appt.staff_id && appt.downpayment_status === 'paid' && (
-        <button
-          onClick={() => onVerifyClick(appt.id)}
-          className="w-full py-2 bg-[#CE845D] hover:bg-[#b87652] text-white text-sm
-            font-medium rounded-lg transition-colors"
-        >
-          Review Payment
-        </button>
-      )}
-      {appt.staff_id && appt.downpayment_status === 'pending' && (
-        <button
-          onClick={() => onVerifyClick(appt.id)}
-          className="w-full py-2 bg-[#8A956D] hover:bg-[#7a8560] text-white text-sm
-            font-medium rounded-lg transition-colors"
-        >
-          Approve Appointment
-        </button>
-      )}
+
+        {!appt.staff_id && appt.booking_status === 'upcoming' && (
+          <button
+            onClick={() => onClaimClick(appt.id)}
+            className="flex-1 py-2 bg-[#8A956D] hover:bg-[#7a8560] text-white text-sm
+              font-medium rounded-lg transition-colors"
+          >
+            Take session
+          </button>
+        )}
+        {appt.staff_id && appt.downpayment_status === 'paid' && (
+          <button
+            onClick={() => onVerifyClick(appt.id)}
+            className="flex-1 py-2 bg-[#CE845D] hover:bg-[#b87652] text-white text-sm
+              font-medium rounded-lg transition-colors"
+          >
+            Review Pay
+          </button>
+        )}
+        {appt.staff_id && appt.downpayment_status === 'pending' && (
+          <button
+            onClick={() => onVerifyClick(appt.id)}
+            className="flex-1 py-2 bg-[#8A956D] hover:bg-[#7a8560] text-white text-sm
+              font-medium rounded-lg transition-colors"
+          >
+            Approve
+          </button>
+        )}
+      </div>
     </div>
   )
 }

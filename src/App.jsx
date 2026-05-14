@@ -28,6 +28,7 @@ import StaffDashboardPage from './pages/staff/DashboardPage'
 import StaffAppointmentsPage from './pages/staff/AppointmentsPage'
 import StaffLeaveRequestPage from './pages/staff/LeaveRequestPage'
 import StaffProfileSettingsPage from './pages/staff/ProfileSettingsPage'
+import StaffAppointmentDetailPage from './pages/staff/StaffAppointmentDetailPage'
 
 // Customer pages
 import CustomerRoute from './components/layout/CustomerRoute'
@@ -104,6 +105,7 @@ const App = () => {
         <Route element={<StaffLayout />}>
           <Route path="/staff" element={<StaffDashboardPage />} />
           <Route path="/staff/appointments" element={<StaffAppointmentsPage />} />
+          <Route path="/staff/appointments/:id" element={<StaffAppointmentDetailPage />} />
           <Route path="/staff/leave" element={<StaffLeaveRequestPage />} />
           <Route path="/staff/profile" element={<StaffProfileSettingsPage />} />
         </Route>

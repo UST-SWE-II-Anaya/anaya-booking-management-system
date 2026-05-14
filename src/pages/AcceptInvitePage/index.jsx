@@ -7,6 +7,7 @@ import Button from '../../components/Button'
 import Spinner from '../../components/common/Spinner'
 import { updateUserPassword, updateProfile, signOut } from '../../services/authService'
 import { supabase } from '../../services/supabaseClient'
+import useAuthStore from '../../store/authStore'
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Prefer not to say']
 
@@ -23,26 +24,66 @@ export default function AcceptInvitePage() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    const code = searchParams.get('code')
-    if (!code) {
-      setSessionError('No invite code found. Please use the link from your email.')
-      return
+    let mounted = true
+    let authSub = null
+
+    const checkInitialSession = async () => {
+      // 1. Check if we already have a session
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user && mounted) {
+        setUser(session.user)
+        setSessionReady(true)
+        return true
+      }
+      return false
     }
-    supabase.auth
-      .exchangeCodeForSession(code)
-      .then(({ data, error: exchangeError }) => {
-        if (exchangeError) {
-          setSessionError(
-            'This invite link is invalid or has expired. Please ask your admin to resend the invitation.'
-          )
-        } else {
-          setUser(data.session.user)
+
+    const init = async () => {
+      // Try initial check
+      if (await checkInitialSession()) return
+
+      // 2. Listen for session (catches hash-based login)
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (session?.user && mounted) {
+          setUser(session.user)
           setSessionReady(true)
+          if (authSub) authSub.unsubscribe()
         }
       })
-      .catch(() => {
-        setSessionError('An unexpected error occurred. Please try again.')
-      })
+      authSub = subscription
+
+      // 3. Check for PKCE code
+      const code = searchParams.get('code')
+      if (code) {
+        try {
+          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+          if (exchangeError) {
+            if (mounted) setSessionError('This invite link is invalid or has expired.')
+          } else if (mounted) {
+            setUser(data.session.user)
+            setSessionReady(true)
+          }
+        } catch (err) {
+          if (mounted) setSessionError('An unexpected error occurred.')
+        }
+        if (authSub) authSub.unsubscribe()
+        return
+      }
+
+      // 4. Give it a few seconds to settle (hash processing)
+      setTimeout(() => {
+        if (mounted && !useAuthStore.getState().user && !searchParams.get('code')) {
+          setSessionError('No invite code found. Please use the link from your email.')
+        }
+      }, 2000)
+    }
+
+    init()
+
+    return () => {
+      mounted = false
+      if (authSub) authSub.unsubscribe()
+    }
   }, [searchParams])
 
   const role = user?.user_metadata?.role ?? ''
@@ -69,6 +110,7 @@ export default function AcceptInvitePage() {
       if (role === 'staff') {
         await updateProfile(user.id, { gender })
       }
+      // Sign out after setting password so they can log in fresh with new password
       await signOut()
       toast.success('Account activated! Please sign in.')
       navigate('/login')

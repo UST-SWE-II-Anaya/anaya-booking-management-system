@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { CalendarDays, Clock, TrendingUp } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { CalendarDays, Clock, TrendingUp, ChevronRight } from 'lucide-react'
 import { getMyDashboardStats } from '../../services/staffAppointmentService'
 import useAuthStore from '../../store/authStore'
 import StatCard from '../../components/common/StatCard'
@@ -21,6 +21,7 @@ const formatDuration = (minutes) => {
 }
 
 const StaffDashboardPage = () => {
+  const navigate = useNavigate()
   const { user } = useAuthStore()
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -101,7 +102,11 @@ const StaffDashboardPage = () => {
         ) : (
           <div className="divide-y divide-gray-50">
             {stats.todaysAppointments.map((appt) => (
-              <div key={appt.id} className="px-6 py-4 flex items-center gap-4">
+              <button
+                key={appt.id}
+                onClick={() => navigate(`/staff/appointments/${appt.id}`)}
+                className="w-full px-6 py-4 flex items-center gap-4 hover:bg-gray-50 transition-colors text-left"
+              >
                 <div className="w-20 text-center flex-shrink-0">
                   <p className="text-sm font-semibold text-[#2C2C2C]">
                     {formatTime(appt.start_time)}
@@ -116,7 +121,7 @@ const StaffDashboardPage = () => {
                       ? `${appt.customer.first_name} ${appt.customer.last_name}`
                       : 'Unknown Customer'}
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-xs text-gray-400 mt-0.5 truncate">
                     {appt.booking_services
                       ?.map((bs) => bs.services?.name)
                       .filter(Boolean)
@@ -127,7 +132,8 @@ const StaffDashboardPage = () => {
                   variant={appt.downpayment_status}
                   label={appt.downpayment_status}
                 />
-              </div>
+                <ChevronRight size={16} className="text-gray-300" />
+              </button>
             ))}
           </div>
         )}
