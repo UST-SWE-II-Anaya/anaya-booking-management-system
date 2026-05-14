@@ -47,6 +47,19 @@ const Profile = () => {
     }
   }
 
+  const handleRemoveAvatar = async () => {
+    setUploading(true)
+    try {
+      await updateMyProfile(user.id, { avatar_url: null })
+      setProfile((p) => ({ ...p, avatar_url: null }))
+      toast.success('Profile photo removed.')
+    } catch {
+      toast.error('Failed to remove photo.')
+    } finally {
+      setUploading(false)
+    }
+  }
+
   if (fetchError) return (
     <div className="min-h-screen bg-anaya-bg flex items-center justify-center">
       <p className="text-gray-500 text-center mt-10">Could not load profile. Please refresh.</p>
@@ -101,6 +114,15 @@ const Profile = () => {
           </div>
 
           {uploading && <p className="text-xs text-gray-400 mb-1">Uploading...</p>}
+          {!uploading && profile.avatar_url && (
+            <button
+              type="button"
+              onClick={handleRemoveAvatar}
+              className="text-xs text-gray-400 hover:text-red-400 transition-colors mb-1"
+            >
+              Remove photo
+            </button>
+          )}
 
           <h2 className="text-lg font-semibold text-anaya-text mb-6">{fullName}</h2>
 

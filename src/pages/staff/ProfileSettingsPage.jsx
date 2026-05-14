@@ -6,6 +6,7 @@ import {
   updateMyStaffDetails,
   updateMyPassword,
 } from '../../services/staffProfileService'
+import { uploadAvatar } from '../../services/customerProfileService'
 import useAuthStore from '../../store/authStore'
 import Spinner from '../../components/common/Spinner'
 
@@ -43,6 +44,7 @@ const StaffProfileSettingsPage = () => {
   })
   const [personalSaving, setPersonalSaving] = useState(false)
   const [personalMsg, setPersonalMsg] = useState(null)
+  const [avatarUploading, setAvatarUploading] = useState(false)
 
   const [contact, setContact] = useState({
     contact_number: '',
@@ -82,6 +84,40 @@ const StaffProfileSettingsPage = () => {
       .finally(() => setLoading(false))
   }, [userId])
 
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    setAvatarUploading(true)
+    setPersonalMsg(null)
+    try {
+      const url = await uploadAvatar(file, userId)
+      const updated = await updateMyProfile(userId, { avatar_url: url })
+      setProfile(updated)
+      setPersonal((p) => ({ ...p, avatar_url: url }))
+      setPersonalMsg({ type: 'success', text: 'Profile photo updated.' })
+    } catch (err) {
+      setPersonalMsg({ type: 'error', text: 'Failed to update photo.' })
+      console.error('Avatar upload error:', err)
+    } finally {
+      setAvatarUploading(false)
+    }
+  }
+
+  const handleRemoveAvatar = async () => {
+    setAvatarUploading(true)
+    setPersonalMsg(null)
+    try {
+      const updated = await updateMyProfile(userId, { avatar_url: null })
+      setProfile(updated)
+      setPersonal((p) => ({ ...p, avatar_url: '' }))
+      setPersonalMsg({ type: 'success', text: 'Profile photo removed.' })
+    } catch (err) {
+      setPersonalMsg({ type: 'error', text: 'Failed to remove photo.' })
+    } finally {
+      setAvatarUploading(false)
+    }
+  }
+
   const handlePersonalSave = async (e) => {
     e.preventDefault()
     setPersonalSaving(true)
@@ -90,7 +126,6 @@ const StaffProfileSettingsPage = () => {
       const updated = await updateMyProfile(userId, {
         first_name: personal.first_name,
         last_name: personal.last_name,
-        avatar_url: personal.avatar_url || null,
       })
       setProfile(updated)
       setPersonalMsg({ type: 'success', text: 'Profile updated.' })
@@ -162,31 +197,47 @@ const StaffProfileSettingsPage = () => {
       <Section title="Personal Information">
         <form onSubmit={handlePersonalSave} className="space-y-4">
           <div className="flex items-center gap-4 mb-2">
-            {personal.avatar_url ? (
-              <img
-                src={personal.avatar_url}
-                alt="Avatar"
-                className="w-16 h-16 rounded-full object-cover border border-gray-200"
-                onError={(e) => { e.target.style.display = 'none' }}
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center
-                justify-center">
-                <UserCircle size={32} className="text-gray-400" />
-              </div>
-            )}
-            <div className="flex-1">
-              <label className="block text-xs text-gray-500 mb-1">
-                Profile Picture URL
+            <div className="relative">
+              {personal.avatar_url ? (
+                <img
+                  src={personal.avatar_url}
+                  alt="Avatar"
+                  className="w-16 h-16 rounded-full object-cover border border-gray-200"
+                  onError={(e) => { e.target.style.display = 'none' }}
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+                  <UserCircle size={32} className="text-gray-400" />
+                </div>
+              )}
+              <label className="absolute bottom-0 right-0 bg-white border border-gray-200 rounded-full p-1 cursor-pointer shadow-sm hover:bg-gray-50 transition-colors">
+                <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a4 4 0 01-1.414.828l-3 1 1-3a4 4 0 01.828-1.414z" />
+                </svg>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarChange}
+                  disabled={avatarUploading}
+                />
               </label>
-              <input
-                className={inputClass}
-                value={personal.avatar_url}
-                onChange={(e) =>
-                  setPersonal((p) => ({ ...p, avatar_url: e.target.value }))
-                }
-                placeholder="https://…"
-              />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-[#2C2C2C]">
+                {[personal.first_name, personal.last_name].filter(Boolean).join(' ') || 'Staff'}
+              </p>
+              {avatarUploading ? (
+                <p className="text-xs text-gray-400 mt-0.5">Uploading…</p>
+              ) : personal.avatar_url ? (
+                <button
+                  type="button"
+                  onClick={handleRemoveAvatar}
+                  className="text-xs text-gray-400 hover:text-red-400 transition-colors mt-0.5"
+                >
+                  Remove photo
+                </button>
+              ) : null}
             </div>
           </div>
 
