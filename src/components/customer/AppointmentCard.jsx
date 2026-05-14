@@ -99,7 +99,7 @@ const AppointmentCard = ({ booking, onViewDetail, onPay, onCancel }) => {
                   Pay Down Payment
                 </button>
               )}
-              {!isExpired && booking.downpayment_status !== 'verified' && (
+              {!isExpired && booking.downpayment_status !== 'verified' && booking.downpayment_status !== 'denied' && (
                 <button
                   onClick={() => onCancel(booking)}
                   className="bg-anaya-accent hover:bg-anaya-accent-hover text-white text-xs px-4 py-1.5 rounded-full font-medium transition-colors whitespace-nowrap"

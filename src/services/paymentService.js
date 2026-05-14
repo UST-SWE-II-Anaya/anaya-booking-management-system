@@ -31,7 +31,7 @@ export const denyPayment = async (paymentId, bookingId) => {
 
   const { data, error: bookErr } = await supabase
     .from('bookings')
-    .update({ downpayment_status: 'denied', updated_at: now })
+    .update({ downpayment_status: 'denied', booking_status: 'cancelled', updated_at: now })
     .eq('id', bookingId)
     .select()
     .single()

@@ -23,8 +23,11 @@ export const uploadAvatar = async (file, userId) => {
   const path = `${userId}/${Date.now()}.${ext}`
   const { error } = await supabase.storage
     .from('avatars')
-    .upload(path, file, { upsert: true })
-  if (error) throw error
+    .upload(path, file)
+  if (error) {
+    console.error('Avatar upload error:', error)
+    throw error
+  }
   const { data } = supabase.storage.from('avatars').getPublicUrl(path)
   return data.publicUrl
 }
