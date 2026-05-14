@@ -54,7 +54,7 @@ Deno.serve(async (req: Request) => {
 
     // Parse and validate body
     const body = await req.json()
-    const { first_name, last_name, email, phone_number, role } = body
+    const { first_name, last_name, email, phone_number, role, redirect_to } = body
 
     if (!first_name || !last_name || !email || !role) {
       return new Response(
@@ -74,6 +74,7 @@ Deno.serve(async (req: Request) => {
     const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
       email,
       {
+        redirectTo: redirect_to,
         data: {
           first_name,
           last_name,
