@@ -122,30 +122,28 @@ const AppointmentCard = ({ appt, onVerifyClick, onClaimClick }) => {
 
       {/* Action */}
       {!appt.staff_id && appt.booking_status === 'upcoming' && (
-        <button
-          onClick={() => onClaimClick(appt.id)}
-          className="w-full py-2 bg-[#8A956D] hover:bg-[#7a8560] text-white text-sm
-            font-medium rounded-lg transition-colors"
-        >
-          Take this session
-        </button>
+        ['paid', 'pending'].includes(appt.downpayment_status) ? (
+          <div className="w-full py-2 bg-gray-100 text-gray-500 text-sm font-medium rounded-lg text-center cursor-not-allowed">
+            Awaiting admin payment review
+          </div>
+        ) : (
+          <button
+            onClick={() => onClaimClick(appt.id)}
+            className="w-full py-2 bg-[#8A956D] hover:bg-[#7a8560] text-white text-sm
+              font-medium rounded-lg transition-colors"
+          >
+            Take this session
+          </button>
+        )
       )}
-      {appt.staff_id && appt.downpayment_status === 'paid' && (
+      
+      {['paid', 'pending'].includes(appt.downpayment_status) && (
         <button
           onClick={() => onVerifyClick(appt.id)}
-          className="w-full py-2 bg-[#CE845D] hover:bg-[#b87652] text-white text-sm
-            font-medium rounded-lg transition-colors"
+          className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm
+            font-medium rounded-lg transition-colors border border-gray-200"
         >
-          Review Payment
-        </button>
-      )}
-      {appt.staff_id && appt.downpayment_status === 'pending' && (
-        <button
-          onClick={() => onVerifyClick(appt.id)}
-          className="w-full py-2 bg-[#8A956D] hover:bg-[#7a8560] text-white text-sm
-            font-medium rounded-lg transition-colors"
-        >
-          Approve Appointment
+          View Payment
         </button>
       )}
     </div>
@@ -418,6 +416,7 @@ const StaffAppointmentsPage = () => {
         booking={verifyBooking}
         onClose={() => setVerifyBooking(null)}
         onUpdated={load}
+        readOnly
       />
     </div>
   )

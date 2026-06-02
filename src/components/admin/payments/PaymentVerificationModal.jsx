@@ -11,10 +11,11 @@ import useAuthStore from '../../../store/authStore'
  *   open: boolean,
  *   onClose: () => void,
  *   booking: object | null,
- *   onUpdated: () => void
+ *   onUpdated: () => void,
+ *   readOnly?: boolean
  * }} props
  */
-const PaymentVerificationModal = ({ open, onClose, booking, onUpdated }) => {
+const PaymentVerificationModal = ({ open, onClose, booking, onUpdated, readOnly = false }) => {
   const { user } = useAuthStore()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -144,7 +145,13 @@ const PaymentVerificationModal = ({ open, onClose, booking, onUpdated }) => {
           </p>
         )}
 
-        {payment && ['pending', 'paid'].includes(booking.downpayment_status) && (
+        {readOnly && payment && (
+          <p className="text-sm text-gray-500 italic text-center py-2">
+            Payment verification is handled by an admin.
+          </p>
+        )}
+
+        {!readOnly && payment && ['pending', 'paid'].includes(booking.downpayment_status) && (
           <div className="flex gap-3 pt-2">
             <button
               onClick={handleDeny}
