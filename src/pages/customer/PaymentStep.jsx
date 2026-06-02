@@ -245,16 +245,25 @@ const PaymentStep = () => {
                   className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors ${
                     dragOver
                       ? 'border-anaya-accent bg-anaya-accent/5'
-                      : 'border-gray-300 bg-white hover:border-anaya-accent'
+                      : receipt
+                        ? 'border-green-500 bg-green-50 hover:border-green-600'
+                        : 'border-gray-300 bg-white hover:border-anaya-accent'
                   }`}
                 >
                   <div className="flex flex-col items-center gap-2">
                     <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
                     </svg>
-                    <p className="text-sm text-anaya-text font-medium">
-                      {receipt ? receipt.name : 'Upload a file or drag and drop'}
-                    </p>
+                    <div className="flex items-center justify-center gap-2">
+                      <p className="text-sm text-anaya-text font-medium">
+                        {receipt ? receipt.name : 'Upload a file or drag and drop'}
+                      </p>
+                      {receipt && (
+                        <svg className="w-4 h-4 text-green-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-400">JPG, JPEG, PNG up to 5MB</p>
                   </div>
                   <input
