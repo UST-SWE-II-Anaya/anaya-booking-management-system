@@ -1,5 +1,5 @@
+// src/services/staffAppointmentService.js
 import { supabase } from './supabaseClient'
-import { logAction } from './auditService'
 
 const today = () => new Date().toISOString().split('T')[0]
 
@@ -43,7 +43,7 @@ export const getMyAppointments = async (staffId, {
   let query = supabase
     .from('bookings')
     .select(APPOINTMENT_SELECT, { count: 'exact' })
-    .or(`staff_id.eq.${staffId},staff_id.is.null`)
+    .eq('staff_id', staffId)
     .range(page * pageSize, page * pageSize + pageSize - 1)
 
   if (status) query = query.eq('booking_status', status)
@@ -59,7 +59,6 @@ export const getMyAppointments = async (staffId, {
   const { data, error, count } = await query
   if (error) throw error
 
-  // Filter by category client-side (join path is too deep for server filter)
   const filtered = categoryId
     ? (data ?? []).filter((b) =>
         b.booking_services?.some(
@@ -78,12 +77,12 @@ export const getMyDashboardStats = async (staffId) => {
     supabase
       .from('bookings')
       .select('*', { count: 'exact', head: true })
-      .or(`staff_id.eq.${staffId},staff_id.is.null`)
+      .eq('staff_id', staffId)
       .eq('booking_status', 'upcoming'),
     supabase
       .from('bookings')
       .select(APPOINTMENT_SELECT)
-      .or(`staff_id.eq.${staffId},staff_id.is.null`)
+      .eq('staff_id', staffId)
       .eq('appointment_date', todayStr)
       .eq('booking_status', 'upcoming')
       .order('start_time'),
@@ -117,7 +116,7 @@ export const getMyAppointmentById = async (id, staffId) => {
       )
     `)
     .eq('id', id)
-    .or(`staff_id.eq.${staffId},staff_id.is.null`)
+    .eq('staff_id', staffId)
     .single()
   if (error) throw error
   return data
@@ -130,39 +129,10 @@ export const getMyAppointmentDates = async (staffId, year, month) => {
   const { data, error } = await supabase
     .from('bookings')
     .select('appointment_date')
-    .or(`staff_id.eq.${staffId},staff_id.is.null`)
+    .eq('staff_id', staffId)
     .eq('booking_status', 'upcoming')
     .gte('appointment_date', startDate)
     .lte('appointment_date', endDate)
   if (error) throw error
   return new Set((data ?? []).map((b) => b.appointment_date))
-}
-
-export const claimAppointment = async (bookingId, staffId) => {
-  const { data: prev } = await supabase
-    .from('bookings')
-    .select('staff_id, reference_id')
-    .eq('id', bookingId)
-    .single()
-
-  const { data, error } = await supabase
-    .from('bookings')
-    .update({ staff_id: staffId })
-    .eq('id', bookingId)
-    .is('staff_id', null)
-    .select()
-    .single()
-  if (error) throw error
-
-  logAction({
-    actionType: 'booking.claimed',
-    entityType: 'booking',
-    entityId: bookingId,
-    entityReference: data.reference_id,
-    description: `Claimed booking #${data.reference_id}`,
-    oldData: prev ? { staff_id: prev.staff_id } : null,
-    newData: { staff_id: data.staff_id },
-  })
-
-  return data
 }

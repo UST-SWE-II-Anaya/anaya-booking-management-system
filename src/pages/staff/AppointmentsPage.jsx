@@ -5,7 +5,6 @@ import {
   getMyAppointments,
   getMyAppointmentById,
   getMyAppointmentDates,
-  claimAppointment,
 } from '../../services/staffAppointmentService'
 import useAuthStore from '../../store/authStore'
 import Badge from '../../components/common/Badge'
@@ -44,12 +43,11 @@ const formatDeadlineCountdown = (deadlineStr) => {
   return hours > 0 ? `${hours}h ${mins}m left` : `${mins}m left`
 }
 
-const AppointmentCard = ({ appt, onVerifyClick, onClaimClick }) => {
+const AppointmentCard = ({ appt, onVerifyClick }) => {
   const countdown = formatDeadlineCountdown(appt.payment_deadline)
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-3">
-      {/* Header row */}
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-semibold text-[#2C2C2C]">
@@ -63,20 +61,10 @@ const AppointmentCard = ({ appt, onVerifyClick, onClaimClick }) => {
         </div>
         <div className="flex flex-col items-end gap-1">
           <Badge variant={appt.booking_status} label={appt.booking_status} />
-          <Badge
-            variant={appt.downpayment_status}
-            label={appt.downpayment_status}
-          />
-          {!appt.staff_id && (
-            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full
-              bg-orange-100 text-orange-600 uppercase tracking-wide">
-              Unassigned
-            </span>
-          )}
+          <Badge variant={appt.downpayment_status} label={appt.downpayment_status} />
         </div>
       </div>
 
-      {/* Date/time row */}
       <div className="grid grid-cols-2 gap-3 text-sm">
         <div>
           <p className="text-xs text-gray-400 mb-0.5">Date &amp; Time</p>
@@ -97,7 +85,6 @@ const AppointmentCard = ({ appt, onVerifyClick, onClaimClick }) => {
         </div>
       </div>
 
-      {/* Payment row */}
       <div className="grid grid-cols-2 gap-3 text-sm">
         <div>
           <p className="text-xs text-gray-400 mb-0.5">Downpayment / Total</p>
@@ -120,23 +107,6 @@ const AppointmentCard = ({ appt, onVerifyClick, onClaimClick }) => {
         )}
       </div>
 
-      {/* Action */}
-      {!appt.staff_id && appt.booking_status === 'upcoming' && (
-        ['paid', 'pending'].includes(appt.downpayment_status) ? (
-          <div className="w-full py-2 bg-gray-100 text-gray-500 text-sm font-medium rounded-lg text-center cursor-not-allowed">
-            Awaiting admin payment review
-          </div>
-        ) : (
-          <button
-            onClick={() => onClaimClick(appt.id)}
-            className="w-full py-2 bg-[#8A956D] hover:bg-[#7a8560] text-white text-sm
-              font-medium rounded-lg transition-colors"
-          >
-            Take this session
-          </button>
-        )
-      )}
-      
       {['paid', 'pending'].includes(appt.downpayment_status) && (
         <button
           onClick={() => onVerifyClick(appt.id)}
@@ -206,14 +176,7 @@ const StaffAppointmentsPage = () => {
     }
   }
 
-  const handleClaimClick = async (id) => {
-    try {
-      await claimAppointment(id, staffId)
-      load()
-    } catch (err) {
-      setError(err.message)
-    }
-  }
+
 
   const handleDateSelect = (dateStr) => {
     setSelectedDate((prev) => (prev === dateStr ? null : dateStr))
@@ -338,7 +301,6 @@ const StaffAppointmentsPage = () => {
                       key={appt.id}
                       appt={appt}
                       onVerifyClick={handleVerifyClick}
-                      onClaimClick={handleClaimClick}
                     />
                   ))
                 )}
@@ -371,7 +333,6 @@ const StaffAppointmentsPage = () => {
                   key={appt.id}
                   appt={appt}
                   onVerifyClick={handleVerifyClick}
-                  onClaimClick={handleClaimClick}
                 />
               ))}
             </div>

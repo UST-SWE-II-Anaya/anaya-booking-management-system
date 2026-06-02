@@ -198,3 +198,19 @@ export const banStaff = async (id, reason = 'Banned by admin') => {
   }
   return data
 }
+
+export const getAssignableStaff = async (preference) => {
+  let query = supabase
+    .from('profiles')
+    .select('id, first_name, last_name, avatar_url, gender, staff_details(is_active, job_title)')
+    .eq('role', 'staff')
+    .eq('account_status', 'active')
+    .order('first_name', { ascending: true })
+
+  if (preference === 'any_female') query = query.eq('gender', 'female')
+  else if (preference === 'any_male') query = query.eq('gender', 'male')
+
+  const { data, error } = await query
+  if (error) throw error
+  return (data ?? []).filter((s) => s.staff_details?.is_active)
+}
