@@ -7,10 +7,14 @@ import { formatDuration, to12h } from '../../utils/bookingUtils'
 import useAuthStore from '../../store/authStore'
 import useSiteSettings from '../../hooks/useSiteSettings'
 
-const GCashCard = ({ number, url }) => (
+const GCashCard = ({ number, url, onClick }) => (
   <div className="flex-1 flex flex-col items-center">
     {url ? (
-      <div className="w-full max-w-[280px] aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-white flex items-center justify-center p-2">
+      <div 
+        onClick={() => onClick(url)}
+        className="w-full max-w-[368px] aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-white flex items-center justify-center p-2 cursor-pointer hover:border-anaya-accent hover:shadow-md transition-all"
+        title="Click to enlarge"
+      >
         <img
           src={url}
           alt={`GCash QR ${number}`}
@@ -19,7 +23,7 @@ const GCashCard = ({ number, url }) => (
         />
       </div>
     ) : (
-      <div className="w-full max-w-[280px] aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-gray-50 flex items-center justify-center p-2">
+      <div className="w-full max-w-[368px] aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-gray-50 flex items-center justify-center p-2">
         <p className="text-gray-400 text-sm text-center px-2">Not Available</p>
       </div>
     )}
@@ -37,6 +41,7 @@ const PaymentStep = () => {
   const [receipt, setReceipt] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [dragOver, setDragOver] = useState(false)
+  const [expandedQr, setExpandedQr] = useState(null)
   const { settings } = useSiteSettings()
   const downpaymentPctLabel = `${settings?.downpayment_rate?.percentage ?? 10}% of Total`
 
@@ -170,9 +175,9 @@ const PaymentStep = () => {
             </p>
 
             {/* GCash QR codes */}
-            <div className="flex gap-6 mb-8 max-w-sm">
-              {settings?.gcash_qr_1?.url && <GCashCard number={1} url={settings.gcash_qr_1.url} />}
-              {settings?.gcash_qr_2?.url && <GCashCard number={2} url={settings.gcash_qr_2.url} />}
+            <div className="flex gap-6 mb-8 max-w-2xl">
+              {settings?.gcash_qr_1?.url && <GCashCard number={1} url={settings.gcash_qr_1.url} onClick={setExpandedQr} />}
+              {settings?.gcash_qr_2?.url && <GCashCard number={2} url={settings.gcash_qr_2.url} onClick={setExpandedQr} />}
               {(!settings?.gcash_qr_1?.url && !settings?.gcash_qr_2?.url) && (
                 <div className="w-full py-4 text-center text-sm text-gray-500 italic bg-gray-50 rounded-xl border border-gray-100">
                   GCash payment is currently unavailable.
@@ -336,6 +341,37 @@ const PaymentStep = () => {
           </div>
         </div>
       </div>
+
+      {/* Fullscreen QR Modal */}
+      {expandedQr && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-8 cursor-pointer"
+          onClick={() => setExpandedQr(null)}
+        >
+          <div 
+            className="bg-white p-6 rounded-2xl shadow-2xl max-w-xl w-full max-h-full flex flex-col relative cursor-default" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
+              onClick={() => setExpandedQr(null)}
+              title="Close"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <h3 className="text-center font-bold text-2xl mb-6 text-gray-800">Scan to Pay</h3>
+            <div className="flex-1 overflow-hidden flex items-center justify-center">
+              <img 
+                src={expandedQr} 
+                alt="Expanded GCash QR" 
+                className="max-w-full max-h-[70vh] object-contain" 
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
