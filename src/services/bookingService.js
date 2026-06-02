@@ -1,5 +1,6 @@
 // src/services/bookingService.js
 import { supabase } from './supabaseClient'
+import { logAction } from './auditService'
 
 const BOOKING_SELECT = `
   id, reference_id, appointment_date, start_time,
@@ -60,6 +61,12 @@ export const getBookingById = async (id) => {
 }
 
 export const updateBookingStatus = async (id, bookingStatus) => {
+  const { data: prev } = await supabase
+    .from('bookings')
+    .select('booking_status, reference_id')
+    .eq('id', id)
+    .single()
+
   const { data, error } = await supabase
     .from('bookings')
     .update({ booking_status: bookingStatus, updated_at: new Date().toISOString() })
@@ -67,10 +74,27 @@ export const updateBookingStatus = async (id, bookingStatus) => {
     .select()
     .single()
   if (error) throw error
+
+  logAction({
+    actionType: 'booking.status_updated',
+    entityType: 'booking',
+    entityId: id,
+    entityReference: data.reference_id,
+    description: `Updated booking #${data.reference_id} status to ${bookingStatus}`,
+    oldData: prev ? { status: prev.booking_status } : null,
+    newData: { status: data.booking_status },
+  })
+
   return data
 }
 
 export const settleBalance = async (id) => {
+  const { data: prev } = await supabase
+    .from('bookings')
+    .select('balance_settled, reference_id')
+    .eq('id', id)
+    .single()
+
   const { data, error } = await supabase
     .from('bookings')
     .update({
@@ -81,10 +105,27 @@ export const settleBalance = async (id) => {
     .select()
     .single()
   if (error) throw error
+
+  logAction({
+    actionType: 'booking.balance_settled',
+    entityType: 'booking',
+    entityId: id,
+    entityReference: data.reference_id,
+    description: `Settled balance for booking #${data.reference_id}`,
+    oldData: prev ? { balance_settled: prev.balance_settled } : null,
+    newData: { balance_settled: data.balance_settled },
+  })
+
   return data
 }
 
 export const cancelBooking = async (id, cancelledBy) => {
+  const { data: prev } = await supabase
+    .from('bookings')
+    .select('booking_status, reference_id')
+    .eq('id', id)
+    .single()
+
   const { data, error } = await supabase
     .from('bookings')
     .update({
@@ -97,6 +138,17 @@ export const cancelBooking = async (id, cancelledBy) => {
     .select()
     .single()
   if (error) throw error
+
+  logAction({
+    actionType: 'booking.cancelled',
+    entityType: 'booking',
+    entityId: id,
+    entityReference: data.reference_id,
+    description: `Cancelled booking #${data.reference_id}`,
+    oldData: prev ? { status: prev.booking_status } : null,
+    newData: { status: data.booking_status },
+  })
+
   return data
 }
 

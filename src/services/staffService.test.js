@@ -96,6 +96,7 @@ describe('inviteUser', () => {
         role: 'staff',
         redirect_to: expect.stringContaining('/accept-invite'),
       },
+      headers: { 'x-actor-id': undefined },
     })
     expect(result).toEqual({ success: true })
   })
@@ -125,6 +126,7 @@ describe('banStaff', () => {
     await banStaff('staff-456', 'Policy violation')
     expect(mockInvoke).toHaveBeenCalledWith('ban-user', {
       body: { userId: 'staff-456', reason: 'Policy violation', role: 'staff' },
+      headers: { 'x-actor-id': undefined },
     })
   })
 

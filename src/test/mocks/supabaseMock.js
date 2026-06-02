@@ -12,6 +12,7 @@ export const createQueryBuilder = (
     ilike: vi.fn().mockReturnThis(),
     gte: vi.fn().mockReturnThis(),
     lte: vi.fn().mockReturnThis(),
+    is: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
     limit: vi.fn().mockReturnThis(),
     or: vi.fn().mockReturnThis(),

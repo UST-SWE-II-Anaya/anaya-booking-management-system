@@ -40,7 +40,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: callerProfile, error: profileError } = await supabaseUser
       .from('profiles')
-      .select('role')
+      .select('role, first_name, last_name')
       .eq('id', user.id)
       .single()
 
@@ -96,7 +96,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // 3. Update profile status
-    const { error: updateError } = await supabaseAdmin
+    const { data: bannedProfile, error: updateError } = await supabaseAdmin
       .from('profiles')
       .update({
         account_status: 'banned',
@@ -104,6 +104,8 @@ Deno.serve(async (req: Request) => {
         updated_at: new Date().toISOString(),
       })
       .eq('id', userId)
+      .select()
+      .single()
 
     if (updateError) {
       return new Response(
@@ -111,6 +113,22 @@ Deno.serve(async (req: Request) => {
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    // 4. Insert Audit Log
+    const actorName = `${callerProfile.first_name ?? ''} ${callerProfile.last_name ?? ''}`.trim()
+    await supabaseAdmin.from('audit_logs').insert({
+      actor_id: user.id,
+      actor_name: actorName,
+      actor_role: callerProfile.role,
+      action_type: role === 'customer' ? 'customer.banned' : 'staff.banned',
+      entity_type: role,
+      entity_id: userId,
+      entity_reference: bannedProfile.reference_id,
+      description: `Banned ${role} ${bannedProfile.email || bannedProfile.reference_id}`,
+      old_data: { status: 'active' }, // Assuming active before
+      new_data: { status: 'banned' },
+      metadata: { reason },
+    })
 
     return new Response(
       JSON.stringify({ success: true }),

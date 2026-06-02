@@ -118,7 +118,7 @@ const CustomersPage = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 text-left">
-                  {['Name', 'Email', 'Phone', 'Status', 'Joined', 'Actions'].map((h) => (
+                  {['ID', 'Name', 'Email', 'Phone', 'Status', 'Joined', 'Actions'].map((h) => (
                     <th
                       key={h}
                       className="px-5 py-3 text-xs font-medium text-gray-400
@@ -132,6 +132,9 @@ const CustomersPage = () => {
               <tbody className="divide-y divide-gray-50">
                 {customers.map((c) => (
                   <tr key={c.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-5 py-3.5 font-mono text-xs text-gray-500">
+                      {c.reference_id}
+                    </td>
                     <td className="px-5 py-3.5 font-medium text-[#4A4A4A]">
                       {c.first_name} {c.last_name}
                     </td>

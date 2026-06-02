@@ -1,5 +1,7 @@
 // src/services/customerService.js
 import { supabase } from './supabaseClient'
+import { logAction } from './auditService'
+import useAuthStore from '../store/authStore'
 
 export const getCustomers = async ({ search, status, page = 0, pageSize = 20 } = {}) => {
   let query = supabase
@@ -48,6 +50,12 @@ export const getCustomerBookings = async (customerId) => {
 }
 
 export const updateAccountStatus = async (id, accountStatus, reason = null) => {
+  const { data: prev } = await supabase
+    .from('profiles')
+    .select('account_status, reference_id')
+    .eq('id', id)
+    .single()
+
   const { data, error } = await supabase
     .from('profiles')
     .update({
@@ -59,6 +67,18 @@ export const updateAccountStatus = async (id, accountStatus, reason = null) => {
     .select()
     .single()
   if (error) throw error
+
+  logAction({
+    actionType: accountStatus === 'suspended' ? 'customer.suspended' : 'customer.reactivated',
+    entityType: 'customer',
+    entityId: id,
+    entityReference: data.reference_id,
+    description: accountStatus === 'suspended' ? `Suspended customer ${data.reference_id}` : `Reactivated customer ${data.reference_id}`,
+    oldData: prev ? { status: prev.account_status } : null,
+    newData: { status: data.account_status },
+    metadata: accountStatus === 'suspended' ? { reason } : null,
+  })
+
   return data
 }
 
@@ -74,8 +94,10 @@ export const updateCustomer = async (id, updates) => {
 }
 
 export const banCustomer = async (id, reason = 'Banned by admin') => {
+  const { profile } = useAuthStore.getState()
   const { data, error } = await supabase.functions.invoke('ban-user', {
     body: { userId: id, reason, role: 'customer' },
+    headers: { 'x-actor-id': profile?.id },
   })
   if (error) {
     if (error.context instanceof Response) {

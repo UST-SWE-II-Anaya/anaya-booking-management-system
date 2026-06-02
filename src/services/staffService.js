@@ -1,5 +1,7 @@
 // src/services/staffService.js
 import { supabase } from './supabaseClient'
+import { logAction } from './auditService'
+import useAuthStore from '../store/authStore'
 
 export const getStaff = async () => {
   const { data, error } = await supabase
@@ -56,6 +58,12 @@ export const getLeaveRequests = async ({ status } = {}) => {
 }
 
 export const reviewLeaveRequest = async (id, status, reviewedBy) => {
+  const { data: prev } = await supabase
+    .from('leave_requests')
+    .select('status')
+    .eq('id', id)
+    .single()
+
   const { data, error } = await supabase
     .from('leave_requests')
     .update({ status, reviewed_by: reviewedBy, reviewed_at: new Date().toISOString() })
@@ -63,10 +71,27 @@ export const reviewLeaveRequest = async (id, status, reviewedBy) => {
     .select()
     .single()
   if (error) throw error
+
+  logAction({
+    actionType: status === 'approved' ? 'leave_request.approved' : 'leave_request.rejected',
+    entityType: 'leave_request',
+    entityId: id,
+    entityReference: id,
+    description: status === 'approved' ? 'Approved leave request' : 'Rejected leave request',
+    oldData: prev ? { status: prev.status } : null,
+    newData: { status: data.status },
+  })
+
   return data
 }
 
 export const deactivateStaff = async (id, reason) => {
+  const { data: prev } = await supabase
+    .from('profiles')
+    .select('account_status, reference_id')
+    .eq('id', id)
+    .single()
+
   const { data, error } = await supabase
     .from('profiles')
     .update({
@@ -78,10 +103,28 @@ export const deactivateStaff = async (id, reason) => {
     .select()
     .single()
   if (error) throw error
+
+  logAction({
+    actionType: 'staff.suspended',
+    entityType: 'staff',
+    entityId: id,
+    entityReference: data.reference_id,
+    description: `Suspended staff ${data.reference_id}`,
+    oldData: prev ? { status: prev.account_status } : null,
+    newData: { status: data.account_status },
+    metadata: { reason },
+  })
+
   return data
 }
 
 export const activateStaff = async (id) => {
+  const { data: prev } = await supabase
+    .from('profiles')
+    .select('account_status, reference_id')
+    .eq('id', id)
+    .single()
+
   const { data, error } = await supabase
     .from('profiles')
     .update({
@@ -93,6 +136,17 @@ export const activateStaff = async (id) => {
     .select()
     .single()
   if (error) throw error
+
+  logAction({
+    actionType: 'staff.reactivated',
+    entityType: 'staff',
+    entityId: id,
+    entityReference: data.reference_id,
+    description: `Reactivated staff ${data.reference_id}`,
+    oldData: prev ? { status: prev.account_status } : null,
+    newData: { status: data.account_status },
+  })
+
   return data
 }
 
@@ -107,6 +161,7 @@ export const getActiveStaffList = async () => {
 }
 
 export const inviteUser = async ({ firstName, lastName, email, phone, role }) => {
+  const { profile } = useAuthStore.getState()
   const { data, error } = await supabase.functions.invoke('invite-user', {
     body: {
       first_name: firstName,
@@ -116,6 +171,7 @@ export const inviteUser = async ({ firstName, lastName, email, phone, role }) =>
       role,
       redirect_to: `${window.location.origin}/accept-invite`,
     },
+    headers: { 'x-actor-id': profile?.id },
   })
   if (error) {
     if (error.context instanceof Response) {
@@ -128,8 +184,10 @@ export const inviteUser = async ({ firstName, lastName, email, phone, role }) =>
 }
 
 export const banStaff = async (id, reason = 'Banned by admin') => {
+  const { profile } = useAuthStore.getState()
   const { data, error } = await supabase.functions.invoke('ban-user', {
     body: { userId: id, reason, role: 'staff' },
+    headers: { 'x-actor-id': profile?.id },
   })
   if (error) {
     if (error.context instanceof Response) {
@@ -139,4 +197,20 @@ export const banStaff = async (id, reason = 'Banned by admin') => {
     throw error
   }
   return data
+}
+
+export const getAssignableStaff = async (preference) => {
+  let query = supabase
+    .from('profiles')
+    .select('id, first_name, last_name, avatar_url, gender, staff_details(is_active, job_title)')
+    .eq('role', 'staff')
+    .eq('account_status', 'active')
+    .order('first_name', { ascending: true })
+
+  if (preference === 'any_female') query = query.eq('gender', 'female')
+  else if (preference === 'any_male') query = query.eq('gender', 'male')
+
+  const { data, error } = await query
+  if (error) throw error
+  return (data ?? []).filter((s) => s.staff_details?.is_active)
 }

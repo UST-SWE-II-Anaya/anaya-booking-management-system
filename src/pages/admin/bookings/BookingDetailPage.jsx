@@ -12,6 +12,7 @@ import Badge from '../../../components/common/Badge'
 import Spinner from '../../../components/common/Spinner'
 import ConfirmDialog from '../../../components/common/ConfirmDialog'
 import PaymentVerificationModal from '../../../components/admin/payments/PaymentVerificationModal'
+import ActivityHistory from '../../../components/ActivityHistory'
 import useAuthStore from '../../../store/authStore'
 
 const formatDate = (dateStr) =>
@@ -264,6 +265,11 @@ const BookingDetailPage = () => {
         onClose={() => setVerifyOpen(false)}
         onUpdated={load}
       />
+
+      {/* Activity History */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <ActivityHistory entityType="booking" entityId={id} />
+      </div>
     </div>
   )
 }

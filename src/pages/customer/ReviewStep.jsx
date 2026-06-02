@@ -121,7 +121,7 @@ const ReviewStep = () => {
           {/* Left: policies + notes */}
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-anaya-text mb-6">
-              Review and Confirm
+              Terms and Conditions
             </h1>
 
             <div className="mb-5">

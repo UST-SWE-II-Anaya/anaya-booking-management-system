@@ -7,39 +7,27 @@ import { formatDuration, to12h } from '../../utils/bookingUtils'
 import useAuthStore from '../../store/authStore'
 import useSiteSettings from '../../hooks/useSiteSettings'
 
-// GCash QR placeholder — replace src with actual QR image paths when available
-const GCashCard = ({ number, url }) => (
+const GCashCard = ({ number, url, onClick }) => (
   <div className="flex-1 flex flex-col items-center">
-    <div className="w-full rounded-xl overflow-hidden border-2 border-blue-200 bg-blue-600
-      flex flex-col items-center py-4 px-3">
-      <div className="flex items-center gap-1.5 mb-3">
-        <div className="bg-white rounded-full w-6 h-6 flex items-center justify-center">
-          <span className="text-blue-600 font-black text-xs">G</span>
-        </div>
-        <span className="text-white font-bold text-sm tracking-wide">GCash</span>
+    {url ? (
+      <div 
+        onClick={() => onClick(url)}
+        className="w-full max-w-[368px] aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-white flex items-center justify-center p-2 cursor-pointer hover:border-anaya-accent hover:shadow-md transition-all"
+        title="Click to enlarge"
+      >
+        <img
+          src={url}
+          alt={`GCash QR ${number}`}
+          className="w-full h-full object-contain"
+          onError={(e) => { e.target.style.display = 'none' }}
+        />
       </div>
-      {url ? (
-        <>
-          <p className="text-blue-200 text-xs mb-2 font-medium tracking-wider">
-            SCAN TO PAY HERE
-          </p>
-          <div className="w-28 h-28 bg-white rounded-lg overflow-hidden
-            flex items-center justify-center">
-            <img
-              src={url}
-              alt={`GCash QR ${number}`}
-              className="w-full h-full object-contain"
-              onError={(e) => { e.target.style.display = 'none' }}
-            />
-          </div>
-        </>
-      ) : (
-        <div className="w-28 h-28 bg-white/20 rounded-lg flex items-center justify-center">
-          <p className="text-white/70 text-xs text-center px-2">Not Available</p>
-        </div>
-      )}
-    </div>
-    <p className="text-sm font-semibold text-anaya-text mt-2">GCASH #{number}</p>
+    ) : (
+      <div className="w-full max-w-[368px] aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-gray-50 flex items-center justify-center p-2">
+        <p className="text-gray-400 text-sm text-center px-2">Not Available</p>
+      </div>
+    )}
+    <p className="text-sm font-semibold text-gray-500 mt-3 uppercase tracking-wider">GCASH #{number}</p>
   </div>
 )
 
@@ -53,6 +41,7 @@ const PaymentStep = () => {
   const [receipt, setReceipt] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [dragOver, setDragOver] = useState(false)
+  const [expandedQr, setExpandedQr] = useState(null)
   const { settings } = useSiteSettings()
   const downpaymentPctLabel = `${settings?.downpayment_rate?.percentage ?? 10}% of Total`
 
@@ -186,9 +175,9 @@ const PaymentStep = () => {
             </p>
 
             {/* GCash QR codes */}
-            <div className="flex gap-6 mb-8 max-w-sm">
-              {settings?.gcash_qr_1?.url && <GCashCard number={1} url={settings.gcash_qr_1.url} />}
-              {settings?.gcash_qr_2?.url && <GCashCard number={2} url={settings.gcash_qr_2.url} />}
+            <div className="flex gap-6 mb-8 max-w-2xl">
+              {settings?.gcash_qr_1?.url && <GCashCard number={1} url={settings.gcash_qr_1.url} onClick={setExpandedQr} />}
+              {settings?.gcash_qr_2?.url && <GCashCard number={2} url={settings.gcash_qr_2.url} onClick={setExpandedQr} />}
               {(!settings?.gcash_qr_1?.url && !settings?.gcash_qr_2?.url) && (
                 <div className="w-full py-4 text-center text-sm text-gray-500 italic bg-gray-50 rounded-xl border border-gray-100">
                   GCash payment is currently unavailable.
@@ -245,16 +234,25 @@ const PaymentStep = () => {
                   className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors ${
                     dragOver
                       ? 'border-anaya-accent bg-anaya-accent/5'
-                      : 'border-gray-300 bg-white hover:border-anaya-accent'
+                      : receipt
+                        ? 'border-green-500 bg-green-50 hover:border-green-600'
+                        : 'border-gray-300 bg-white hover:border-anaya-accent'
                   }`}
                 >
                   <div className="flex flex-col items-center gap-2">
                     <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
                     </svg>
-                    <p className="text-sm text-anaya-text font-medium">
-                      {receipt ? receipt.name : 'Upload a file or drag and drop'}
-                    </p>
+                    <div className="flex items-center justify-center gap-2">
+                      <p className="text-sm text-anaya-text font-medium">
+                        {receipt ? receipt.name : 'Upload a file or drag and drop'}
+                      </p>
+                      {receipt && (
+                        <svg className="w-4 h-4 text-green-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-400">JPG, JPEG, PNG up to 5MB</p>
                   </div>
                   <input
@@ -343,6 +341,37 @@ const PaymentStep = () => {
           </div>
         </div>
       </div>
+
+      {/* Fullscreen QR Modal */}
+      {expandedQr && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-8 cursor-pointer"
+          onClick={() => setExpandedQr(null)}
+        >
+          <div 
+            className="bg-white p-6 rounded-2xl shadow-2xl max-w-xl w-full max-h-full flex flex-col relative cursor-default" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
+              onClick={() => setExpandedQr(null)}
+              title="Close"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <h3 className="text-center font-bold text-2xl mb-6 text-gray-800">Scan to Pay</h3>
+            <div className="flex-1 overflow-hidden flex items-center justify-center">
+              <img 
+                src={expandedQr} 
+                alt="Expanded GCash QR" 
+                className="max-w-full max-h-[70vh] object-contain" 
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -51,6 +51,7 @@ describe('banCustomer', () => {
     await banCustomer('user-123', 'Spam')
     expect(mockInvoke).toHaveBeenCalledWith('ban-user', {
       body: { userId: 'user-123', reason: 'Spam', role: 'customer' },
+      headers: { 'x-actor-id': undefined },
     })
   })
 

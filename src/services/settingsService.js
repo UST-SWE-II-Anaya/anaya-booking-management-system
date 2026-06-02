@@ -1,5 +1,6 @@
 // src/services/settingsService.js
 import { supabase } from './supabaseClient'
+import { logAction } from './auditService'
 
 /**
  * Keys used in site_settings:
@@ -30,6 +31,12 @@ export const getAllSettings = async () => {
 }
 
 export const upsertSetting = async (key, value, updatedBy) => {
+  const { data: prev } = await supabase
+    .from('site_settings')
+    .select('value')
+    .eq('key', key)
+    .single()
+
   const { data, error } = await supabase
     .from('site_settings')
     .upsert(
@@ -44,5 +51,17 @@ export const upsertSetting = async (key, value, updatedBy) => {
     .select()
     .single()
   if (error) throw error
+
+  logAction({
+    actionType: 'setting.updated',
+    entityType: 'setting',
+    entityId: key,
+    entityReference: key,
+    description: `Updated setting ${key}`,
+    oldData: prev ? { value: prev.value } : null,
+    newData: { value: data.value },
+    metadata: { key },
+  })
+
   return data
 }

@@ -13,6 +13,7 @@ import Badge from '../../../components/common/Badge'
 import Spinner from '../../../components/common/Spinner'
 import ConfirmDialog from '../../../components/common/ConfirmDialog'
 import DeactivateAccountModal from '../../../components/admin/accounts/DeactivateAccountModal'
+import ActivityHistory from '../../../components/ActivityHistory'
 
 const StaffDetailPage = () => {
   const { id } = useParams()
@@ -223,6 +224,11 @@ const StaffDetailPage = () => {
         userRole={staff?.role ?? 'staff'}
         action="ban"
       />
+
+      {/* Activity History */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <ActivityHistory entityType="staff" entityId={id} />
+      </div>
     </div>
   )
 }

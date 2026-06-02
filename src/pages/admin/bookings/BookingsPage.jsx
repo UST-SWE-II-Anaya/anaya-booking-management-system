@@ -258,7 +258,7 @@ const BookingsPage = () => {
                               className="group-hover:text-white" />
                             View
                           </button>
-                          {b.downpayment_status === 'pending' &&
+                          {b.downpayment_status === 'paid' &&
                             b.booking_status !== 'cancelled' && (
                             <button
                               onClick={() => setVerifyModal(b)}

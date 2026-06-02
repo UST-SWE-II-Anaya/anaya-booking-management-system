@@ -1,5 +1,6 @@
 // src/services/inquiryService.js
 import { supabase } from './supabaseClient'
+import { logAction } from './auditService'
 
 export const getInquiries = async ({ status } = {}) => {
   let query = supabase
@@ -21,6 +22,12 @@ export const createInquiry = async (inquiryData) => {
 }
 
 export const markRead = async (id) => {
+  const { data: prev } = await supabase
+    .from('inquiries')
+    .select('status, reference_id')
+    .eq('id', id)
+    .single()
+
   const { data, error } = await supabase
     .from('inquiries')
     .update({ status: 'read' })
@@ -28,10 +35,27 @@ export const markRead = async (id) => {
     .select()
     .single()
   if (error) throw error
+
+  logAction({
+    actionType: 'inquiry.marked_read',
+    entityType: 'inquiry',
+    entityId: id,
+    entityReference: data.reference_id,
+    description: `Marked inquiry #${data.reference_id} as read`,
+    oldData: prev ? { status: prev.status } : null,
+    newData: { status: data.status },
+  })
+
   return data
 }
 
 export const archiveInquiry = async (id) => {
+  const { data: prev } = await supabase
+    .from('inquiries')
+    .select('status, reference_id')
+    .eq('id', id)
+    .single()
+
   const { data, error } = await supabase
     .from('inquiries')
     .update({ status: 'archived' })
@@ -39,5 +63,16 @@ export const archiveInquiry = async (id) => {
     .select()
     .single()
   if (error) throw error
+
+  logAction({
+    actionType: 'inquiry.archived',
+    entityType: 'inquiry',
+    entityId: id,
+    entityReference: data.reference_id,
+    description: `Archived inquiry #${data.reference_id}`,
+    oldData: prev ? { status: prev.status } : null,
+    newData: { status: data.status },
+  })
+
   return data
 }
