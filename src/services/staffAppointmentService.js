@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient'
+import { logAction } from './auditService'
 
 const today = () => new Date().toISOString().split('T')[0]
 
@@ -138,6 +139,12 @@ export const getMyAppointmentDates = async (staffId, year, month) => {
 }
 
 export const claimAppointment = async (bookingId, staffId) => {
+  const { data: prev } = await supabase
+    .from('bookings')
+    .select('staff_id, reference_id')
+    .eq('id', bookingId)
+    .single()
+
   const { data, error } = await supabase
     .from('bookings')
     .update({ staff_id: staffId })
@@ -146,5 +153,16 @@ export const claimAppointment = async (bookingId, staffId) => {
     .select()
     .single()
   if (error) throw error
+
+  logAction({
+    actionType: 'booking.claimed',
+    entityType: 'booking',
+    entityId: bookingId,
+    entityReference: data.reference_id,
+    description: `Claimed booking #${data.reference_id}`,
+    oldData: prev ? { staff_id: prev.staff_id } : null,
+    newData: { staff_id: data.staff_id },
+  })
+
   return data
 }

@@ -1,8 +1,15 @@
 // src/services/paymentService.js
 import { supabase } from './supabaseClient'
+import { logAction } from './auditService'
 
 export const verifyPayment = async (paymentId, bookingId, verifierId) => {
   const now = new Date().toISOString()
+
+  const { data: prev } = await supabase
+    .from('payments')
+    .select('status, reference_number')
+    .eq('id', paymentId)
+    .single()
 
   const { error: payErr } = await supabase
     .from('payments')
@@ -17,11 +24,28 @@ export const verifyPayment = async (paymentId, bookingId, verifierId) => {
     .select()
     .single()
   if (bookErr) throw bookErr
+
+  logAction({
+    actionType: 'payment.verified',
+    entityType: 'payment',
+    entityId: paymentId,
+    entityReference: prev?.reference_number,
+    description: `Verified payment ${prev?.reference_number}`,
+    oldData: prev ? { status: prev.status } : null,
+    newData: { status: 'verified' },
+  })
+
   return data
 }
 
 export const denyPayment = async (paymentId, bookingId) => {
   const now = new Date().toISOString()
+
+  const { data: prev } = await supabase
+    .from('payments')
+    .select('status, reference_number')
+    .eq('id', paymentId)
+    .single()
 
   const { error: payErr } = await supabase
     .from('payments')
@@ -36,5 +60,16 @@ export const denyPayment = async (paymentId, bookingId) => {
     .select()
     .single()
   if (bookErr) throw bookErr
+
+  logAction({
+    actionType: 'payment.denied',
+    entityType: 'payment',
+    entityId: paymentId,
+    entityReference: prev?.reference_number,
+    description: `Denied payment ${prev?.reference_number}`,
+    oldData: prev ? { status: prev.status } : null,
+    newData: { status: 'denied' },
+  })
+
   return data
 }

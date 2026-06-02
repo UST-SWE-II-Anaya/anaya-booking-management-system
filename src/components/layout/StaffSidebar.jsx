@@ -4,6 +4,7 @@ import {
   CalendarDays,
   ClipboardList,
   UserCircle,
+  History,
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -11,6 +12,7 @@ const navItems = [
   { label: 'Dashboard', to: '/staff', icon: LayoutDashboard, end: true },
   { label: 'Appointments', to: '/staff/appointments', icon: CalendarDays },
   { label: 'Leave Request', to: '/staff/leave', icon: ClipboardList },
+  { label: 'My Activity', to: '/staff/my-activity', icon: History },
   { label: 'Profile', to: '/staff/profile', icon: UserCircle },
 ]
 

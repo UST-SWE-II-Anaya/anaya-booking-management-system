@@ -1,13 +1,23 @@
 # Audit Log & Actions Tracker — Implementation Plan
 
 **Date:** 2026-06-02  
+**Revised:** 2026-06-02 (addresses 5 concerns — see bottom of file)  
 **Design Spec:** `docs/superpowers/specs/2026-06-02-audit-log-design.md`
 
 ---
 
 ## Overview
 
-This plan implements a centralized audit logging system that tracks all admin and staff write actions. Admins see all logs; staff see only their own actions. Includes a global audit log page, inline activity history on detail pages, and a staff activity view.
+This plan implements a centralized audit logging system that tracks all admin and staff write
+actions. Admins see all logs; staff see only their own actions. Includes a global audit log page,
+inline activity history on detail pages, and a staff activity view.
+
+**Key changes from initial plan:**
+1. `ON DELETE SET NULL` on `actor_id` FK — profile deletion no longer blocked
+2. Edge Functions log server-side — eliminates network-drop risk for high-impact actions
+3. `logAction` reads actor from `useAuthStore.getState()` — no prop drilling
+4. `getEntityAuditLogs` capped at 50 rows with offset-based load-more
+5. Optional chaining on profile fields — safe against momentarily null profile
 
 ---
 
@@ -15,13 +25,11 @@ This plan implements a centralized audit logging system that tracks all admin an
 
 ### Task 1.1 — Create audit_logs migration
 
-**File to create:** Run Supabase migration
-
-**SQL:**
 ```sql
 CREATE TABLE audit_logs (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  actor_id         UUID REFERENCES profiles(id),
+  -- ON DELETE SET NULL: profile deletion is not blocked by this FK
+  actor_id         UUID REFERENCES profiles(id) ON DELETE SET NULL,
   actor_name       TEXT NOT NULL,
   actor_role       TEXT NOT NULL CHECK (actor_role IN ('admin', 'staff')),
   action_type      TEXT NOT NULL,
@@ -45,23 +53,28 @@ ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Admins can view all audit logs"
   ON audit_logs FOR SELECT
   USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+    EXISTS (
+      SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'
+    )
   );
 
 CREATE POLICY "Staff can view own audit logs"
   ON audit_logs FOR SELECT
   USING (actor_id = auth.uid());
 
+-- RLS prevents actor_id spoofing — client cannot claim a different uid
 CREATE POLICY "Authenticated users can insert audit logs"
   ON audit_logs FOR INSERT
   WITH CHECK (auth.uid() = actor_id);
 ```
 
+Apply via Supabase MCP `apply_migration` tool.
+
 **Verification:**
-- Run migration via Supabase MCP tool
-- Confirm table exists with all columns
-- Test admin can query all rows
-- Test staff user can query only own rows (RLS enforcement)
+- Table exists with all columns and `ON DELETE SET NULL` on actor_id
+- Delete a test profile → confirm `actor_id` is nulled, not blocked
+- Admin user can SELECT all rows
+- Staff user can SELECT only their own rows (RLS)
 
 ---
 
@@ -71,19 +84,13 @@ CREATE POLICY "Authenticated users can insert audit logs"
 
 **File:** `src/services/auditService.js`
 
-**Exports:**
-1. `logAction(options)` — Fire-and-forget insert
-2. `getAuditLogs(options)` — Paginated query for admin page
-3. `getEntityAuditLogs(options)` — Query for detail page history
-4. `getMyAuditLogs(options)` — Query for staff activity page
-
-**Implementation:**
+#### `logAction` — reads actor from Zustand, no prop drilling
 
 ```js
 import { supabase } from './supabaseClient'
+import { useAuthStore } from '../store/authStore'
 
 export async function logAction({
-  actor,
   actionType,
   entityType,
   entityId,
@@ -93,6 +100,15 @@ export async function logAction({
   oldData,
   newData,
 }) {
+  const { profile } = useAuthStore.getState()
+  if (!profile?.id) return
+
+  const actor = {
+    id: profile.id,
+    name: `${profile.first_name ?? ''} ${profile.last_name ?? ''}`.trim(),
+    role: profile.role,
+  }
+
   const { error } = await supabase.from('audit_logs').insert({
     actor_id: actor.id,
     actor_name: actor.name,
@@ -108,7 +124,17 @@ export async function logAction({
   })
   if (error) console.error('Audit log failed:', error)
 }
+```
 
+Key rules:
+- `useAuthStore.getState()` reads Zustand state outside React — no prop needed
+- Guards on `profile?.id` — safe if profile is null during loading
+- Optional chaining on name fields — no crash if momentarily undefined
+- Fire-and-forget: never throws, never breaks the calling service
+
+#### `getAuditLogs` — paginated, for admin audit log page
+
+```js
 export async function getAuditLogs({
   page = 1,
   pageSize = 20,
@@ -119,7 +145,9 @@ export async function getAuditLogs({
   endDate,
   search,
 }) {
-  let query = supabase.from('audit_logs').select('*', { count: 'exact' })
+  let query = supabase
+    .from('audit_logs')
+    .select('*', { count: 'exact' })
 
   if (actorId) query = query.eq('actor_id', actorId)
   if (actionType) query = query.eq('action_type', actionType)
@@ -137,21 +165,36 @@ export async function getAuditLogs({
     .range((page - 1) * pageSize, page * pageSize - 1)
 
   const { data, count, error } = await query
-
   return { data: data || [], count: count || 0, error }
 }
+```
 
-export async function getEntityAuditLogs({ entityType, entityId }) {
+#### `getEntityAuditLogs` — capped at 50, supports load-more
+
+```js
+export async function getEntityAuditLogs({
+  entityType,
+  entityId,
+  limit = 50,
+  offset = 0,
+}) {
   const { data, error } = await supabase
     .from('audit_logs')
     .select('*')
     .eq('entity_type', entityType)
     .eq('entity_id', entityId)
     .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1)
 
   return { data: data || [], error }
 }
+```
 
+The `ActivityHistory` component increments `offset` by 50 on each "Load more" click.
+
+#### `getMyAuditLogs` — paginated, for staff activity page
+
+```js
 export async function getMyAuditLogs({
   page = 1,
   pageSize = 20,
@@ -159,7 +202,9 @@ export async function getMyAuditLogs({
   startDate,
   endDate,
 }) {
-  let query = supabase.from('audit_logs').select('*', { count: 'exact' })
+  let query = supabase
+    .from('audit_logs')
+    .select('*', { count: 'exact' })
 
   if (actionType) query = query.eq('action_type', actionType)
   if (startDate) query = query.gte('created_at', startDate.toISOString())
@@ -170,39 +215,29 @@ export async function getMyAuditLogs({
     .range((page - 1) * pageSize, page * pageSize - 1)
 
   const { data, count, error } = await query
-
   return { data: data || [], count: count || 0, error }
 }
 ```
-
-**Verification:**
-- Test `logAction` inserts a row with correct fields
-- Test `getAuditLogs` returns paginated results with filters working
-- Test RLS: staff user calling `getAuditLogs` (should not return others' logs via RLS policy)
 
 ---
 
 ## Phase 3: Wire Logging into Services
 
-### Task 3.1 — Update bookingService.js
+`logAction` no longer takes an `actor` parameter — it reads it internally. No component call sites
+need to change. Each service function just imports `logAction` and calls it after its main
+Supabase call succeeds.
 
-**Functions to update:**
-- `updateBookingStatus(bookingId, status, actor)`
-- `cancelBooking(bookingId, actor)`
-- `settleBalance(bookingId, actor)`
+### Task 3.1 — bookingService.js
 
-**Pattern:**
-1. Add `actor` parameter
-2. Fetch old state before update (e.g., `booking_status`)
-3. Perform update
-4. Call `logAction()` after success
+Functions: `updateBookingStatus`, `cancelBooking`, `settleBalance`
 
-**Example for cancelBooking:**
+Example — `cancelBooking`:
+
 ```js
 import { logAction } from './auditService'
 
-export async function cancelBooking(bookingId, actor) {
-  const { data: oldBooking } = await supabase
+export async function cancelBooking(bookingId) {
+  const { data: prev } = await supabase
     .from('bookings')
     .select('booking_status, reference_id')
     .eq('id', bookingId)
@@ -210,7 +245,10 @@ export async function cancelBooking(bookingId, actor) {
 
   const { data, error } = await supabase
     .from('bookings')
-    .update({ booking_status: 'cancelled', cancelled_at: new Date().toISOString() })
+    .update({
+      booking_status: 'cancelled',
+      cancelled_at: new Date().toISOString(),
+    })
     .eq('id', bookingId)
     .select()
     .single()
@@ -218,13 +256,12 @@ export async function cancelBooking(bookingId, actor) {
   if (error) return { data, error }
 
   logAction({
-    actor,
     actionType: 'booking.cancelled',
     entityType: 'booking',
     entityId: bookingId,
     entityReference: data.reference_id,
     description: `Cancelled booking #${data.reference_id}`,
-    oldData: oldBooking ? { status: oldBooking.booking_status } : null,
+    oldData: prev ? { status: prev.booking_status } : null,
     newData: { status: data.booking_status },
   })
 
@@ -232,281 +269,240 @@ export async function cancelBooking(bookingId, actor) {
 }
 ```
 
-### Task 3.2 — Update paymentService.js
+### Task 3.2 — paymentService.js
 
-**Functions to update:**
-- `verifyPayment(paymentId, actor)`
-- `denyPayment(paymentId, actor)`
+Functions: `verifyPayment`, `denyPayment`
 
-### Task 3.3 — Update customerService.js
+Log `payment.verified` / `payment.denied` with `old_data: { status: prev.status }` and
+`new_data: { status: 'verified' | 'denied' }`.
 
-**Functions to update:**
-- `updateAccountStatus(customerId, status, reason, actor)`
-- `banCustomer(customerId, actor)` — calls Edge Function, log after success
+### Task 3.3 — customerService.js
 
-### Task 3.4 — Update staffService.js
+Functions: `updateAccountStatus` (covers suspend and reactivate)
 
-**Functions to update:**
-- `deactivateStaff(staffId, reason, actor)`
-- `activateStaff(staffId, actor)`
-- `banStaff(staffId, actor)` — calls Edge Function
-- `inviteUser(email, role, actor)` — calls Edge Function
-- `reviewLeaveRequest(leaveRequestId, status, actor)`
+Action types: `customer.suspended`, `customer.reactivated`.  
+Include `old_data: { status: prev.account_status }`, `new_data: { status: newStatus }`,
+`metadata: { reason }` for suspensions.
 
-### Task 3.5 — Update staffAppointmentService.js
+**Note:** `banCustomer` is excluded here — it's handled server-side in the Edge Function (Phase 4).
 
-**Functions to update:**
-- `claimAppointment(appointmentId, actor)`
+### Task 3.4 — staffService.js
 
-### Task 3.6 — Update servicesCmsService.js
+Functions: `deactivateStaff`, `activateStaff`, `reviewLeaveRequest`
 
-**Functions to update:**
-- `createService(categoryId, serviceData, actor)`
-- `updateService(serviceId, serviceData, actor)`
-- `deleteService(serviceId, actor)`
-- `createCategory(categoryData, actor)`
-- `updateCategory(categoryId, categoryData, actor)`
-- `deleteCategory(categoryId, actor)`
+Action types: `staff.suspended`, `staff.reactivated`, `leave_request.approved`,
+`leave_request.rejected`.
 
-### Task 3.7 — Update inquiryService.js
+**Note:** `banStaff` and `inviteUser` are excluded — handled server-side in Edge Functions.
 
-**Functions to update:**
-- `markRead(inquiryId, actor)`
-- `archiveInquiry(inquiryId, actor)`
+### Task 3.5 — staffAppointmentService.js
 
-### Task 3.8 — Update settingsService.js
+Functions: `claimAppointment`
 
-**Functions to update:**
-- `upsertSetting(key, value, actor)`
+Action type: `booking.claimed`. Log `entityReference` as the appointment reference_id.
 
-### Task 3.9 — Update qrPaymentService.js
+### Task 3.6 — servicesCmsService.js
 
-**Functions to update:**
-- `uploadQRCode(slot, file, actor)`
-- `removeQRCode(slot, actor)`
+Functions: all create/update/delete on services and categories
 
-### Task 3.10 — Update component call sites
+Action types: `service.created`, `service.updated`, `service.deleted`, `category.created`,
+`category.updated`, `category.deleted`.
 
-**Where services are called:**
-- Admin pages (booking, customer, staff, services, inquiries, settings, qr-payment)
-- Staff appointment page (claimAppointment)
+For updates: capture `old_data` from the record before update (name, price, etc.).
 
-Add `actor` from `useAuthStore()`:
-```js
-const { profile } = useAuthStore()
-const actor = { 
-  id: profile.id, 
-  name: `${profile.first_name} ${profile.last_name}`, 
-  role: profile.role 
-}
+### Task 3.7 — inquiryService.js
 
-await cancelBooking(bookingId, actor)
-```
+Functions: `markRead`, `archiveInquiry`
+
+Action types: `inquiry.marked_read`, `inquiry.archived`.
+
+### Task 3.8 — settingsService.js
+
+Functions: `upsertSetting`
+
+Action type: `setting.updated`. Include `metadata: { key }` so the log shows which setting
+changed.
+
+### Task 3.9 — qrPaymentService.js
+
+Functions: `uploadQRCode`, `removeQRCode`
+
+Action types: `qr_payment.uploaded`, `qr_payment.removed`. Include `metadata: { slot }`.
 
 ---
 
-## Phase 4: UI Components
+## Phase 4: Edge Function Updates
 
-### Task 4.1 — Create ActivityHistory component
+The three Edge Functions that perform the highest-impact actions must log **server-side** using
+the Supabase service role client. This eliminates the network-drop risk between success response
+and client-side log insert.
+
+### banCustomer Edge Function
+
+After completing the ban logic, insert an audit log row:
+
+```js
+// Inside the Edge Function, after ban operations complete
+const actorId = req.headers.get('x-actor-id') // passed from client
+const { data: actor } = await supabaseAdmin
+  .from('profiles')
+  .select('first_name, last_name, role')
+  .eq('id', actorId)
+  .single()
+
+await supabaseAdmin.from('audit_logs').insert({
+  actor_id: actorId,
+  actor_name: `${actor.first_name} ${actor.last_name}`,
+  actor_role: actor.role,
+  action_type: 'customer.banned',
+  entity_type: 'customer',
+  entity_id: customerId,
+  entity_reference: customerReference,
+  description: `Banned customer ${customerEmail}`,
+  old_data: { status: 'active' },
+  new_data: { status: 'banned' },
+})
+```
+
+### banStaff Edge Function
+
+Same pattern. Action type: `staff.banned`.
+
+### inviteUser Edge Function
+
+Same pattern. Action type: `staff.invited`. Include `metadata: { role: invitedRole }`.
+
+**Actor identity:** Read `actorId` from a header sent by the client. The Edge Function fetches
+name/role from profiles using the service role client. The client sends the actor's `profile.id`
+from `useAuthStore.getState()`.
+
+---
+
+## Phase 5: UI Components
+
+### Task 5.1 — ActivityHistory component
 
 **File:** `src/components/ActivityHistory/index.jsx`
 
-**Props:**
-```js
-{
-  entityType: 'booking' | 'customer' | 'staff',
-  entityId: UUID,
-}
-```
+Props: `{ entityType: string, entityId: string }`
 
-**Features:**
-- Fetch logs using `getEntityAuditLogs`
-- Render timeline (top-to-bottom, newest first)
-- Each entry: timestamp · actor name (+ badge) · action type · description
-- Expandable to show old_data / new_data as formatted JSON or diff
-- Loading state
-- Empty state
+Behavior:
+- Fetch with `getEntityAuditLogs({ entityType, entityId, limit: 50, offset: 0 })`
+- Render timeline, newest first
+- Each entry: timestamp · actor name + role badge · description
+- Expandable for `old_data` / `new_data` (formatted JSON or key-value pairs)
+- "Load more" button: increments `offset` by 50, appends next batch to list
+- Loading and empty states
 
-**Styling:** Use Tailwind CSS v4 (match existing admin table styles)
+### Task 5.2 — Add ActivityHistory to detail pages
 
-### Task 4.2 — Add ActivityHistory to BookingDetailPage
+- `src/pages/admin/BookingDetailPage/index.jsx` — add at bottom with `entityType="booking"`
+- `src/pages/admin/CustomerDetailPage/index.jsx` — add with `entityType="customer"`
+- `src/pages/admin/StaffDetailPage/index.jsx` — add with `entityType="staff"`
 
-**File:** `src/pages/admin/BookingDetailPage/index.jsx`
-
-Add at bottom before closing:
-```jsx
-<ActivityHistory entityType="booking" entityId={bookingId} />
-```
-
-### Task 4.3 — Add ActivityHistory to CustomerDetailPage
-
-**File:** `src/pages/admin/CustomerDetailPage/index.jsx`
-
-Add at bottom:
-```jsx
-<ActivityHistory entityType="customer" entityId={customerId} />
-```
-
-### Task 4.4 — Add ActivityHistory to StaffDetailPage
-
-**File:** `src/pages/admin/StaffDetailPage/index.jsx`
-
-Add at bottom:
-```jsx
-<ActivityHistory entityType="staff" entityId={staffId} />
-```
-
-### Task 4.5 — Create AuditLogPage
+### Task 5.3 — AuditLogPage
 
 **File:** `src/pages/admin/AuditLogPage/index.jsx`
 
-**Structure:**
-1. Filter bar (top)
-   - Date range picker (from/to)
-   - Actor dropdown (all admin/staff users)
-   - Action type filter
-   - Entity type filter
-   - Search field
-   - Apply/Reset buttons
+Layout:
+1. Filter bar: date range, actor dropdown (all admin/staff profiles), action type, entity type,
+   search field, Apply/Reset
+2. Table: Date/Time | Actor + badge | Action Type | Entity Ref | Description
+3. Expandable rows: show `old_data` / `new_data`
+4. Pagination: page size selector (10/20/50), Prev/Next, total count
 
-2. Results table
-   - Columns: Date/Time | Actor (+ badge) | Action Type | Entity Ref | Description
-   - Sortable columns
-   - Expandable rows for old_data / new_data
+Match existing admin table Tailwind patterns for consistency.
 
-3. Pagination
-   - Page size selector (10, 20, 50)
-   - Previous/Next
-   - Total count
+### Task 5.4 — Add AuditLogPage route and nav link
 
-**Implementation notes:**
-- Use `getAuditLogs` from auditService
-- Match existing admin table patterns (use same Tailwind classes, structure)
-- Handle loading and error states
-
-### Task 4.6 — Add AuditLogPage to admin routes
-
-**File:** `src/App.jsx` (or wherever admin routes are defined)
-
-Add route:
+**Route** in `src/App.jsx`:
 ```jsx
-<Route path="/admin/audit-log" element={<AdminRoute><AuditLogPage /></AdminRoute>} />
+<Route
+  path="/admin/audit-log"
+  element={<AdminRoute><AuditLogPage /></AdminRoute>}
+/>
 ```
 
-### Task 4.7 — Add AuditLogPage link to admin sidebar
+Add "Audit Log" link to admin sidebar component.
 
-**File:** `src/components/admin/AdminSidebar/index.jsx` (or similar)
-
-Add nav link:
-```jsx
-<Link to="/admin/audit-log">Audit Log</Link>
-```
-
-### Task 4.8 — Create MyActivityPage (staff)
+### Task 5.5 — MyActivityPage
 
 **File:** `src/pages/staff/MyActivityPage/index.jsx`
 
-Similar to AuditLogPage but:
-- Only shows current user's actions
-- Filters: date range, action type
-- Uses `getMyAuditLogs`
+Uses `getMyAuditLogs`. Filters: date range, action type. Same table layout as AuditLogPage.
+RLS ensures only the current user's rows are returned — no client-side filtering needed.
 
-### Task 4.9 — Add MyActivityPage to staff routes
+### Task 5.6 — Add MyActivityPage route and nav link
 
-**File:** `src/App.jsx`
-
-Add route:
+**Route** in `src/App.jsx`:
 ```jsx
-<Route path="/staff/my-activity" element={<StaffRoute><MyActivityPage /></StaffRoute>} />
+<Route
+  path="/staff/my-activity"
+  element={<StaffRoute><MyActivityPage /></StaffRoute>}
+/>
 ```
 
-### Task 4.10 — Add MyActivityPage link to staff sidebar
-
-**File:** `src/components/staff/StaffSidebar/index.jsx` (or similar)
-
-Add nav link:
-```jsx
-<Link to="/staff/my-activity">My Activity</Link>
-```
+Add "My Activity" link to staff sidebar component.
 
 ---
 
-## Phase 5: Testing & Verification
+## Phase 6: Verification
 
-### Task 5.1 — Database verification
+### DB migration
+- `audit_logs` table exists with correct schema
+- `actor_id` FK has `ON DELETE SET NULL`
+- Delete a test profile → `actor_id` nulled in existing logs, not blocked
+- RLS: admin sees all, staff sees only own rows
 
-1. Migration applied successfully
-2. `audit_logs` table exists with correct schema
-3. All indexes created
-4. RLS policies enforced:
-   - Admin user can SELECT all rows
-   - Staff user can SELECT only `actor_id = auth.uid()`
+### App-level logging
+- Cancel a booking as admin → row in `audit_logs` with correct fields
+- Verify `old_data`/`new_data` populated
+- Break the log insert temporarily → main action still completes, no user-facing error
 
-### Task 5.2 — Service logging verification
+### Edge Function logging
+- Trigger `banCustomer` → audit log row inserted server-side
+- Confirm log appears even when client disconnects immediately after calling the function
 
-1. Trigger booking cancellation in admin UI
-2. Check `audit_logs` table for new row
-3. Verify fields: actor_id, action_type, old_data, new_data populated correctly
-4. Temporarily break insert (wrong table name) → main action still completes
+### Entity query limit
+- Entity with 60+ logs → `ActivityHistory` shows 50 → "Load more" loads next batch
 
-### Task 5.3 — Admin audit log page verification
+### Admin audit log page
+- Filters and search return correct results
+- Pagination works (page size, Prev/Next)
+- Row expansion shows old/new data
+- `/admin/audit-log` accessible to admin, redirects for staff/customer
 
-1. Navigate to `/admin/audit-log`
-2. Page loads with existing logs
-3. Filters work (date range, actor, action type, entity type)
-4. Search works (by description or entity_reference)
-5. Pagination works (page size, previous/next)
-6. Row expansion shows old_data / new_data
-
-### Task 5.4 — Inline activity history verification
-
-1. Open `/admin/bookings/:id`
-2. ActivityHistory section visible at bottom
-3. Shows logs for that booking
-4. Expandable rows work
-5. Repeat for customer detail and staff detail pages
-
-### Task 5.5 — Staff activity page verification
-
-1. Log in as staff user
-2. Navigate to `/staff/my-activity`
-3. Page shows only current user's actions
-4. Filters work
-5. Pagination works
-6. Confirm staff cannot see other staff's logs (RLS)
-
-### Task 5.6 — End-to-end smoke test
-
-1. Create a booking as customer
-2. As admin: approve payment, mark finished, settle balance
-3. Check audit log for all three actions
-4. Open booking detail → inline history shows all three actions
-5. Check staff's my activity page (no entries for admin actions) ✓
+### Staff activity page
+- `/staff/my-activity` shows only current user's actions
+- Staff cannot access `/admin/audit-log`
 
 ---
 
 ## Rollout Checklist
 
-- [ ] All 10 service files updated with actor parameter and logAction calls
-- [ ] All 10 component/page call sites passing actor
-- [ ] auditService.js tested (logAction doesn't throw, queries return correct data)
-- [ ] ActivityHistory component created and tested
-- [ ] Activity history added to 3 detail pages
-- [ ] AuditLogPage created with filters/search/pagination
-- [ ] AuditLogPage linked in admin sidebar
-- [ ] MyActivityPage created
-- [ ] MyActivityPage linked in staff sidebar
-- [ ] Smoke tests pass (logging works, no errors, RLS enforced)
-- [ ] Design spec reviewed
-- [ ] Commit all changes with message `feat: add audit log and actions tracker`
+- [ ] Migration applied (`ON DELETE SET NULL` confirmed)
+- [ ] `auditService.js` created (logAction, getAuditLogs, getEntityAuditLogs, getMyAuditLogs)
+- [ ] 9 service files updated with logAction calls (no actor param needed)
+- [ ] 3 Edge Functions updated with server-side logging
+- [ ] `ActivityHistory` component created with load-more
+- [ ] ActivityHistory added to 3 detail pages
+- [ ] `AuditLogPage` created and routed at `/admin/audit-log`
+- [ ] Audit Log link added to admin sidebar
+- [ ] `MyActivityPage` created and routed at `/staff/my-activity`
+- [ ] My Activity link added to staff sidebar
+- [ ] All verification tests pass
+- [ ] Commit: `feat: add audit log and actions tracker`
 
 ---
 
-## Notes
+## Revision Notes
 
-- **Fire-and-forget pattern**: `logAction` never throws. Logging failures are silent console.error only.
-- **Actor composition**: Pull from `useAuthStore()`. Compose as `{ id, name: '${first_name} ${last_name}', role }`.
-- **Before/after snapshots**: Include only relevant fields (status, amount, etc.), not entire records.
-- **Denormalization**: `actor_name` and `actor_role` stored in log for readability if profile deleted later.
-- **Immutable logs**: No update/delete access to audit_logs table.
-- **Testing RLS**: Use a test staff account that's different from the admin account to verify policies.
+**Changes from initial plan:**
+
+| # | Concern | Fix Applied |
+|---|---|---|
+| 1 | Client-side logging risky for Edge Functions | Edge Functions insert logs server-side; app-level kept for standard DB ops (RLS prevents spoofing, rich context preserved) |
+| 2 | FK blocks profile deletion | Changed to `ON DELETE SET NULL` |
+| 3 | `getEntityAuditLogs` unbounded | Added `.range(offset, offset + limit - 1)` with default limit 50 and load-more support |
+| 4 | Prop drilling actor into 10 components | `logAction` calls `useAuthStore.getState()` internally — service signatures unchanged |
+| 5 | Null crash risk + 80-char violations | Optional chaining on profile fields; long lines wrapped |

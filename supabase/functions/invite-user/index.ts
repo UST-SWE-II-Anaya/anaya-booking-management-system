@@ -41,7 +41,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: callerProfile, error: profileError } = await supabaseUser
       .from('profiles')
-      .select('role')
+      .select('role, first_name, last_name')
       .eq('id', user.id)
       .single()
 
@@ -109,6 +109,20 @@ Deno.serve(async (req: Request) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    // Insert Audit Log
+    const actorName = `${callerProfile.first_name ?? ''} ${callerProfile.last_name ?? ''}`.trim()
+    await supabaseAdmin.from('audit_logs').insert({
+      actor_id: user.id,
+      actor_name: actorName,
+      actor_role: callerProfile.role,
+      action_type: 'staff.invited',
+      entity_type: 'staff',
+      entity_id: inviteData.user?.id,
+      description: `Invited new ${role} ${email}`,
+      metadata: { role },
+      new_data: { first_name, last_name, email, role },
+    })
 
     return new Response(
       JSON.stringify({ success: true }),

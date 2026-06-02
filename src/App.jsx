@@ -22,12 +22,14 @@ import AdminServicesPage from './pages/admin/services/ServicesPage'
 import InquiriesPage from './pages/admin/inquiries/InquiriesPage'
 import SettingsPage from './pages/admin/settings/SettingsPage'
 import QRPaymentPage from './pages/admin/qr-payment/QRPaymentPage'
+import AuditLogPage from './pages/admin/AuditLogPage'
 
 // Staff pages
 import StaffDashboardPage from './pages/staff/DashboardPage'
 import StaffAppointmentsPage from './pages/staff/AppointmentsPage'
 import StaffLeaveRequestPage from './pages/staff/LeaveRequestPage'
 import StaffProfileSettingsPage from './pages/staff/ProfileSettingsPage'
+import MyActivityPage from './pages/staff/MyActivityPage'
 
 // Customer pages
 import CustomerRoute from './components/layout/CustomerRoute'
@@ -96,6 +98,7 @@ const App = () => {
           <Route path="/admin/inquiries" element={<InquiriesPage />} />
           <Route path="/admin/settings" element={<SettingsPage />} />
           <Route path="/admin/qr-payment" element={<QRPaymentPage />} />
+          <Route path="/admin/audit-log" element={<AuditLogPage />} />
         </Route>
       </Route>
 
@@ -106,6 +109,7 @@ const App = () => {
           <Route path="/staff/appointments" element={<StaffAppointmentsPage />} />
           <Route path="/staff/leave" element={<StaffLeaveRequestPage />} />
           <Route path="/staff/profile" element={<StaffProfileSettingsPage />} />
+          <Route path="/staff/my-activity" element={<MyActivityPage />} />
         </Route>
       </Route>
 
