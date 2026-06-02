@@ -109,7 +109,7 @@ const StaffPage = () => {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 text-left">
-                {['Name', 'Email', 'Phone', 'Role', 'Status', 'Joined', 'Actions'].map((h) => (
+                {['ID', 'Name', 'Email', 'Phone', 'Role', 'Status', 'Joined', 'Actions'].map((h) => (
                   <th
                     key={h}
                     className="px-5 py-3 text-xs font-medium text-gray-400
@@ -123,6 +123,9 @@ const StaffPage = () => {
             <tbody className="divide-y divide-gray-50">
               {filtered.map((s) => (
                 <tr key={s.id} className="hover:bg-gray-50/50 transition-colors">
+                  <td className="px-5 py-3.5 font-mono text-xs text-gray-500">
+                    {s.reference_id}
+                  </td>
                   <td className="px-5 py-3.5 font-medium text-[#4A4A4A]">
                     {s.first_name} {s.last_name}
                   </td>
