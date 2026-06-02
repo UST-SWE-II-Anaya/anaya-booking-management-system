@@ -7,39 +7,23 @@ import { formatDuration, to12h } from '../../utils/bookingUtils'
 import useAuthStore from '../../store/authStore'
 import useSiteSettings from '../../hooks/useSiteSettings'
 
-// GCash QR placeholder — replace src with actual QR image paths when available
 const GCashCard = ({ number, url }) => (
   <div className="flex-1 flex flex-col items-center">
-    <div className="w-full rounded-xl overflow-hidden border-2 border-blue-200 bg-blue-600
-      flex flex-col items-center py-4 px-3">
-      <div className="flex items-center gap-1.5 mb-3">
-        <div className="bg-white rounded-full w-6 h-6 flex items-center justify-center">
-          <span className="text-blue-600 font-black text-xs">G</span>
-        </div>
-        <span className="text-white font-bold text-sm tracking-wide">GCash</span>
+    {url ? (
+      <div className="w-full max-w-[280px] aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-white flex items-center justify-center p-2">
+        <img
+          src={url}
+          alt={`GCash QR ${number}`}
+          className="w-full h-full object-contain"
+          onError={(e) => { e.target.style.display = 'none' }}
+        />
       </div>
-      {url ? (
-        <>
-          <p className="text-blue-200 text-xs mb-2 font-medium tracking-wider">
-            SCAN TO PAY HERE
-          </p>
-          <div className="w-28 h-28 bg-white rounded-lg overflow-hidden
-            flex items-center justify-center">
-            <img
-              src={url}
-              alt={`GCash QR ${number}`}
-              className="w-full h-full object-contain"
-              onError={(e) => { e.target.style.display = 'none' }}
-            />
-          </div>
-        </>
-      ) : (
-        <div className="w-28 h-28 bg-white/20 rounded-lg flex items-center justify-center">
-          <p className="text-white/70 text-xs text-center px-2">Not Available</p>
-        </div>
-      )}
-    </div>
-    <p className="text-sm font-semibold text-anaya-text mt-2">GCASH #{number}</p>
+    ) : (
+      <div className="w-full max-w-[280px] aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-gray-50 flex items-center justify-center p-2">
+        <p className="text-gray-400 text-sm text-center px-2">Not Available</p>
+      </div>
+    )}
+    <p className="text-sm font-semibold text-gray-500 mt-3 uppercase tracking-wider">GCASH #{number}</p>
   </div>
 )
 
