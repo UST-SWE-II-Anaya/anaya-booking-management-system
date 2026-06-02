@@ -70,7 +70,6 @@ const StaffStep = () => {
 
   const handleSelect = (pref) => {
     setStaffPreference(pref)
-    navigate('/booking/datetime')
   }
 
   return (
