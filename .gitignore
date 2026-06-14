@@ -9,6 +9,7 @@ lerna-debug.log*
 
 .claude
 CLAUDE.md
+.superpowers
 agent guide
 node_modules
 dist
